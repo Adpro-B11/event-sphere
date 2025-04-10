@@ -5,21 +5,26 @@ import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.repository.EventRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+
+@ExtendWith(MockitoExtension.class)
 class EventServiceTest {
 
+    @Mock
     private EventRepository eventRepository;
-    private EventService eventService;
 
-    @BeforeEach
-    void setUp() {
-        eventRepository = mock(EventRepository.class);
-        eventService = new EventService.EventServiceImpl(eventRepository);
-    }
+    @InjectMocks
+    private EventServiceImpl eventService;
 
     @Test
     void testCreateEvent_Success() {
