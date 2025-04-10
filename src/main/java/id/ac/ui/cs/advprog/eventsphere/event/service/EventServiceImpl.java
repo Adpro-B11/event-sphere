@@ -1,9 +1,11 @@
 package id.ac.ui.cs.advprog.eventsphere.event.service;
 
+import id.ac.ui.cs.advprog.eventsphere.event.enums.EventStatus;
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.repository.EventRepository;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
@@ -14,21 +16,36 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public void createEvent(Event event) {
-        // Placeholder implementation
+        if (event == null) {
+            throw new IllegalArgumentException("Event cannot be null");
+        }
+        eventRepository.save(event);
     }
 
     @Override
     public void updateStatus(String eventId, String status) {
-        // Placeholder implementation
+        Event event = eventRepository.findById(eventId);
+        if (event == null) {
+            throw new NoSuchElementException("Event with ID " + eventId + " not found");
+        }
+        if (!EventStatus.contains(status)) {
+            throw new IllegalArgumentException("Invalid status");
+        }
+        event.setStatus(status);
+        eventRepository.save(event);
     }
 
     @Override
     public Event findById(String eventId) {
-        return null; // Placeholder implementation
+        Event event = eventRepository.findById(eventId);
+        if (event == null) {
+            throw new NoSuchElementException("Event with ID " + eventId + " not found");
+        }
+        return event;
     }
 
     @Override
     public List<Event> findAllByOrganizer(String organizer) {
-        return null; // Placeholder implementation
+        return eventRepository.findAllByOrganizer(organizer);
     }
 }
