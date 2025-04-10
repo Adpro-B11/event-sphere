@@ -23,6 +23,7 @@ class EventTest {
         event.setDate("2023-12-01");
         event.setLocation("Jakarta");
         event.setPrice(500000.0);
+        event.setOrganizer("Mas Inis");
 
         // Assert
         assertEquals("Konser Musik", event.getTitle());
@@ -31,6 +32,7 @@ class EventTest {
         assertEquals("Jakarta", event.getLocation());
         assertEquals(500000.0, event.getPrice());
         assertEquals(EventStatus.DRAFT.getValue(), event.getStatus()); // Default status
+        assertEquals("Mas Inis", event.getOrganizer());
     }
 
     @Test

@@ -30,6 +30,9 @@ public class Event {
 
     private String status = EventStatus.DRAFT.getValue(); // Default status
 
+    @Setter
+    private String organizer;
+
     public void setTitle(String title) {
         if (title == null || title.isEmpty()) {
             throw new IllegalArgumentException("Title cannot be empty");
