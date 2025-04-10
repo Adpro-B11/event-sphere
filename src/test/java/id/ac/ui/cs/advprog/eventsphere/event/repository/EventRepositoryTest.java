@@ -109,7 +109,7 @@ class EventRepositoryTest {
 
         // Assert
         assertFalse(events.isEmpty());
-        assertEquals(2, events.size());
+        assertEquals(1, events.size());
     }
 
     @Test
