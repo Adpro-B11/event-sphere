@@ -5,6 +5,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.List;
+
 class EventRepositoryTest {
 
     private EventRepository eventRepository;
@@ -105,7 +107,7 @@ class EventRepositoryTest {
         eventRepository.save(event2);
 
         // Act
-        var events = eventRepository.findAllByOrganizer("Mas Inis");
+        List<Event> events = eventRepository.findAllByOrganizer("Mas Inis");
 
         // Assert
         assertFalse(events.isEmpty());
@@ -126,7 +128,7 @@ class EventRepositoryTest {
         eventRepository.save(event);
 
         // Act
-        var events = eventRepository.findAllByOrganizer("Dek Atsini");
+        List<Event> events = eventRepository.findAllByOrganizer("Dek Atsini");
 
         // Assert
         assertTrue(events.isEmpty());

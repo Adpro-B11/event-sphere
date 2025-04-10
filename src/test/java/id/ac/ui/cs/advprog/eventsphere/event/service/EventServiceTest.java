@@ -107,7 +107,7 @@ class EventServiceTest {
         when(eventRepository.findAllByOrganizer(organizer)).thenReturn(List.of(event));
 
         // Act
-        var events = eventService.findAllByOrganizer(organizer);
+        List<Event> events = eventService.findAllByOrganizer(organizer);
 
         // Assert
         assertFalse(events.isEmpty());
@@ -121,7 +121,7 @@ class EventServiceTest {
         when(eventRepository.findAllByOrganizer(organizer)).thenReturn(List.of());
 
         // Act
-        var events = eventService.findAllByOrganizer(organizer);
+        List<Event> events = eventService.findAllByOrganizer(organizer);
 
         // Assert
         assertTrue(events.isEmpty());
