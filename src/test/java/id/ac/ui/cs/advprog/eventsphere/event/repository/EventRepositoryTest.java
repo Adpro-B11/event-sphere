@@ -23,6 +23,7 @@ class EventRepositoryTest {
         event.setDate("2023-12-01");
         event.setLocation("Jakarta");
         event.setPrice(500000.0);
+        event.setOrganizer("Mas Inis");
 
         // Act
         eventRepository.save(event);
@@ -40,6 +41,7 @@ class EventRepositoryTest {
         event.setDate("2023-12-01");
         event.setLocation("Jakarta");
         event.setPrice(500000.0);
+        event.setOrganizer("Mas Inis");
 
         eventRepository.save(event);
 
@@ -61,6 +63,7 @@ class EventRepositoryTest {
         event.setDate("2023-12-01");
         event.setLocation("Jakarta");
         event.setPrice(500000.0);
+        event.setOrganizer("Mas Inis");
 
         eventRepository.save(event);
 
@@ -87,6 +90,7 @@ class EventRepositoryTest {
         event1.setLocation("Jakarta");
         event1.setPrice(500000.0);
         event1.setStatus("DRAFT");
+        event1.setOrganizer("Mas Inis");
 
         Event event2 = new Event();
         event2.setTitle("Seminar Teknologi");
@@ -95,12 +99,13 @@ class EventRepositoryTest {
         event2.setLocation("Bandung");
         event2.setPrice(300000.0);
         event2.setStatus("PUBLISHED");
+        event2.setOrganizer("Mbak Pao");
 
         eventRepository.save(event1);
         eventRepository.save(event2);
 
         // Act
-        var events = eventRepository.findAllByOrganizer("John Doe");
+        var events = eventRepository.findAllByOrganizer("Mas Inis");
 
         // Assert
         assertFalse(events.isEmpty());
@@ -121,7 +126,7 @@ class EventRepositoryTest {
         eventRepository.save(event);
 
         // Act
-        var events = eventRepository.findAllByOrganizer("john doe");
+        var events = eventRepository.findAllByOrganizer("Dek Atsini");
 
         // Assert
         assertTrue(events.isEmpty());
