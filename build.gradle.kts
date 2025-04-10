@@ -88,3 +88,9 @@ tasks.jacocoTestReport {
 tasks.withType<Test> {
     useJUnitPlatform()
 }
+
+tasks {
+    bootJar {
+        mainClass.set("id.ac.ui.cs.advprog.eventsphere.EventSphereApplication")  // Your main class
+    }
+}
