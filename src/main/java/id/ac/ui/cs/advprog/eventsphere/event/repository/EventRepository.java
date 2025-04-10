@@ -9,14 +9,31 @@ public class EventRepository {
     private List<Event> events = new ArrayList<>();
 
     public void save(Event event) {
-        // Placeholder implementation
+        for (int i = 0; i < events.size(); i++) {
+            if (events.get(i).getId().equals(event.getId())) {
+                events.set(i, event);
+                return;
+            }
+        }
+        events.add(event);
     }
 
     public Event findById(String id) {
-        return null; // Placeholder implementation
+        for (Event event : events) {
+            if (event.getId().equals(id)) {
+                return event;
+            }
+        }
+        return null;
     }
 
     public List<Event> findAllByOrganizer(String organizer) {
-        return new ArrayList<>(); // Placeholder implementation
+        List<Event> result = new ArrayList<>();
+        for (Event event : events) {
+            if (event.getOrganizer() != null && event.getOrganizer().equals(organizer)) {
+                result.add(event);
+            }
+        }
+        return result;
     }
 }
