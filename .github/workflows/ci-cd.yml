@@ -47,6 +47,10 @@ jobs:
         echo "$DEPLOY_KEY" >> $HOME/key.pem
         chmod 400 $HOME/key.pem
 
+    - name: Test Secrets
+      run: echo "DEPLOY_HOST is ${{ secrets.DEPLOY_HOST }}"
+
+
     - name: Copy JAR to EC2
       uses: appleboy/scp-action@master
       with:
