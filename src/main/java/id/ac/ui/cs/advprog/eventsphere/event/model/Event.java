@@ -11,6 +11,7 @@ import id.ac.ui.cs.advprog.eventsphere.event.enums.EventStatus;
 @NoArgsConstructor
 @Getter
 public class Event {
+    @Setter
     private String id = UUID.randomUUID().toString();
 
     @Setter
