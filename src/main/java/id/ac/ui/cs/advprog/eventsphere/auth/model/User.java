@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.eventsphere.auth;
+package id.ac.ui.cs.advprog.eventsphere.auth.model;
 
 public class User {
 }
