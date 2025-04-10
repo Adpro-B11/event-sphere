@@ -15,6 +15,6 @@ public class CreateEventCommand implements EventCommand {
 
     @Override
     public void execute() {
-        // Placeholder implementation
+        eventService.createEvent(event);
     }
 }

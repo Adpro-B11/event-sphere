@@ -16,6 +16,6 @@ public class UpdateStatusCommand implements EventCommand {
 
     @Override
     public void execute() {
-        // Placeholder implementation
+        eventService.updateStatus(eventId, status);
     }
 }
