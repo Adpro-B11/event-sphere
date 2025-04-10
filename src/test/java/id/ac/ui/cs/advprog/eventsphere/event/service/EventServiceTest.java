@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import java.util.List;
+import java.util.NoSuchElementException;
 class EventServiceTest {
 
     private EventRepository eventRepository;
@@ -16,7 +18,7 @@ class EventServiceTest {
     @BeforeEach
     void setUp() {
         eventRepository = mock(EventRepository.class);
-        eventService = new EventServiceImpl(eventRepository);
+        eventService = new EventService.EventServiceImpl(eventRepository);
     }
 
     @Test
