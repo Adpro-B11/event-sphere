@@ -4,6 +4,7 @@ package id.ac.ui.cs.advprog.eventsphere.event.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import id.ac.ui.cs.advprog.eventsphere.event.enums.EventStatus;
 
 class EventTest {
 
@@ -29,7 +30,7 @@ class EventTest {
         assertEquals("2023-12-01", event.getDate());
         assertEquals("Jakarta", event.getLocation());
         assertEquals(500000.0, event.getPrice());
-        assertEquals("DRAFT", event.getStatus()); // Default status
+        assertEquals(EventStatus.DRAFT.getValue(), event.getStatus()); // Default status
     }
 
     @Test
@@ -46,10 +47,10 @@ class EventTest {
     @Test
     void testSetStatus_ValidStatus() {
         // Arrange & Act
-        event.setStatus("PUBLISHED");
+        event.setStatus(EventStatus.PUBLISHED.getValue());
 
         // Assert
-        assertEquals("PUBLISHED", event.getStatus());
+        assertEquals(EventStatus.PUBLISHED.getValue(), event.getStatus());
     }
 
     @Test
