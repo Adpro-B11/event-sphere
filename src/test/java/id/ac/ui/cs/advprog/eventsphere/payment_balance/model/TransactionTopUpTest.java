@@ -1,11 +1,12 @@
-package id.ac.ui.cs.advprog.eventsphere.model;
+package id.ac.ui.cs.advprog.eventsphere.payment_balance.model;
 
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.TopUpTransaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import id.ac.ui.cs.advprog.eventsphere.enums.TransactionStatus;
-import id.ac.ui.cs.advprog.eventsphere.enums.TransactionType;
-import id.ac.ui.cs.advprog.eventsphere.enums.PaymentMethod;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.PaymentMethod;
 
 import java.util.HashMap;
 import java.util.Map;
