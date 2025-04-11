@@ -17,14 +17,17 @@ public class TransactionTopUpRepositoryTest {
     @BeforeEach
     void setUp() {
         topUpTransactionRepository = new TopUpTransactionRepository();
+
         Map<String,String> paymentData = new HashMap<>();
         paymentData.put("bankName","Bank BCA");
-        paymentData.put("accountNumber","663128683");
+        paymentData.put("accountNumber","6631286837");
         TopUpTransaction trx1 = new TopUpTransaction("trx-001", "user-01", "TOPUP_BALANCE","BANK_TRANSFER", 100000,paymentData );
+        trx1.setValidateStatus();
 
         Map<String,String> paymentData2 = new HashMap<>();
-        paymentData.put("accountNumber","663128683123456");
+        paymentData2.put("accountNumber","663128683123456");
         TopUpTransaction trx2 = new TopUpTransaction("trx-002", "user-02", "TOPUP_BALANCE","CREDIT_CARD",50000,paymentData2 );
+        trx2.setValidateStatus();
 
         listTopUpTransactionData = new ArrayList<>();
         listTopUpTransactionData.add(trx1);
