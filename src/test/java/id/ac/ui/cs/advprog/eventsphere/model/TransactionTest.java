@@ -19,7 +19,8 @@ class TransactionTest {
                 "txn-003",
                 "user-123",
                 TransactionType.TOPUP_BALANCE.getValue(),
-                TransactionStatus.FAILED.getValue()
+                TransactionStatus.FAILED.getValue(),
+                400000
         );
 
         transaction.setStatus(TransactionStatus.SUCCESS.getValue());
@@ -32,7 +33,8 @@ class TransactionTest {
                 "txn-003",
                 "user-123",
                 TransactionType.TOPUP_BALANCE.getValue(),
-                TransactionStatus.SUCCESS.getValue()
+                TransactionStatus.SUCCESS.getValue(),
+                400000
         );
 
         transaction.setStatus(TransactionStatus.FAILED.getValue());
@@ -45,7 +47,8 @@ class TransactionTest {
                 "txn-004",
                 "user-123",
                 TransactionType.TOPUP_BALANCE.getValue(),
-                TransactionStatus.SUCCESS.getValue()
+                TransactionStatus.SUCCESS.getValue(),
+                400000
         );
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -59,7 +62,8 @@ class TransactionTest {
                 "txn-005",
                 "user-123",
                 TransactionType.TOPUP_BALANCE.getValue(),
-                TransactionStatus.SUCCESS.getValue()
+                TransactionStatus.SUCCESS.getValue(),
+                400000
         );
 
         assertEquals("txn-005", transaction.getTransactionId());
@@ -74,7 +78,8 @@ class TransactionTest {
                 "txn-006",
                 "user-789",
                 TransactionType.TICKET_PURCHASE.getValue(),
-                TransactionStatus.SUCCESS.getValue()
+                TransactionStatus.SUCCESS.getValue(),
+                400000
         );
         assertEquals("txn-006", transaction.getTransactionId());
         assertEquals("user-789", transaction.getUserId());
@@ -89,7 +94,8 @@ class TransactionTest {
                     "txn-001",
                     "user-123",
                     "INVALID_TYPE",
-                    TransactionStatus.SUCCESS.getValue()
+                    TransactionStatus.SUCCESS.getValue(),
+                    400000
             );
         });
     }
@@ -102,7 +108,22 @@ class TransactionTest {
                     "txn-002",
                     "user-123",
                     TransactionType.TOPUP_BALANCE.getValue(),
-                    "Lodon"
+                    "Lodon",
+                    400000
+            );
+        });
+    }
+
+    @Test
+    void testCreateTransactionWithInvalidAmount() {
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new Transaction(
+                    "txn-002",
+                    "user-123",
+                    TransactionType.TOPUP_BALANCE.getValue(),
+                    "Lodon",
+                    -1
             );
         });
     }
