@@ -103,4 +103,33 @@ public class TransactionTopUpRepositoryTest {
         List<TopUpTransaction> pendingTrxList = topUpTransactionRepository.findByStatus("PENDING");
         assertTrue(pendingTrxList.isEmpty());
     }
+
+    @Test
+    void testDeleteByIdIfFound() {
+        for (TopUpTransaction trx : listTopUpTransactionData) {
+            topUpTransactionRepository.save(trx);
+        }
+
+        topUpTransactionRepository.deleteById("trx-001");
+
+        TopUpTransaction found = topUpTransactionRepository.findById("trx-001");
+        assertNull(found);
+
+        List<TopUpTransaction> allTransactions = topUpTransactionRepository.findAll();
+        assertEquals(1, allTransactions.size());
+        assertEquals("trx-002", allTransactions.getFirst().getTransactionId());
+    }
+
+    @Test
+    void testDeleteByIdIfNotFound() {
+        for (TopUpTransaction trx : listTopUpTransactionData) {
+            topUpTransactionRepository.save(trx);
+        }
+
+        topUpTransactionRepository.deleteById("trx-999");
+
+        List<TopUpTransaction> allTransactions = topUpTransactionRepository.findAll();
+        assertEquals(2, allTransactions.size());
+    }
+
 }
