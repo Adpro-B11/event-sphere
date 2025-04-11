@@ -17,9 +17,14 @@ public class TransactionTopUpRepositoryTest {
     @BeforeEach
     void setUp() {
         topUpTransactionRepository = new TopUpTransactionRepository();
+        Map<String,String> paymentData = new HashMap<>();
+        paymentData.put("bankName","Bank BCA");
+        paymentData.put("accountNumber","663128683");
+        TopUpTransaction trx1 = new TopUpTransaction("trx-001", "user-01", "TOPUP_BALANCE","BANK_TRANSFER", 100000,paymentData );
 
-        TopUpTransaction trx1 = new TopUpTransaction("trx-001", "user-01", 100000, TransactionStatus.SUCCESS.getValue());
-        TopUpTransaction trx2 = new TopUpTransaction("trx-002", "user-02", 50000, TransactionStatus.FAILED.getValue());
+        Map<String,String> paymentData2 = new HashMap<>();
+        paymentData.put("accountNumber","663128683123456");
+        TopUpTransaction trx2 = new TopUpTransaction("trx-002", "user-02", "TOPUP_BALANCE","CREDIT_CARD",50000,paymentData2 );
 
         listTopUpTransactionData = new ArrayList<>();
         listTopUpTransactionData.add(trx1);
@@ -33,7 +38,7 @@ public class TransactionTopUpRepositoryTest {
 
         TopUpTransaction found = topUpTransactionRepository.findById("trx-001");
         assertNotNull(found);
-        assertEquals("trx-001", found.getId());
+        assertEquals("trx-001", found.getTransactionId());
         assertEquals("user-01", found.getUserId());
         assertEquals(100000, found.getAmount());
         assertEquals(TransactionStatus.SUCCESS.getValue(), found.getStatus());
@@ -47,7 +52,7 @@ public class TransactionTopUpRepositoryTest {
 
         TopUpTransaction found = topUpTransactionRepository.findById("trx-002");
         assertNotNull(found);
-        assertEquals("trx-002", found.getId());
+        assertEquals("trx-002", found.getTransactionId());
         assertEquals("user-02", found.getUserId());
     }
 
@@ -71,15 +76,6 @@ public class TransactionTopUpRepositoryTest {
         assertEquals(2, result.size());
     }
 
-    public List<TopUpTransaction> findByStatus(String status) {
-        List<TopUpTransaction> filtered = new ArrayList<>();
-        for (TopUpTransaction trx : topUpTransactionStorage.values()) {
-            if (trx.getStatus().equalsIgnoreCase(status)) {
-                filtered.add(trx);
-            }
-        }
-        return filtered;
-    }
 
     @Test
     void testFindByStatusIfFound() {
@@ -91,7 +87,7 @@ public class TransactionTopUpRepositoryTest {
         assertEquals(1, successTrxList.size());
 
         TopUpTransaction trx = successTrxList.getFirst();
-        assertEquals("trx-001", trx.getId());
+        assertEquals("trx-001", trx.getTransactionId());
         assertEquals(TransactionStatus.SUCCESS.getValue(), trx.getStatus());
     }
 
@@ -101,7 +97,7 @@ public class TransactionTopUpRepositoryTest {
             topUpTransactionRepository.save(trx);
         }
 
-        List<TopUpTransaction> pendingTrxList = topUpTransactionRepository.findByStatus(TransactionStatus.PENDING.getValue());
+        List<TopUpTransaction> pendingTrxList = topUpTransactionRepository.findByStatus("PENDING");
         assertTrue(pendingTrxList.isEmpty());
     }
 }
