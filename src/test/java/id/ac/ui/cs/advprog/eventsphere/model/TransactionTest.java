@@ -68,7 +68,7 @@ class TransactionTest {
 
     @Test
     void testCreateTransactionSuccessWithTicketPurchase() {
-        Transaction transaction = new DummyTransaction(
+        Transaction transaction = new Transaction(
                 "txn-006",
                 "user-789",
                 "TICKET_PURCHASE",
