@@ -1,7 +1,10 @@
 package id.ac.ui.cs.advprog.eventsphere.report.model;
 
+import id.ac.ui.cs.advprog.eventsphere.report.observer.ReportObserver;
 import lombok.Getter;
 import lombok.Setter;
+
+import java.util.ArrayList;
 
 import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
 import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportCategory;
@@ -36,6 +39,9 @@ public class Report {
     private List<String> attachments;
 
     private String responseMessage;
+
+    private List<ReportObserver> observers = new ArrayList<>();
+
 
     public Report(String reportId, String attendeeId, String eventId, String ticketId,
                   String description, String category, String status,
@@ -108,20 +114,37 @@ public class Report {
         if (status == null || !ReportStatus.contains(status)) {
             throw new IllegalArgumentException("Report status cannot be null or invalid");
         }
+
+        String oldStatus = this.status;
         this.status = status;
         this.updatedAt = LocalDateTime.now();
+
+        if (!status.equals(oldStatus)) {
+            notifyObservers();
+        }
+
     }
 
     public void setResponseMessage(String responseMessage) {
+        String oldMessage = this.responseMessage;
         this.responseMessage = responseMessage;
         this.updatedAt = LocalDateTime.now();
+
+        if ((oldMessage == null && responseMessage != null) ||
+                (oldMessage != null && !oldMessage.equals(responseMessage))) {
+            notifyObservers();
+        }
     }
 
     // Method to add response and update status
     public void resolveReport(String responseMessage) {
         this.responseMessage = responseMessage;
+        String oldStatus = this.status;
         this.status = ReportStatus.RESOLVED.getValue();
         this.updatedAt = LocalDateTime.now();
+
+        // Always notify observers when resolving a report
+        notifyObservers();
     }
 
     // Method to add attachment
@@ -131,5 +154,27 @@ public class Report {
         }
         this.attachments.add(attachmentUrl);
         this.updatedAt = LocalDateTime.now();
+    }
+
+    // Observer pattern methods
+    public void addObserver(ReportObserver observer) {
+        if (observers == null) {
+            observers = new ArrayList<>();
+        }
+        observers.add(observer);
+    }
+
+    public void removeObserver(ReportObserver observer) {
+        if (observers != null) {
+            observers.remove(observer);
+        }
+    }
+
+    private void notifyObservers() {
+        if (observers != null) {
+            for (ReportObserver observer : observers) {
+                observer.update(this);
+            }
+        }
     }
 }
