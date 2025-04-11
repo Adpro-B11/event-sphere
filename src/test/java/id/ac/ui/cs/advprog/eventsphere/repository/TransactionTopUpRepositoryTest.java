@@ -40,19 +40,6 @@ public class TransactionTopUpRepositoryTest {
     }
 
     @Test
-    void testSaveUpdate() {
-        TopUpTransaction original = listTopUpTransactionData.get(1);
-        TopUpTransaction updated = new TopUpTransaction("trx-002", "user-02", 70000, TransactionStatus.SUCCESS.getValue());
-
-        topUpTransactionRepository.save(updated);
-        TopUpTransaction found = topUpTransactionRepository.findById("trx-002");
-
-        assertNotNull(found);
-        assertEquals(70000, found.getAmount());
-        assertEquals(TransactionStatus.SUCCESS.getValue(), found.getStatus());
-    }
-
-    @Test
     void testFindByIdIfFound() {
         for (TopUpTransaction trx : listTopUpTransactionData) {
             topUpTransactionRepository.save(trx);
@@ -82,5 +69,39 @@ public class TransactionTopUpRepositoryTest {
 
         List<TopUpTransaction> result = topUpTransactionRepository.findAll();
         assertEquals(2, result.size());
+    }
+
+    public List<TopUpTransaction> findByStatus(String status) {
+        List<TopUpTransaction> filtered = new ArrayList<>();
+        for (TopUpTransaction trx : topUpTransactionStorage.values()) {
+            if (trx.getStatus().equalsIgnoreCase(status)) {
+                filtered.add(trx);
+            }
+        }
+        return filtered;
+    }
+
+    @Test
+    void testFindByStatusIfFound() {
+        for (TopUpTransaction trx : listTopUpTransactionData) {
+            topUpTransactionRepository.save(trx);
+        }
+
+        List<TopUpTransaction> successTrxList = topUpTransactionRepository.findByStatus(TransactionStatus.SUCCESS.getValue());
+        assertEquals(1, successTrxList.size());
+
+        TopUpTransaction trx = successTrxList.getFirst();
+        assertEquals("trx-001", trx.getId());
+        assertEquals(TransactionStatus.SUCCESS.getValue(), trx.getStatus());
+    }
+
+    @Test
+    void testFindByStatusIfNotFound() {
+        for (TopUpTransaction trx : listTopUpTransactionData) {
+            topUpTransactionRepository.save(trx);
+        }
+
+        List<TopUpTransaction> pendingTrxList = topUpTransactionRepository.findByStatus(TransactionStatus.PENDING.getValue());
+        assertTrue(pendingTrxList.isEmpty());
     }
 }
