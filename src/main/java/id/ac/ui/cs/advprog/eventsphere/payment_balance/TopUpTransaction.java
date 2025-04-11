@@ -1,8 +1,8 @@
-package id.ac.ui.cs.advprog.eventsphere.model;
+package id.ac.ui.cs.advprog.eventsphere.payment_balance;
 
-import id.ac.ui.cs.advprog.eventsphere.enums.PaymentMethod;
-import id.ac.ui.cs.advprog.eventsphere.enums.TransactionStatus;
-import id.ac.ui.cs.advprog.eventsphere.enums.TransactionType;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.PaymentMethod;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import lombok.Getter;
 
 import java.util.Map;

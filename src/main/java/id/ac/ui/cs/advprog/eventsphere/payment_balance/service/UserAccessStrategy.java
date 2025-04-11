@@ -1,10 +1,10 @@
-package id.ac.ui.cs.advprog.eventsphere.service;
+package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
-import id.ac.ui.cs.advprog.eventsphere.model.Transaction;
-import id.ac.ui.cs.advprog.eventsphere.model.TopUpTransaction;
-import id.ac.ui.cs.advprog.eventsphere.model.TicketPurchaseTransaction;
-import id.ac.ui.cs.advprog.eventsphere.repository.TopUpTransactionRepository;
-import id.ac.ui.cs.advprog.eventsphere.repository.TicketPurchaseTransactionRepository;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.Transaction;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.TopUpTransaction;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.TicketPurchaseTransaction;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TopUpTransactionRepository;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TicketPurchaseTransactionRepository;
 
 import java.util.List;
 

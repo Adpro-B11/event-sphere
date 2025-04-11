@@ -1,5 +1,5 @@
 
-package id.ac.ui.cs.advprog.eventsphere.enums;
+package id.ac.ui.cs.advprog.eventsphere.payment_balance.enums;
 
 import lombok.Getter;
 
