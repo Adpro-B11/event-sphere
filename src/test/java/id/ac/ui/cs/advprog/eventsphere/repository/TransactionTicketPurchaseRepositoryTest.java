@@ -81,4 +81,23 @@ public class TransactionTicketPurchaseRepositoryTest {
                 .allMatch(trx -> trx.getStatus().equals(TransactionStatus.SUCCESS.getValue())));
     }
 
+    @Test
+    void testDeleteById() {
+        transactionList.forEach(repository::save);
+        assertNotNull(repository.findById("txn-301"));
+        repository.deleteById("txn-301");
+        assertNull(repository.findById("txn-301"));
+        List<TicketPurchaseTransaction> remaining = repository.findAll();
+        assertEquals(1, remaining.size());
+        assertEquals("txn-302", remaining.getFirst().getTransactionId());
+    }
+
+    @Test
+    void testDeleteByIdNotFound() {
+        transactionList.forEach(repository::save);
+        assertDoesNotThrow(() -> repository.deleteById("non-existent-id"));
+        List<TicketPurchaseTransaction> all = repository.findAll();
+        assertEquals(2, all.size());
+    }
+
 }
