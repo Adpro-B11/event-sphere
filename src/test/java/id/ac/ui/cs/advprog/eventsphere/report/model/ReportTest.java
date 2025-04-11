@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.report.model;
 
 import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
+import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportCategory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -33,7 +34,7 @@ class ReportTest {
         eventId = UUID.randomUUID().toString();
         ticketId = UUID.randomUUID().toString();
         description = "Test description for report";
-        category = "TICKET";
+        category = ReportCategory.TICKET.getValue();
         status = ReportStatus.ON_PROGRESS;
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
@@ -78,7 +79,7 @@ class ReportTest {
                 null,
                 null,
                 "Minimal report description",
-                "PAYMENT",
+                ReportCategory.PAYMENT.getValue(),
                 ReportStatus.ON_PROGRESS,
                 LocalDateTime.now(),
                 null,
@@ -91,7 +92,7 @@ class ReportTest {
         assertNull(minimalReport.getEventId());
         assertNull(minimalReport.getTicketId());
         assertEquals("Minimal report description", minimalReport.getDescription());
-        assertEquals("PAYMENT", minimalReport.getCategory());
+        assertEquals(ReportCategory.PAYMENT.getValue(), minimalReport.getCategory());
         assertEquals(ReportStatus.ON_PROGRESS, minimalReport.getStatus());
         assertNotNull(minimalReport.getCreatedAt());
         assertNull(minimalReport.getUpdatedAt());
@@ -138,9 +139,9 @@ class ReportTest {
     void shouldThrowExceptionForInvalidCategory() {
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
-                () -> report.setCategory(null)
+                () -> report.setCategory("")
         );
-        assertEquals("Report category cannot be null", exception.getMessage());
+        assertEquals("Report category cannot be null or invalid", exception.getMessage());
     }
 
     @Test
@@ -174,7 +175,7 @@ class ReportTest {
                         eventId,
                         ticketId,
                         "",
-                        "TICKET",
+                        ReportCategory.TICKET.getValue(),
                         ReportStatus.ON_PROGRESS,
                         createdAt,
                         updatedAt,

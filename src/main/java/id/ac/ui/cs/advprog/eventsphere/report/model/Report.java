@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
+import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportCategory;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -49,8 +50,8 @@ public class Report {
             throw new IllegalArgumentException("Description cannot be null or empty");
         }
 
-        if (category == null) {
-            throw new IllegalArgumentException("Report category cannot be null");
+        if (category == null || !ReportCategory.contains(category)) {
+            throw new IllegalArgumentException("Report category cannot be null or invalid");
         }
 
         if (status == null) {
@@ -97,8 +98,8 @@ public class Report {
     }
 
     public void setCategory(String category) {
-        if (category == null) {
-            throw new IllegalArgumentException("Report category cannot be null");
+        if (category == null || !ReportCategory.contains(category)) {
+            throw new IllegalArgumentException("Report category cannot be null or invalid");
         }
         this.category = category;
     }
