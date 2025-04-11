@@ -3,6 +3,10 @@ package id.ac.ui.cs.advprog.eventsphere.model;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionType;
+import id.ac.ui.cs.advprog.eventsphere.enums.PaymentMethod;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,82 +29,81 @@ public class TransactionTopUpTest {
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-001",
                 "user-123",
-                "TOPUP_BALANCE",
-                "BANK_TRANSFER",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.BANK_TRANSFER.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
 
         assertEquals("txn-001", transaction.getTransactionId());
         assertEquals("user-123", transaction.getUserId());
-        assertEquals("TOPUP_BALANCE", transaction.getType());
-        assertEquals("SUCCESS", transaction.getStatus());
-        assertEquals("Bank ABC", paymentData.get("bankName"));
-        assertEquals("1234567890", paymentData.get("accountNumber"));
+        assertEquals(TransactionType.TOPUP_BALANCE.getValue(), transaction.getType());
+        assertEquals(PaymentMethod.BANK_TRANSFER.getValue(), transaction.getMethod());
+        assertEquals(TransactionStatus.SUCCESS.getValue(), transaction.getStatus());
     }
 
     @Test
-    void testInvalidAccountNumberTooShortDoesNotThrowException() {
+    void testInvalidAccountNumberTooShort() {
         paymentData.put("bankName", "Bank XYZ");
         paymentData.put("accountNumber", "12345678");
 
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-002",
                 "user-456",
-                "TOPUP_BALANCE",
-                "BANK_TRANSFER",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.BANK_TRANSFER.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("REJECTED", transaction.getStatus());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
-    void testInvalidAccountNumberWithLettersDoesNotThrowException() {
+    void testInvalidAccountNumberWithLetters() {
         paymentData.put("bankName", "Bank DEF");
         paymentData.put("accountNumber", "1234abc890");
 
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-003",
                 "user-789",
-                "TOPUP_BALANCE",
-                "BANK_TRANSFER",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.BANK_TRANSFER.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("REJECTED", transaction.getStatus());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
-    void testInvalidAccountNumberWithSpecialCharactersDoesNotThrowException() {
+    void testInvalidAccountNumberWithSpecialCharacters() {
         paymentData.put("bankName", "Bank HIJ");
         paymentData.put("accountNumber", "12345@7890");
 
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-004",
                 "user-890",
-                "TOPUP_BALANCE",
-                "BANK_TRANSFER",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.BANK_TRANSFER.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("REJECTED", transaction.getStatus());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
-    void testInvalidAccountNumberTooLongDoesNotThrowException() {
+    void testInvalidAccountNumberTooLong() {
         paymentData.put("bankName", "Bank KLM");
         paymentData.put("accountNumber", "1234567890123");
 
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-005",
                 "user-999",
-                "TOPUP_BALANCE",
-                "BANK_TRANSFER",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.BANK_TRANSFER.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("REJECTED", transaction.getStatus());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -108,7 +111,7 @@ public class TransactionTopUpTest {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("bankName", null);
             paymentData.put("accountNumber", "1234567890");
-            new TopUpTransaction("txn-006", "user-234", "TOPUP_BALANCE", "BANK_TRANSFER", paymentData);
+            new TopUpTransaction("txn-006", "user-234", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.BANK_TRANSFER.getValue(), paymentData);
         });
     }
 
@@ -117,7 +120,7 @@ public class TransactionTopUpTest {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("bankName", "");
             paymentData.put("accountNumber", "1234567890");
-            new TopUpTransaction("txn-007", "user-345", "TOPUP_BALANCE", "BANK_TRANSFER", paymentData);
+            new TopUpTransaction("txn-007", "user-345", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.BANK_TRANSFER.getValue(), paymentData);
         });
     }
 
@@ -126,7 +129,7 @@ public class TransactionTopUpTest {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("bankName", "   ");
             paymentData.put("accountNumber", "1234567890");
-            new TopUpTransaction("txn-008", "user-456", "TOPUP_BALANCE", "BANK_TRANSFER", paymentData);
+            new TopUpTransaction("txn-008", "user-456", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.BANK_TRANSFER.getValue(), paymentData);
         });
     }
 
@@ -135,7 +138,7 @@ public class TransactionTopUpTest {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("bankName", "Bank ABC");
             paymentData.put("accountNumber", null);
-            new TopUpTransaction("txn-009", "user-567", "TOPUP_BALANCE", "BANK_TRANSFER", paymentData);
+            new TopUpTransaction("txn-009", "user-567", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.BANK_TRANSFER.getValue(), paymentData);
         });
     }
 
@@ -144,7 +147,7 @@ public class TransactionTopUpTest {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("bankName", "Bank DEF");
             paymentData.put("accountNumber", "");
-            new TopUpTransaction("txn-010", "user-678", "TOPUP_BALANCE", "BANK_TRANSFER", paymentData);
+            new TopUpTransaction("txn-010", "user-678", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.BANK_TRANSFER.getValue(), paymentData);
         });
     }
 
@@ -153,7 +156,7 @@ public class TransactionTopUpTest {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("bankName", "Bank XYZ");
             paymentData.put("accountNumber", "          ");
-            new TopUpTransaction("txn-011", "user-789", "TOPUP_BALANCE", "BANK_TRANSFER", paymentData);
+            new TopUpTransaction("txn-011", "user-789", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.BANK_TRANSFER.getValue(), paymentData);
         });
     }
 
@@ -164,12 +167,12 @@ public class TransactionTopUpTest {
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-100",
                 "user-100",
-                "TOPUP_BALANCE",
-                "CREDIT_CARD",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.CREDIT_CARD.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("SUCCESS", transaction.getStatus());
+        assertEquals(TransactionStatus.SUCCESS.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -179,12 +182,12 @@ public class TransactionTopUpTest {
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-101",
                 "user-101",
-                "TOPUP_BALANCE",
-                "CREDIT_CARD",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.CREDIT_CARD.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("REJECTED", transaction.getStatus());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -194,12 +197,12 @@ public class TransactionTopUpTest {
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-102",
                 "user-102",
-                "TOPUP_BALANCE",
-                "CREDIT_CARD",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.CREDIT_CARD.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("REJECTED", transaction.getStatus());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -209,12 +212,12 @@ public class TransactionTopUpTest {
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-103",
                 "user-103",
-                "TOPUP_BALANCE",
-                "CREDIT_CARD",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.CREDIT_CARD.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("REJECTED", transaction.getStatus());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -224,19 +227,19 @@ public class TransactionTopUpTest {
         TopUpTransaction transaction = new TopUpTransaction(
                 "txn-104",
                 "user-104",
-                "TOPUP_BALANCE",
-                "CREDIT_CARD",
+                TransactionType.TOPUP_BALANCE.getValue(),
+                PaymentMethod.CREDIT_CARD.getValue(),
                 paymentData
         );
         transaction.setValidateStatus(paymentData);
-        assertEquals("REJECTED", transaction.getStatus());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
     void testEmptyCardNumberThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("accountNumber", "");
-            new TopUpTransaction("txn-105", "user-105", "TOPUP_BALANCE", "CREDIT_CARD", paymentData);
+            new TopUpTransaction("txn-105", "user-105", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.CREDIT_CARD.getValue(), paymentData);
         });
     }
 
@@ -244,7 +247,7 @@ public class TransactionTopUpTest {
     void testWhitespaceCardNumberThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("accountNumber", "                ");
-            new TopUpTransaction("txn-106", "user-106", "TOPUP_BALANCE", "CREDIT_CARD", paymentData);
+            new TopUpTransaction("txn-106", "user-106", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.CREDIT_CARD.getValue(), paymentData);
         });
     }
 
@@ -252,8 +255,7 @@ public class TransactionTopUpTest {
     void testNullCardNumberThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> {
             paymentData.put("accountNumber", null);
-            new TopUpTransaction("txn-107", "user-107", "TOPUP_BALANCE", "CREDIT_CARD", paymentData);
+            new TopUpTransaction("txn-107", "user-107", TransactionType.TOPUP_BALANCE.getValue(), PaymentMethod.CREDIT_CARD.getValue(), paymentData);
         });
     }
-
 }

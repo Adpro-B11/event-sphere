@@ -1,5 +1,8 @@
 package id.ac.ui.cs.advprog.eventsphere.model;
 
+import id.ac.ui.cs.advprog.eventsphere.enums.PaymentMethod;
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionType;
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionStatus;
 import lombok.Getter;
 
 import java.util.Map;
@@ -31,7 +34,15 @@ public class TopUpTransaction {
             throw new IllegalArgumentException("Account number must not be null or empty.");
         }
 
-        if ("BANK_TRANSFER".equals(method)) {
+        if (!TransactionType.contains(type)) {
+            throw new IllegalArgumentException("Invalid transaction type.");
+        }
+
+        if (!PaymentMethod.contains(method)) {
+            throw new IllegalArgumentException("Invalid payment method.");
+        }
+
+        if (method.equals(PaymentMethod.BANK_TRANSFER.name())) {
             String bankName = paymentData.get("bankName");
             if (bankName == null || bankName.trim().isEmpty()) {
                 throw new IllegalArgumentException("Bank name must not be null or empty for bank transfers.");
@@ -42,18 +53,18 @@ public class TopUpTransaction {
     public void setValidateStatus(Map<String, String> paymentData) {
         String accountNumber = paymentData.get("accountNumber");
 
-        if ("BANK_TRANSFER".equals(method)) {
+        if (method.equals(PaymentMethod.BANK_TRANSFER.name())) {
             if (accountNumber.length() != 10 || !accountNumber.matches("\\d+")) {
-                this.status = "REJECTED";
+                this.status = TransactionStatus.FAILED.name();
                 return;
             }
-        } else if ("CREDIT_CARD".equals(method)) {
+        } else if (method.equals(PaymentMethod.CREDIT_CARD.name())) {
             if (accountNumber.length() != 16 || !accountNumber.matches("\\d+")) {
-                this.status = "REJECTED";
+                this.status = TransactionStatus.FAILED.name();
                 return;
             }
         }
 
-        this.status = "SUCCESS";
+        this.status = TransactionStatus.SUCCESS.name();
     }
 }
