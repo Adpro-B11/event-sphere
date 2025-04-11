@@ -1,7 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.model;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
-import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -17,8 +15,10 @@ public class Review {
     private String comment;
     private ZonedDateTime createdAt;
     private ZonedDateTime updatedAt;
-    private User user;
-    private Event event;
+    @Setter
+    private String userId;
+    @Setter
+    private String eventId;
 
     public void setId(String id) {
         this.id = id;
@@ -37,13 +37,5 @@ public class Review {
 
     public void setUpdatedAt(ZonedDateTime updatedAt) {
         this.updatedAt = updatedAt;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setEvent(Event event) {
-        this.event = event;
     }
 }
