@@ -20,17 +20,29 @@ public class UserAccessStrategy implements AccessStrategy {
 
     @Override
     public void createTransaction(Transaction transaction) {
+        if (transaction instanceof TopUpTransaction topUp) {
+            topUp.setValidateStatus();
+            topUpRepo.save(topUp);
+        } else if (transaction instanceof TicketPurchaseTransaction ticket) {
+            ticket.setValidateStatus();
+            ticketRepo.save(ticket);
+        } else {
+            throw new IllegalArgumentException("Unsupported transaction type");
+        }
     }
 
     @Override
     public void deleteTransaction(String transactionId) {
+        throw new UnsupportedOperationException("User cannot delete transactions");
     }
 
     @Override
     public List<Transaction> viewAllTransactions() {
+        throw new UnsupportedOperationException("User cannot view all transactions");
     }
 
     @Override
     public List<Transaction> filterTransactions(String status) {
+        throw new UnsupportedOperationException("User cannot filter transactions");
     }
 }
