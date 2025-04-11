@@ -1,7 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.model;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
-import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -11,52 +9,62 @@ import java.util.UUID;
 class ReviewTest {
 
     @Test
-    void testReviewCreation() {
-        // Arrange
-        String id = UUID.randomUUID().toString();
+    void testCreateReview() {
+        String id = "rev_123";
         int rating = 5;
-        String comment = "Great event!";
+        String comment = "This event was amazing!";
         ZonedDateTime createdAt = ZonedDateTime.now();
-        User user = new User();
-        Event event = new Event();
-        event.setId(UUID.randomUUID().toString());
+        String userId = "usr_123";
+        String eventId = "evt_123";
 
-        // Act
         Review review = new Review();
         review.setId(id);
         review.setRating(rating);
         review.setComment(comment);
         review.setCreatedAt(createdAt);
-        review.setUser(user);
-        review.setEvent(event);
+        review.setUserId(userId);
+        review.setEventId(eventId);
 
-        // Assert
         assertEquals(id, review.getId());
         assertEquals(rating, review.getRating());
         assertEquals(comment, review.getComment());
         assertEquals(createdAt, review.getCreatedAt());
+        assertEquals(userId, review.getUserId());
+        assertEquals(eventId, review.getEventId());
         assertNull(review.getUpdatedAt());
-        assertEquals(user, review.getUser());
-        assertEquals(event, review.getEvent());
     }
 
     @Test
-    void testRatingValidation() {
-        // Arrange
+    void testInvalidRating() {
         Review review = new Review();
 
-        // Act & Assert - Valid ratings
-        assertDoesNotThrow(() -> review.setRating(1));
-        assertDoesNotThrow(() -> review.setRating(3));
-        assertDoesNotThrow(() -> review.setRating(5));
+        Exception tooLowException = assertThrows(IllegalArgumentException.class, () -> {
+            review.setRating(0);
+        });
 
-        // Act & Assert - Invalid ratings
-        IllegalArgumentException exceptionLow = assertThrows(IllegalArgumentException.class,
-                () -> review.setRating(0));
-        assertEquals("Rating must be between 1 and 5", exceptionLow.getMessage());
+        Exception tooHighException = assertThrows(IllegalArgumentException.class, () -> {
+            review.setRating(6);
+        });
 
-        IllegalArgumentException exceptionHigh = assertThrows(IllegalArgumentException.class,
-                () -> review.setRating(6));
-        assertEquals("Rating must be between 1 and 5", exceptionHigh.getMessage());
+        assertTrue(tooLowException.getMessage().contains("between 1 and 5"));
+        assertTrue(tooHighException.getMessage().contains("between 1 and 5"));
+    }
+
+    @Test
+    void testUpdateReview() {
+        Review review = new Review();
+        review.setRating(3);
+        review.setComment("Original comment");
+
+        ZonedDateTime beforeUpdate = ZonedDateTime.now();
+
+        review.setRating(5);
+        review.setComment("Updated comment");
+        review.setUpdatedAt(ZonedDateTime.now());
+
+        assertEquals(5, review.getRating());
+        assertEquals("Updated comment", review.getComment());
+        assertNotNull(review.getUpdatedAt());
+        assertTrue(review.getUpdatedAt().isAfter(beforeUpdate) || review.getUpdatedAt().equals(beforeUpdate));
     }
 }
