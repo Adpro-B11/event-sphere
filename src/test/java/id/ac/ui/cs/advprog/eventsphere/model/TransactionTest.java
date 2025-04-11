@@ -4,6 +4,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionType;
+
 class TransactionTest {
 
     @BeforeEach
@@ -15,13 +18,12 @@ class TransactionTest {
         Transaction transaction = new Transaction(
                 "txn-003",
                 "user-123",
-                "TOPUP_BALANCE",
-                "FAILED"
+                TransactionType.TOPUP_BALANCE.getValue(),
+                TransactionStatus.FAILED.getValue()
         );
 
-        transaction.setStatus("SUCCESS");
-
-        assertEquals("SUCCESS", transaction.getStatus());
+        transaction.setStatus(TransactionStatus.SUCCESS.getValue());
+        assertEquals(TransactionStatus.SUCCESS.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -29,12 +31,12 @@ class TransactionTest {
         Transaction transaction = new Transaction(
                 "txn-003",
                 "user-123",
-                "TOPUP_BALANCE",
-                "FAILED"
+                TransactionType.TOPUP_BALANCE.getValue(),
+                TransactionStatus.SUCCESS.getValue()
         );
 
-        transaction.setStatus("SUCCESS");
-        assertEquals("SUCCESS", transaction.getStatus());
+        transaction.setStatus(TransactionStatus.FAILED.getValue());
+        assertEquals(TransactionStatus.FAILED.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -42,8 +44,8 @@ class TransactionTest {
         Transaction transaction = new Transaction(
                 "txn-004",
                 "user-123",
-                "TOPUP_BALANCE",
-                "SUCCESS"
+                TransactionType.TOPUP_BALANCE.getValue(),
+                TransactionStatus.SUCCESS.getValue()
         );
 
         assertThrows(IllegalArgumentException.class, () -> {
@@ -56,14 +58,14 @@ class TransactionTest {
         Transaction transaction = new Transaction(
                 "txn-005",
                 "user-123",
-                "TOPUP_BALANCE",
-                "SUCCESS"
+                TransactionType.TOPUP_BALANCE.getValue(),
+                TransactionStatus.SUCCESS.getValue()
         );
 
         assertEquals("txn-005", transaction.getTransactionId());
         assertEquals("user-123", transaction.getUserId());
-        assertEquals("TOPUP_BALANCE", transaction.getType());
-        assertEquals("SUCCESS", transaction.getStatus());
+        assertEquals(TransactionType.TOPUP_BALANCE.getValue(), transaction.getType());
+        assertEquals(TransactionStatus.SUCCESS.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -71,13 +73,13 @@ class TransactionTest {
         Transaction transaction = new Transaction(
                 "txn-006",
                 "user-789",
-                "TICKET_PURCHASE",
-                "SUCCESS"
+                TransactionType.TICKET_PURCHASE.getValue(),
+                TransactionStatus.SUCCESS.getValue()
         );
         assertEquals("txn-006", transaction.getTransactionId());
         assertEquals("user-789", transaction.getUserId());
-        assertEquals("TICKET_PURCHASE", transaction.getType());
-        assertEquals("SUCCESS", transaction.getStatus());
+        assertEquals(TransactionType.TICKET_PURCHASE.getValue(), transaction.getType());
+        assertEquals(TransactionStatus.SUCCESS.getValue(), transaction.getStatus());
     }
 
     @Test
@@ -87,7 +89,7 @@ class TransactionTest {
                     "txn-001",
                     "user-123",
                     "INVALID_TYPE",
-                    "SUCCESS"
+                    TransactionStatus.SUCCESS.getValue()
             );
         });
     }
@@ -99,8 +101,8 @@ class TransactionTest {
             new Transaction(
                     "txn-002",
                     "user-123",
-                    "TOPUP_BALANCE",
-                    "LODON"
+                    TransactionType.TOPUP_BALANCE.getValue(),
+                    "Lodon"
             );
         });
     }

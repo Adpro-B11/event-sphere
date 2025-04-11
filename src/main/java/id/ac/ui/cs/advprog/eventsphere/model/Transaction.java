@@ -9,8 +9,8 @@ public class Transaction {
 
     private String transactionId;
     private String userId;
-    private TransactionType type;
-    private TransactionStatus status;
+    private String type;
+    private String status;
 
     public Transaction(String transactionId, String userId, String type, String status) {
         if (!TransactionType.contains(type)) {
@@ -23,14 +23,14 @@ public class Transaction {
 
         this.transactionId = transactionId;
         this.userId = userId;
-        this.type = TransactionType.valueOf(type);
-        this.status = TransactionStatus.valueOf(status);
+        this.type = type;
+        this.status = status;
     }
 
     public void setStatus(String status) {
         if (!TransactionStatus.contains(status)) {
             throw new IllegalArgumentException("Invalid transaction status: " + status);
         }
-        this.status = TransactionStatus.valueOf(status);
+        this.status = status;
     }
 }
