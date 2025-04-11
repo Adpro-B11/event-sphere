@@ -1,45 +1,36 @@
 package id.ac.ui.cs.advprog.eventsphere.model;
 
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionType;
 import lombok.Getter;
-
-import java.util.Arrays;
-import java.util.List;
 
 @Getter
 public class Transaction {
 
-    private static final List<String> VALID_TYPES = Arrays.asList("TOPUP_BALANCE", "TICKET_PURCHASE");
-    private static final List<String> VALID_STATUSES = Arrays.asList("SUCCESS", "FAILED");
-
     private String transactionId;
     private String userId;
-    private String type;
-    private String status;
+    private TransactionType type;
+    private TransactionStatus status;
 
     public Transaction(String transactionId, String userId, String type, String status) {
-        validateType(type);
-        validateStatus(status);
+        if (!TransactionType.contains(type)) {
+            throw new IllegalArgumentException("Invalid transaction type: " + type);
+        }
+
+        if (!TransactionStatus.contains(status)) {
+            throw new IllegalArgumentException("Invalid transaction status: " + status);
+        }
 
         this.transactionId = transactionId;
         this.userId = userId;
-        this.type = type;
-        this.status = status;
+        this.type = TransactionType.valueOf(type);
+        this.status = TransactionStatus.valueOf(status);
     }
 
     public void setStatus(String status) {
-        validateStatus(status);
-        this.status = status;
-    }
-
-    private void validateType(String type) {
-        if (!VALID_TYPES.contains(type)) {
-            throw new IllegalArgumentException("Invalid transaction type: " + type);
-        }
-    }
-
-    private void validateStatus(String status) {
-        if (!VALID_STATUSES.contains(status)) {
+        if (!TransactionStatus.contains(status)) {
             throw new IllegalArgumentException("Invalid transaction status: " + status);
         }
+        this.status = TransactionStatus.valueOf(status);
     }
 }
