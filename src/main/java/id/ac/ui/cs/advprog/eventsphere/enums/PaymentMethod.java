@@ -3,18 +3,18 @@ package id.ac.ui.cs.advprog.eventsphere.enums;
 import lombok.Getter;
 
 @Getter
-public enum PaymentType {
+public enum PaymentMethod {
     BANK_TRANSFER("BANK_TRANSFER"),
     CREDIT_CARD("CREDIT_CARD");
 
     private final String value;
 
-    PaymentType(String value) {
+    PaymentMethod(String value) {
         this.value = value;
     }
 
     public static boolean contains(String param) {
-        for (PaymentType method : PaymentType.values()) {
+        for (PaymentMethod method : PaymentMethod.values()) {
             if (method.name().equals(param)) {
                 return true;
             }
