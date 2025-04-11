@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.model;
 
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.eventsphere.enums.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -102,5 +104,27 @@ class TicketPurchaseTransactionTest {
                     paymentData
             );
         });
+    }
+
+    @Test
+    void testTicketPurchaseSuccess() {
+        paymentData.put("ConcertVIP", "3");
+        paymentData.put("ConcertVVIP", "2");
+
+        TicketPurchaseTransaction transaction = new TicketPurchaseTransaction(
+                    "txn-206",
+                    "user-206",
+                    "TICKET_PURCHASE",
+                    100000,
+                    paymentData
+        );
+
+        transaction.setValidateStatus();
+        assertEquals("txn-206", transaction.getTransactionId());
+        assertEquals("user-206", transaction.getUserId());
+        assertEquals(TransactionType.TICKET_PURCHASE.getValue(), transaction.getType());
+        assertEquals(TransactionStatus.SUCCESS.getValue(), transaction.getStatus());
+        assertEquals(100000, transaction.getAmount());
+
     }
 }
