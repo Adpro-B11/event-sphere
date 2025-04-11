@@ -3,6 +3,8 @@ package id.ac.ui.cs.advprog.eventsphere.report.model;
 import lombok.Getter;
 import lombok.Setter;
 
+import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +26,7 @@ public class Report {
     private String category;
 
     @Setter
-    private String status;
+    private ReportStatus status;
 
     private LocalDateTime createdAt;
 
@@ -37,7 +39,7 @@ public class Report {
     private String responseMessage;
 
     public Report(String reportId, String attendeeId, String eventId, String ticketId,
-                  String description, String category, String status,
+                  String description, String category, ReportStatus status,
                   LocalDateTime createdAt, LocalDateTime updatedAt,
                   List<String> attachments, String responseMessage) {
 
@@ -81,7 +83,7 @@ public class Report {
                 ticketId,
                 description,
                 category,
-                "ON_PROGRESS",
+                ReportStatus.ON_PROGRESS,
                 LocalDateTime.now(),
                 null,
                 attachments,
@@ -103,14 +105,13 @@ public class Report {
         this.category = category;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(ReportStatus status) {
         if (status == null) {
             throw new IllegalArgumentException("Report status cannot be null");
         }
         this.status = status;
         this.updatedAt = LocalDateTime.now();
     }
-
 
     public void setResponseMessage(String responseMessage) {
         this.responseMessage = responseMessage;
@@ -120,7 +121,7 @@ public class Report {
     // Method to add response and update status
     public void resolveReport(String responseMessage) {
         this.responseMessage = responseMessage;
-        this.status = "RESOLVED";
+        this.status = ReportStatus.RESOLVED;
         this.updatedAt = LocalDateTime.now();
     }
 

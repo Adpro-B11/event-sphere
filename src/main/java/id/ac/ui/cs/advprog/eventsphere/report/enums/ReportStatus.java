@@ -1,13 +1,16 @@
 package id.ac.ui.cs.advprog.eventsphere.report.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum ReportStatus {
     ON_PROGRESS("ON_PROGRESS"),
     RESOLVED("RESOLVED");
 
-    private final String status;
+    private final String value;
 
-    private ReportStatus(String status) {
-        this.status = status;
+    private ReportStatus(String value) {
+        this.value = value;
     }
 
     public static boolean contains(String param) {
