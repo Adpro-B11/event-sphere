@@ -13,15 +13,29 @@ public class NotificationReportObserver implements ReportObserver {
 
     private final NotificationService notificationService;
 
-    public NotificationReportObserver() {
+    public NotificationReportObserver(NotificationService notificationService) {
+        this.notificationService = notificationService;
     }
 
     @Override
     public void update(Report report) {
+        String message = generateNotificationMessage(report);
+        notificationService.sendNotification(report.getAttendeeId(), message);
     }
 
     private String generateNotificationMessage(Report report) {
+        StringBuilder message = new StringBuilder("Your report ");
 
+        if (report.getStatus() == ReportStatus.RESOLVED.getValue()) {
+            message.append("has been resolved");
+            if (report.getResponseMessage() != null && !report.getResponseMessage().isEmpty()) {
+                message.append(" with the following response: ").append(report.getResponseMessage());
+            }
+        } else {
+            message.append("status has been updated to ").append(report.getStatus());
+        }
+
+        return message.toString();
     }
 }
 
