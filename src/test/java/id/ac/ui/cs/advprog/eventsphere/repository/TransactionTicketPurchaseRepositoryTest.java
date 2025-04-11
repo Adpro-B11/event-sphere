@@ -10,7 +10,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TicketPurchaseTransactionRepositoryTest {
+public class TransactionTicketPurchaseRepositoryTest {
 
     TicketPurchaseTransactionRepository repository;
     List<TicketPurchaseTransaction> transactionList;
