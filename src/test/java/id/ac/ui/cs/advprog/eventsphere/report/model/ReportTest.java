@@ -21,7 +21,7 @@ class ReportTest {
     private String ticketId;
     private String description;
     private String category;
-    private ReportStatus status;
+    private String status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> attachments;
@@ -35,7 +35,7 @@ class ReportTest {
         ticketId = UUID.randomUUID().toString();
         description = "Test description for report";
         category = ReportCategory.TICKET.getValue();
-        status = ReportStatus.ON_PROGRESS;
+        status = ReportStatus.ON_PROGRESS.getValue();
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         attachments = Arrays.asList("url1", "url2");
@@ -80,7 +80,7 @@ class ReportTest {
                 null,
                 "Minimal report description",
                 ReportCategory.PAYMENT.getValue(),
-                ReportStatus.ON_PROGRESS,
+                ReportStatus.ON_PROGRESS.getValue(),
                 LocalDateTime.now(),
                 null,
                 null,
@@ -93,7 +93,7 @@ class ReportTest {
         assertNull(minimalReport.getTicketId());
         assertEquals("Minimal report description", minimalReport.getDescription());
         assertEquals(ReportCategory.PAYMENT.getValue(), minimalReport.getCategory());
-        assertEquals(ReportStatus.ON_PROGRESS, minimalReport.getStatus());
+        assertEquals(ReportStatus.ON_PROGRESS.getValue(), minimalReport.getStatus());
         assertNotNull(minimalReport.getCreatedAt());
         assertNull(minimalReport.getUpdatedAt());
         assertNull(minimalReport.getAttachments());
@@ -102,8 +102,8 @@ class ReportTest {
 
     @Test
     void shouldUpdateStatus() {
-        report.setStatus(ReportStatus.RESOLVED);
-        assertEquals(ReportStatus.RESOLVED, report.getStatus());
+        report.setStatus(ReportStatus.RESOLVED.getValue());
+        assertEquals(ReportStatus.RESOLVED.getValue(), report.getStatus());
     }
 
     @Test
@@ -132,7 +132,7 @@ class ReportTest {
                 IllegalArgumentException.class,
                 () -> report.setStatus(null)
         );
-        assertEquals("Report status cannot be null", exception.getMessage());
+        assertEquals("Report status cannot be null or invalid", exception.getMessage());
     }
 
     @Test
@@ -176,7 +176,7 @@ class ReportTest {
                         ticketId,
                         "",
                         ReportCategory.TICKET.getValue(),
-                        ReportStatus.ON_PROGRESS,
+                        ReportStatus.ON_PROGRESS.getValue(),
                         createdAt,
                         updatedAt,
                         attachments,

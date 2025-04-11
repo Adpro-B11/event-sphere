@@ -25,7 +25,7 @@ public class Report {
 
     private String category;
 
-    private ReportStatus status;
+    private String status;
 
     private LocalDateTime createdAt;
 
@@ -38,7 +38,7 @@ public class Report {
     private String responseMessage;
 
     public Report(String reportId, String attendeeId, String eventId, String ticketId,
-                  String description, String category, ReportStatus status,
+                  String description, String category, String status,
                   LocalDateTime createdAt, LocalDateTime updatedAt,
                   List<String> attachments, String responseMessage) {
 
@@ -82,7 +82,7 @@ public class Report {
                 ticketId,
                 description,
                 category,
-                ReportStatus.ON_PROGRESS,
+                ReportStatus.ON_PROGRESS.getValue(),
                 LocalDateTime.now(),
                 null,
                 attachments,
@@ -104,9 +104,9 @@ public class Report {
         this.category = category;
     }
 
-    public void setStatus(ReportStatus status) {
-        if (status == null) {
-            throw new IllegalArgumentException("Report status cannot be null");
+    public void setStatus(String status) {
+        if (status == null || !ReportStatus.contains(status)) {
+            throw new IllegalArgumentException("Report status cannot be null or invalid");
         }
         this.status = status;
         this.updatedAt = LocalDateTime.now();
@@ -120,7 +120,7 @@ public class Report {
     // Method to add response and update status
     public void resolveReport(String responseMessage) {
         this.responseMessage = responseMessage;
-        this.status = ReportStatus.RESOLVED;
+        this.status = ReportStatus.RESOLVED.getValue();
         this.updatedAt = LocalDateTime.now();
     }
 
