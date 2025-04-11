@@ -32,4 +32,7 @@ public class TicketPurchaseTransactionRepository {
                 .toList();
     }
 
+    public void deleteById(String id) {
+        transactions.remove(id);
+    }
 }
