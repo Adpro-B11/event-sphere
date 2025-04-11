@@ -30,4 +30,8 @@ public class TopUpTransactionRepository {
         }
         return filtered;
     }
+
+    public void deleteById(String id) {
+        topUpTransactionStorage.remove(id);
+    }
 }
