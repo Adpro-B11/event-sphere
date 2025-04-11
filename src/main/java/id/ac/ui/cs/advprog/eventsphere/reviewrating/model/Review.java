@@ -1,4 +1,3 @@
-// src/main/java/id/ac/ui/cs/advprog/eventsphere/reviewrating/model/Review.java
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.model;
 
 import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
