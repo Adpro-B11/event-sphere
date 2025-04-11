@@ -22,10 +22,8 @@ public class Report {
 
     private String description;
 
-    @Setter
     private String category;
 
-    @Setter
     private ReportStatus status;
 
     private LocalDateTime createdAt;

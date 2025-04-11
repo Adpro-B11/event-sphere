@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.report.model;
 
+import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -19,7 +20,7 @@ class ReportTest {
     private String ticketId;
     private String description;
     private String category;
-    private String status;
+    private ReportStatus status;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private List<String> attachments;
@@ -33,7 +34,7 @@ class ReportTest {
         ticketId = UUID.randomUUID().toString();
         description = "Test description for report";
         category = "TICKET";
-        status = "ON_PROGRESS";
+        status = ReportStatus.ON_PROGRESS;
         createdAt = LocalDateTime.now();
         updatedAt = LocalDateTime.now();
         attachments = Arrays.asList("url1", "url2");
@@ -78,7 +79,7 @@ class ReportTest {
                 null,
                 "Minimal report description",
                 "PAYMENT",
-                "ON_PROGRESS",
+                ReportStatus.ON_PROGRESS,
                 LocalDateTime.now(),
                 null,
                 null,
@@ -91,7 +92,7 @@ class ReportTest {
         assertNull(minimalReport.getTicketId());
         assertEquals("Minimal report description", minimalReport.getDescription());
         assertEquals("PAYMENT", minimalReport.getCategory());
-        assertEquals("ON_PROGRESS", minimalReport.getStatus());
+        assertEquals(ReportStatus.ON_PROGRESS, minimalReport.getStatus());
         assertNotNull(minimalReport.getCreatedAt());
         assertNull(minimalReport.getUpdatedAt());
         assertNull(minimalReport.getAttachments());
@@ -100,8 +101,8 @@ class ReportTest {
 
     @Test
     void shouldUpdateStatus() {
-        report.setStatus("RESOLVED");
-        assertEquals("RESOLVED", report.getStatus());
+        report.setStatus(ReportStatus.RESOLVED);
+        assertEquals(ReportStatus.RESOLVED, report.getStatus());
     }
 
     @Test
@@ -174,7 +175,7 @@ class ReportTest {
                         ticketId,
                         "",
                         "TICKET",
-                        "ON_PROGRESS",
+                        ReportStatus.ON_PROGRESS,
                         createdAt,
                         updatedAt,
                         attachments,
