@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.eventsphere.Service;
+package id.ac.ui.cs.advprog.eventsphere.service;
 
 import id.ac.ui.cs.advprog.eventsphere.model.TicketPurchaseTransaction;
 import id.ac.ui.cs.advprog.eventsphere.model.TopUpTransaction;
