@@ -13,7 +13,7 @@ public class TransactionServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        transactionService = new TransactionService();
+        transactionService = new TransactionServiceImpl();
         mockStrategy = mock(AccessStrategy.class);
         transactionService.setStrategy(mockStrategy);
     }
