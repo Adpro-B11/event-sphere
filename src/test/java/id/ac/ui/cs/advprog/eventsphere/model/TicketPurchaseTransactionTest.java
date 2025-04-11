@@ -4,10 +4,11 @@ import id.ac.ui.cs.advprog.eventsphere.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.eventsphere.enums.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 class TicketPurchaseTransactionTest {
 
@@ -24,7 +25,7 @@ class TicketPurchaseTransactionTest {
             new TicketPurchaseTransaction(
                     "txn-201",
                     "user-201",
-                    "TICKET_PURCHASE",
+                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
                     paymentData
             );
@@ -39,7 +40,7 @@ class TicketPurchaseTransactionTest {
             new TicketPurchaseTransaction(
                     "txn-202",
                     "user-202",
-                    "TICKET_PURCHASE",
+                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
                     paymentData
             );
@@ -54,7 +55,7 @@ class TicketPurchaseTransactionTest {
             new TicketPurchaseTransaction(
                     "txn-203",
                     "user-203",
-                    "TICKET_PURCHASE",
+                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
                     paymentData
             );
@@ -69,7 +70,7 @@ class TicketPurchaseTransactionTest {
             new TicketPurchaseTransaction(
                     "txn-204",
                     "user-204",
-                    "TICKET_PURCHASE",
+                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
                     paymentData
             );
@@ -84,7 +85,7 @@ class TicketPurchaseTransactionTest {
             new TicketPurchaseTransaction(
                     "txn-205",
                     "user-205",
-                    "TICKET_PURCHASE",
+                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
                     paymentData
             );
@@ -99,7 +100,7 @@ class TicketPurchaseTransactionTest {
             new TicketPurchaseTransaction(
                     "txn-206",
                     "user-206",
-                    "TICKET_PURCHASE",
+                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
                     paymentData
             );
@@ -112,19 +113,19 @@ class TicketPurchaseTransactionTest {
         paymentData.put("ConcertVVIP", "2");
 
         TicketPurchaseTransaction transaction = new TicketPurchaseTransaction(
-                    "txn-206",
-                    "user-206",
-                    "TICKET_PURCHASE",
-                    100000,
-                    paymentData
+                "txn-207",
+                "user-207",
+                TransactionType.TICKET_PURCHASE.getValue(),
+                100000,
+                paymentData
         );
 
         transaction.setValidateStatus();
-        assertEquals("txn-206", transaction.getTransactionId());
-        assertEquals("user-206", transaction.getUserId());
+
+        assertEquals("txn-207", transaction.getTransactionId());
+        assertEquals("user-207", transaction.getUserId());
         assertEquals(TransactionType.TICKET_PURCHASE.getValue(), transaction.getType());
         assertEquals(TransactionStatus.SUCCESS.getValue(), transaction.getStatus());
         assertEquals(100000, transaction.getAmount());
-
     }
 }

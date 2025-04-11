@@ -12,7 +12,7 @@ public class TicketPurchaseTransaction extends Transaction {
     private final Map<String, String> ticketData;
 
     public TicketPurchaseTransaction(String transactionId, String userId, String type, double amount, Map<String, String> ticketData) {
-        super(transactionId, userId, type, "FAILED", amount);
+        super(transactionId, userId, type, TransactionStatus.FAILED.name(), amount);
 
         if (!TransactionType.contains(type)) {
             throw new IllegalArgumentException("Invalid transaction type.");
@@ -50,6 +50,6 @@ public class TicketPurchaseTransaction extends Transaction {
     }
 
     public void setValidateStatus() {
-        super.setStatus("SUCCESS");
+        super.setStatus(TransactionStatus.SUCCESS.name());
     }
 }
