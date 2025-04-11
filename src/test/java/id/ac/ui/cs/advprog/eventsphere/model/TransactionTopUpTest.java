@@ -35,8 +35,8 @@ public class TransactionTopUpTest {
         assertEquals("user-123", transaction.getUserId());
         assertEquals("TOPUP_BALANCE", transaction.getType());
         assertEquals("SUCCESS", transaction.getStatus());
-        assertEquals("Bank ABC", transaction.getBankName());
-        assertEquals("1234567890", transaction.getAccountNumber());
+        assertEquals("Bank ABC", paymentData.get("bankName"));
+        assertEquals("1234567890", paymentData.get("accountNumber"));
     }
 
     @Test
