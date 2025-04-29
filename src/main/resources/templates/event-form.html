@@ -1,8 +1,52 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><title>Form Acara</title></head>
-<body>
-<!-- stub for tests -->
-<form th:object="${event}"></form>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+       <title th:text="${event.id == null} ? 'Buat Acara Baru' : 'Edit Acara'">Form Acara</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+<div class="max-w-3xl mx-auto p-6 bg-white rounded-lg shadow">
+    <h1 class="text-2xl font-semibold mb-4" th:text="${event.id == null} ? 'Buat Acara Baru' : 'Edit Acara'">Form Acara</h1>
+    <form th:action="@{/ui/events}" th:object="${event}" method="post" class="space-y-4">
+        <input type="hidden" th:field="*{id}" />
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Judul</label>
+            <input type="text" th:field="*{title}" required class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Tanggal</label>
+            <input type="date" th:field="*{date}" required class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Deskripsi</label>
+            <textarea th:field="*{description}" rows="4" class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500"></textarea>
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Lokasi</label>
+            <input type="text" th:field="*{location}" required class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Harga (Rp.)</label>
+            <input type="number" step="0.01" th:field="*{price}" required class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <div>
+            <label class="block text-sm font-medium mb-1">Penyelenggara</label>
+            <input type="text" th:field="*{organizer}" required class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500" />
+        </div>
+
+        <div class="flex space-x-3 pt-4">
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition">Simpan</button>
+            <a href="/ui/events" class="bg-gray-400 hover:bg-gray-500 text-white py-2 px-4 rounded-lg transition">Batal</a>
+        </div>
+    </form>
+</div>
 </body>
 </html>

@@ -1,8 +1,67 @@
+<!-- src/main/resources/templates/events.html -->
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
-<head><title>Daftar Acara</title></head>
-<body>
-<!-- stub for tests -->
-<div th:each="e : ${events}"></div>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Acara</title>
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+<div class="max-w-6xl mx-auto p-6">
+    <div class="flex items-center justify-between mb-6">
+        <h1 class="text-2xl font-semibold">Daftar Acara</h1>
+        <a href="/ui/events/new"
+           class="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg transition">
+            <span class="material-icons align-middle">add</span>
+            <span class="align-middle">Buat Acara</span>
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full bg-white rounded-lg shadow">
+            <thead class="bg-blue-600 text-white">
+            <tr>
+                <th class="px-4 py-2">Judul</th>
+                <th class="px-4 py-2">Tanggal</th>
+                <th class="px-4 py-2">Lokasi</th>
+                <th class="px-4 py-2">Harga</th>
+                <th class="px-4 py-2">Penyelenggara</th>
+                <th class="px-4 py-2">Aksi</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="evt : ${events}" class="border-b hover:bg-gray-50">
+                <!-- ID dihilangkan -->
+                <td class="px-4 py-2 text-center" th:text="${evt.title}">Judul</td>
+                <td class="px-4 py-2 text-center" th:text="${evt.date}">Tanggal</td>
+                <td class="px-4 py-2 text-center" th:text="${evt.location}">Lokasi</td>
+                <td class="px-4 py-2 text-center"
+                    th:text="${#numbers.formatDecimal(evt.price, 0, 'COMMA', 2, 'POINT')}">
+                    Harga
+                </td>
+                <td class="px-4 py-2 text-center" th:text="${evt.organizer}">Penyelenggara</td>
+                <td class="px-4 py-2 flex space-x-2 items-center justify-center">
+                    <!-- Edit icon -->
+                    <a th:href="@{/ui/events/{id}/edit(id=${evt.id})}"
+                       class="p-1 bg-yellow-400 hover:bg-yellow-500 text-gray-900 rounded transition"
+                       title="Edit">
+                        <span class="material-icons">edit</span>
+                    </a>
+                    <!-- Delete icon -->
+                    <a th:href="@{/ui/events/{id}/delete(id=${evt.id})}"
+                       class="p-1 bg-red-500 hover:bg-red-600 text-white rounded transition"
+                       title="Hapus"
+                       onclick="return confirm('Yakin mau hapus acara ini?');">
+                        <span class="material-icons">delete</span>
+                    </a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 </body>
 </html>
