@@ -5,7 +5,9 @@ import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Iterator;
+import org.springframework.stereotype.Repository;
 
+@Repository
 public class EventRepository {
     private List<Event> events = new ArrayList<>();
 

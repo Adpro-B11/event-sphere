@@ -7,7 +7,9 @@ import id.ac.ui.cs.advprog.eventsphere.event.repository.EventRepository;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.time.LocalDate;
+import org.springframework.stereotype.Service;
 
+@Service
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
