@@ -7,9 +7,12 @@ public class DeleteEventCommand implements EventCommand {
     private final String eventId;
 
     public DeleteEventCommand(EventService eventService, String eventId) {
+        this.eventService = eventService;
+        this.eventId = eventId;
     }
 
     @Override
     public void execute() {
+        eventService.deleteEvent(eventId);
     }
 }
