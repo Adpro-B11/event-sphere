@@ -11,31 +11,11 @@ public interface EventService {
     Event findById(String eventId);
     List<Event> findAllByOrganizer(String organizer);
 
-    class EventServiceImpl implements EventService {
-        private final EventRepository eventRepository;
+    // NEW
+    void updateEventInfo(String eventId, Event updatedEvent);
+    void deleteEvent(String eventId);
+    List<Event> findAllEvents();
 
-        public EventServiceImpl(EventRepository eventRepository) {
-            this.eventRepository = eventRepository;
-        }
 
-        @Override
-        public void createEvent(Event event) {
-            // Placeholder implementation
-        }
 
-        @Override
-        public void updateStatus(String eventId, String status) {
-            // Placeholder implementation
-        }
-
-        @Override
-        public Event findById(String eventId) {
-            return null; // Placeholder implementation
-        }
-
-        @Override
-        public List<Event> findAllByOrganizer(String organizer) {
-            return null; // Placeholder implementation
-        }
-    }
 }

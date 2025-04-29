@@ -48,4 +48,18 @@ public class EventServiceImpl implements EventService {
     public List<Event> findAllByOrganizer(String organizer) {
         return eventRepository.findAllByOrganizer(organizer);
     }
+
+    @Override
+    public void updateEventInfo(String eventId, Event updatedEvent) {
+    }
+
+    @Override
+    public void deleteEvent(String eventId) {
+    }
+
+    @Override
+    public List<Event> findAllEvents() {
+        return null;
+    }
+
 }
