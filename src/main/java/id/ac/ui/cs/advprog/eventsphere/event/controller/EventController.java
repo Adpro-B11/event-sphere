@@ -1,5 +1,9 @@
 package id.ac.ui.cs.advprog.eventsphere.event.controller;
 
+import id.ac.ui.cs.advprog.eventsphere.event.command.CreateEventCommand;
+import id.ac.ui.cs.advprog.eventsphere.event.command.DeleteEventCommand;
+import id.ac.ui.cs.advprog.eventsphere.event.command.UpdateStatusCommand;
+import id.ac.ui.cs.advprog.eventsphere.event.command.UpdateEventInfoCommand;
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.service.EventService;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +25,7 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity<Void> createEvent(@RequestBody Event event) {
-        eventService.createEvent(event);
+        new CreateEventCommand(eventService, event).execute();
         return ResponseEntity
                 .created(URI.create("/events/" + event.getId()))
                 .build();
@@ -30,41 +34,29 @@ public class EventController {
     @GetMapping("/{id}")
     public ResponseEntity<Event> getEventById(@PathVariable String id) {
         try {
-            Event event = eventService.findById(id);
-            return ResponseEntity.ok(event);
-        } catch (NoSuchElementException e) {
+            Event e = eventService.findById(id);
+            return ResponseEntity.ok(e);
+        } catch (NoSuchElementException ex) {
             return ResponseEntity.notFound().build();
         }
     }
 
     @GetMapping
     public ResponseEntity<List<Event>> getAllEvents() {
-        List<Event> list = eventService.findAllEvents();
-        return ResponseEntity.ok(list);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Void> updateEventInfo(@PathVariable String id,
-                                                @RequestBody Event updated) {
-        try {
-            eventService.updateEventInfo(id, updated);
-            return ResponseEntity.ok().build();
-        } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        return ResponseEntity.ok(eventService.findAllEvents());
     }
 
     @PatchMapping("/{id}/status")
-    public ResponseEntity<Void> updateStatus(@PathVariable String id,
-                                             @RequestBody StatusDto dto) {
+    public ResponseEntity<Void> updateStatus(
+            @PathVariable String id,
+            @RequestBody StatusDto dto
+    ) {
         try {
-            eventService.updateStatus(id, dto.status);
+            new UpdateStatusCommand(eventService, id, dto.status).execute();
             return ResponseEntity.ok().build();
-        } catch (NoSuchElementException e) {
+        } catch (NoSuchElementException ex) {
             return ResponseEntity.notFound().build();
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException ex) {
             return ResponseEntity.badRequest().build();
         }
     }
@@ -72,14 +64,27 @@ public class EventController {
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable String id) {
         try {
-            eventService.deleteEvent(id);
+            new DeleteEventCommand(eventService, id).execute();
             return ResponseEntity.noContent().build();
-        } catch (NoSuchElementException e) {
+        } catch (NoSuchElementException ex) {
             return ResponseEntity.notFound().build();
         }
     }
 
-    public static class StatusDto {
-        public String status;
+    @PutMapping("/{id}")
+    public ResponseEntity<Void> updateEventInfo(
+            @PathVariable String id,
+            @RequestBody Event updatedEvent
+    ) {
+        try {
+            new UpdateEventInfoCommand(eventService, id, updatedEvent).execute();
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException | IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
+
+    public static class StatusDto { public String status; }
 }

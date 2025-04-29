@@ -1,5 +1,8 @@
 package id.ac.ui.cs.advprog.eventsphere.event.web;
 
+import id.ac.ui.cs.advprog.eventsphere.event.command.CreateEventCommand;
+import id.ac.ui.cs.advprog.eventsphere.event.command.DeleteEventCommand;
+import id.ac.ui.cs.advprog.eventsphere.event.command.UpdateEventInfoCommand;
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.service.EventService;
 import org.springframework.stereotype.Controller;
@@ -30,7 +33,8 @@ public class EventWebController {
 
     @PostMapping
     public String saveOrUpdate(@ModelAttribute Event event) {
-        eventService.createEvent(event);
+        // gunakan Command Pattern
+        new CreateEventCommand(eventService, event).execute();
         return "redirect:/ui/events";
     }
 
@@ -44,13 +48,13 @@ public class EventWebController {
     @PostMapping("/{id}/edit")
     public String submitEdit(@PathVariable String id, @ModelAttribute Event event) {
         event.setId(id);
-        eventService.updateEventInfo(id, event);
+        new UpdateEventInfoCommand(eventService, id, event).execute();
         return "redirect:/ui/events";
     }
 
     @GetMapping("/{id}/delete")
     public String deleteEvent(@PathVariable String id) {
-        eventService.deleteEvent(id);
+        new DeleteEventCommand(eventService, id).execute();
         return "redirect:/ui/events";
     }
 }
