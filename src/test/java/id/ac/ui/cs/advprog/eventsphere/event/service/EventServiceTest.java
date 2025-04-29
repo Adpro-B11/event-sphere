@@ -126,4 +126,78 @@ class EventServiceTest {
         // Assert
         assertTrue(events.isEmpty());
     }
+
+    @Test
+    void testUpdateEventInfo_Success() {
+        String id = "123";
+        Event existing = new Event();
+        existing.setId(id);
+        existing.setTitle("Old");
+        existing.setDescription("OldDesc");
+        existing.setDate("2025-04-30");
+        existing.setLocation("Loc");
+        existing.setPrice(100.0);
+        when(eventRepository.findById(id)).thenReturn(existing);
+
+        Event updated = new Event();
+        updated.setTitle("New");
+        updated.setDescription("NewDesc");
+        updated.setDate("2025-05-01");
+        updated.setLocation("NewLoc");
+        updated.setPrice(200.0);
+
+        eventService.updateEventInfo(id, updated);
+
+        assertEquals("New", existing.getTitle());
+        assertEquals("NewDesc", existing.getDescription());
+        assertEquals("2025-05-01", existing.getDate());
+        assertEquals("NewLoc", existing.getLocation());
+        assertEquals(200.0, existing.getPrice());
+        verify(eventRepository).save(existing);
+    }
+
+    @Test
+    void testUpdateEventInfo_InvalidId() {
+        String id = "NOT_FOUND";
+        when(eventRepository.findById(id)).thenReturn(null);
+        Event updated = new Event();
+        assertThrows(NoSuchElementException.class, () -> eventService.updateEventInfo(id, updated));
+    }
+
+    @Test
+    void testUpdateEventInfo_AfterDate() {
+        String id = "123";
+        Event past = new Event();
+        past.setId(id);
+        past.setDate("2025-04-28");
+        when(eventRepository.findById(id)).thenReturn(past);
+        Event updated = new Event();
+        assertThrows(IllegalStateException.class, () -> eventService.updateEventInfo(id, updated));
+    }
+
+    @Test
+    void testDeleteEvent_Success() {
+        String id = "123";
+        when(eventRepository.deleteById(id)).thenReturn(true);
+
+        eventService.deleteEvent(id);
+
+        verify(eventRepository).deleteById(id);
+    }
+
+    @Test
+    void testDeleteEvent_NotFound() {
+        when(eventRepository.deleteById("NOT_EXIST")).thenReturn(false);
+        assertThrows(NoSuchElementException.class, () -> eventService.deleteEvent("NOT_EXIST"));
+    }
+
+    @Test
+    void testFindAllEvents() {
+        List<Event> list = List.of(new Event(), new Event());
+        when(eventRepository.findAll()).thenReturn(list);
+
+        List<Event> result = eventService.findAllEvents();
+
+        assertEquals(2, result.size());
+    }
 }
