@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @RestController
 @RequestMapping("/events")
@@ -20,35 +21,64 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity<Void> createEvent(@RequestBody Event event) {
+        eventService.createEvent(event);
+        return ResponseEntity
+                .created(URI.create("/events/" + event.getId()))
+                .build();
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<Event> getEventById(@PathVariable String id) {
+        try {
+            Event event = eventService.findById(id);
+            return ResponseEntity.ok(event);
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @GetMapping
     public ResponseEntity<List<Event>> getAllEvents() {
-        throw new UnsupportedOperationException("Not implemented");
+        List<Event> list = eventService.findAllEvents();
+        return ResponseEntity.ok(list);
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<Void> updateEventInfo(@PathVariable String id,
                                                 @RequestBody Event updated) {
-        throw new UnsupportedOperationException("Not implemented");
+        try {
+            eventService.updateEventInfo(id, updated);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @PatchMapping("/{id}/status")
     public ResponseEntity<Void> updateStatus(@PathVariable String id,
                                              @RequestBody StatusDto dto) {
-        throw new UnsupportedOperationException("Not implemented");
+        try {
+            eventService.updateStatus(id, dto.status);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteEvent(@PathVariable String id) {
-        throw new UnsupportedOperationException("Not implemented");
+        try {
+            eventService.deleteEvent(id);
+            return ResponseEntity.noContent().build();
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
-    // inner DTO for status update
     public static class StatusDto {
         public String status;
     }
