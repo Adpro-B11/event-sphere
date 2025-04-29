@@ -36,4 +36,13 @@ public class EventRepository {
         }
         return result;
     }
+
+    public boolean deleteById(String id) {
+
+    }
+
+    public List<Event> findAll() {
+
+    }
+
 }
