@@ -133,4 +133,43 @@ class EventRepositoryTest {
         // Assert
         assertTrue(events.isEmpty());
     }
+
+    @Test
+    void testDeleteById_Success() {
+        Event event = new Event();
+        event.setTitle("Konser Musik");
+        event.setDescription("Desc");
+        event.setDate("2025-05-01");
+        event.setLocation("Jakarta");
+        event.setPrice(100.0);
+        event.setOrganizer("Org");
+        eventRepository.save(event);
+
+        boolean removed = eventRepository.deleteById(event.getId());
+
+        assertTrue(removed);
+        assertNull(eventRepository.findById(event.getId()));
+    }
+
+    @Test
+    void testDeleteById_NotFound() {
+        boolean removed = eventRepository.deleteById("NOT_EXIST");
+        assertFalse(removed);
+    }
+
+    @Test
+    void testFindAll_ReturnsAll() {
+        Event e1 = new Event();
+        e1.setTitle("A1"); e1.setDescription("D1"); e1.setDate("2025-06-01");
+        e1.setLocation("L1"); e1.setPrice(10.0); e1.setOrganizer("O1");
+        Event e2 = new Event();
+        e2.setTitle("A2"); e2.setDescription("D2"); e2.setDate("2025-07-01");
+        e2.setLocation("L2"); e2.setPrice(20.0); e2.setOrganizer("O2");
+        eventRepository.save(e1);
+        eventRepository.save(e2);
+
+        List<Event> all = eventRepository.findAll();
+        assertEquals(2, all.size());
+        assertTrue(all.contains(e1) && all.contains(e2));
+    }
 }
