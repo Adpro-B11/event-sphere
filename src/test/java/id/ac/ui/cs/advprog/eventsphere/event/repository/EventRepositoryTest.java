@@ -18,7 +18,6 @@ class EventRepositoryTest {
 
     @Test
     void testSave_AddNewEvent() {
-        // Arrange
         Event event = new Event();
         event.setTitle("Konser Musik");
         event.setDescription("Konser musik tahunan");
@@ -27,16 +26,13 @@ class EventRepositoryTest {
         event.setPrice(500000.0);
         event.setOrganizer("Mas Inis");
 
-        // Act
         eventRepository.save(event);
 
-        // Assert
         assertNotNull(eventRepository.findById(event.getId()));
     }
 
     @Test
     void testSave_UpdateExistingEvent() {
-        // Arrange
         Event event = new Event();
         event.setTitle("Konser Musik");
         event.setDescription("Konser musik tahunan");
@@ -47,18 +43,15 @@ class EventRepositoryTest {
 
         eventRepository.save(event);
 
-        // Act
         event.setDescription("Konser musik terbesar tahun ini");
         eventRepository.save(event);
 
-        // Assert
         Event updatedEvent = eventRepository.findById(event.getId());
         assertEquals("Konser musik terbesar tahun ini", updatedEvent.getDescription());
     }
 
     @Test
     void testFindById_ValidId() {
-        // Arrange
         Event event = new Event();
         event.setTitle("Konser Musik");
         event.setDescription("Konser musik tahunan");
@@ -69,22 +62,18 @@ class EventRepositoryTest {
 
         eventRepository.save(event);
 
-        // Act & Assert
         assertNotNull(eventRepository.findById(event.getId()));
     }
 
     @Test
     void testFindById_InvalidId() {
-        // Arrange & Act
         Event result = eventRepository.findById("INVALID_ID");
 
-        // Assert
         assertNull(result);
     }
 
     @Test
     void testFindAllByOrganizer_ValidOrganizer() {
-        // Arrange
         Event event1 = new Event();
         event1.setTitle("Konser Musik");
         event1.setDescription("Konser musik tahunan");
@@ -106,17 +95,14 @@ class EventRepositoryTest {
         eventRepository.save(event1);
         eventRepository.save(event2);
 
-        // Act
         List<Event> events = eventRepository.findAllByOrganizer("Mas Inis");
 
-        // Assert
         assertFalse(events.isEmpty());
         assertEquals(1, events.size());
     }
 
     @Test
     void testFindAllByOrganizer_InvalidOrganizer() {
-        // Arrange
         Event event = new Event();
         event.setTitle("Konser Musik");
         event.setDescription("Konser musik tahunan");
@@ -127,10 +113,8 @@ class EventRepositoryTest {
 
         eventRepository.save(event);
 
-        // Act
         List<Event> events = eventRepository.findAllByOrganizer("Dek Atsini");
 
-        // Assert
         assertTrue(events.isEmpty());
     }
 

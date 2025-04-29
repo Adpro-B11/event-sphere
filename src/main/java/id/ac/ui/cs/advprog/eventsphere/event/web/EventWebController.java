@@ -33,7 +33,6 @@ public class EventWebController {
 
     @PostMapping
     public String saveOrUpdate(@ModelAttribute Event event) {
-        // gunakan Command Pattern
         new CreateEventCommand(eventService, event).execute();
         return "redirect:/ui/events";
     }

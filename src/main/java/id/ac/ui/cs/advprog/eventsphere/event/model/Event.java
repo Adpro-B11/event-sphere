@@ -29,7 +29,7 @@ public class Event {
     @Setter
     private double price;
 
-    private String status = EventStatus.DRAFT.getValue(); // Default status
+    private String status = EventStatus.DRAFT.getValue();
 
     @Setter
     private String organizer;

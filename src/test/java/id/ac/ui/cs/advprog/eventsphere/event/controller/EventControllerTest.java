@@ -33,7 +33,6 @@ class EventControllerTest {
 
     @Test
     void testCreateEvent() throws Exception {
-        // Arrange
         Event event = new Event();
         event.setTitle("Konser");
         event.setDescription("desc");
@@ -44,7 +43,6 @@ class EventControllerTest {
 
         willDoNothing().given(eventService).createEvent(any(Event.class));
 
-        // Act & Assert
         mockMvc.perform(post("/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(event)))
@@ -56,14 +54,12 @@ class EventControllerTest {
 
     @Test
     void testGetEventById_Success() throws Exception {
-        // Arrange
         String id = "123";
         Event event = new Event();
         event.setId(id);
         event.setTitle("Konser");
         given(eventService.findById(id)).willReturn(event);
 
-        // Act & Assert
         mockMvc.perform(get("/events/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
@@ -72,23 +68,19 @@ class EventControllerTest {
 
     @Test
     void testGetEventById_NotFound() throws Exception {
-        // Arrange
         String id = "notfound";
         given(eventService.findById(id)).willThrow(new NoSuchElementException());
 
-        // Act & Assert
         mockMvc.perform(get("/events/{id}", id))
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void testGetAllEvents() throws Exception {
-        // Arrange
         Event e1 = new Event(); e1.setId("1"); e1.setTitle("A1");
         Event e2 = new Event(); e2.setId("2"); e2.setTitle("A2");
         given(eventService.findAllEvents()).willReturn(List.of(e1, e2));
 
-        // Act & Assert
         mockMvc.perform(get("/events"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
@@ -97,7 +89,6 @@ class EventControllerTest {
 
     @Test
     void testUpdateEventInfo() throws Exception {
-        // Arrange
         String id = "123";
         Event updated = new Event();
         updated.setTitle("New"); updated.setDescription("NewDesc");
@@ -105,7 +96,6 @@ class EventControllerTest {
         updated.setPrice(200.0);
         willDoNothing().given(eventService).updateEventInfo(eq(id), any(Event.class));
 
-        // Act & Assert
         mockMvc.perform(put("/events/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updated)))
@@ -116,12 +106,10 @@ class EventControllerTest {
 
     @Test
     void testUpdateStatus() throws Exception {
-        // Arrange
         String id = "123";
         String body = "{\"status\":\"PUBLISHED\"}";
         willDoNothing().given(eventService).updateStatus(eq(id), eq("PUBLISHED"));
 
-        // Act & Assert
         mockMvc.perform(patch("/events/{id}/status", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
@@ -132,11 +120,9 @@ class EventControllerTest {
 
     @Test
     void testDeleteEvent() throws Exception {
-        // Arrange
         String id = "123";
         willDoNothing().given(eventService).deleteEvent(id);
 
-        // Act & Assert
         mockMvc.perform(delete("/events/{id}", id))
                 .andExpect(status().isNoContent());
 
