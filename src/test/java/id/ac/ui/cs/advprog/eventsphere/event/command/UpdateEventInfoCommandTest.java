@@ -26,4 +26,5 @@ class UpdateEventInfoCommandTest {
         command.execute();
         verify(eventService, times(1)).updateEventInfo(eventId, updated);
     }
+
 }
