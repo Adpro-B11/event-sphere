@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Iterator;
 
 public class EventRepository {
     private List<Event> events = new ArrayList<>();
@@ -38,11 +39,19 @@ public class EventRepository {
     }
 
     public boolean deleteById(String id) {
-
+        Iterator<Event> it = events.iterator();
+        while (it.hasNext()) {
+            if (it.next().getId().equals(id)) {
+                it.remove();
+                return true;
+            }
+        }
+        return false;
     }
 
     public List<Event> findAll() {
-
+        return new ArrayList<>(events);
     }
+
 
 }
