@@ -6,7 +6,10 @@ import id.ac.ui.cs.advprog.eventsphere.event.repository.EventRepository;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.time.LocalDate;
+import org.springframework.stereotype.Service;
 
+@Service
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
@@ -47,5 +50,36 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> findAllByOrganizer(String organizer) {
         return eventRepository.findAllByOrganizer(organizer);
+    }
+
+    @Override
+    public void updateEventInfo(String eventId, Event updatedEvent) {
+        Event event = eventRepository.findById(eventId);
+        if (event == null) {
+            throw new NoSuchElementException("Event with ID " + eventId + " not found");
+        }
+        LocalDate eventDate = LocalDate.parse(event.getDate());
+        if (LocalDate.now().isAfter(eventDate)) {
+            throw new IllegalStateException("Cannot update event after its date");
+        }
+        event.setTitle(updatedEvent.getTitle());
+        event.setDescription(updatedEvent.getDescription());
+        event.setDate(updatedEvent.getDate());
+        event.setLocation(updatedEvent.getLocation());
+        event.setPrice(updatedEvent.getPrice());
+        eventRepository.save(event);
+    }
+
+    @Override
+    public void deleteEvent(String eventId) {
+        boolean removed = eventRepository.deleteById(eventId);
+        if (!removed) {
+            throw new NoSuchElementException("Event with ID " + eventId + " not found");
+        }
+    }
+
+    @Override
+    public List<Event> findAllEvents() {
+        return eventRepository.findAll();
     }
 }
