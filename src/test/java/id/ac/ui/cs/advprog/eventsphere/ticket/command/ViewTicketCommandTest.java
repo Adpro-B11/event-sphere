@@ -36,10 +36,8 @@ class ViewTicketCommandTest {
 
     @Test
     void testExecute() {
-        // Action
         command.execute();
 
-        // Assert
         verify(repository, times(1)).findById(ticketId);
         assertEquals(mockTicket, command.getResult());
     }

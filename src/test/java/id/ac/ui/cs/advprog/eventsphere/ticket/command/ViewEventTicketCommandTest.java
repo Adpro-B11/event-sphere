@@ -46,10 +46,8 @@ class ViewEventTicketsCommandTest {
 
     @Test
     void testExecute() {
-        // Action
         command.execute();
 
-        // Assert
         verify(repository, times(1)).findByEventId(eventId);
         assertEquals(mockTickets, command.getResult());
         assertEquals(2, command.getResult().size());

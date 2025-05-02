@@ -46,10 +46,8 @@ class UpdateTicketCommandTest {
 
     @Test
     void testExecute_UpdatePrice() {
-        // Action
         command.execute();
 
-        // Assert
         verify(repository, times(1)).findById(ticketId);
         verify(repository, times(1)).update(mockTicket);
         assertEquals(120.0, mockTicket.getPrice());
@@ -57,15 +55,12 @@ class UpdateTicketCommandTest {
 
     @Test
     void testExecute_UpdateQuota() {
-        // Setup
         updates.clear();
         updates.put("quota", 300);
         command = new UpdateTicketCommand(repository, ticketId, updates);
 
-        // Action
         command.execute();
 
-        // Assert
         verify(repository, times(1)).update(mockTicket);
         assertEquals(300, mockTicket.getQuota());
         assertEquals(300, mockTicket.getRemaining()); // Remaining should increase by 100
@@ -73,30 +68,24 @@ class UpdateTicketCommandTest {
 
     @Test
     void testExecute_UpdateType() {
-        // Setup
         updates.clear();
         updates.put("type", TicketType.VIP);
         command = new UpdateTicketCommand(repository, ticketId, updates);
 
-        // Action
         command.execute();
 
-        // Assert
         verify(repository, times(1)).update(mockTicket);
         assertEquals(TicketType.VIP, mockTicket.getType());
     }
 
     @Test
     void testExecute_MultipleUpdates() {
-        // Setup
         updates.put("quota", 250);
         updates.put("type", TicketType.STUDENT);
         command = new UpdateTicketCommand(repository, ticketId, updates);
 
-        // Action
         command.execute();
 
-        // Assert
         verify(repository, times(1)).update(mockTicket);
         assertEquals(120.0, mockTicket.getPrice());
         assertEquals(250, mockTicket.getQuota());
