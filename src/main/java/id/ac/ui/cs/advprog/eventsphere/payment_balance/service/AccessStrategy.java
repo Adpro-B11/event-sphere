@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
+
 import java.util.List;
 
 public interface AccessStrategy {

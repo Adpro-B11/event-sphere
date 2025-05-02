@@ -1,5 +1,8 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,6 +14,9 @@ public class AdminAccessStrategy implements AccessStrategy {
     public AdminAccessStrategy(TopUpTransactionRepository topUpRepo, TicketPurchaseTransactionRepository ticketRepo) {
         this.topUpRepo = topUpRepo;
         this.ticketRepo = ticketRepo;
+    }
+
+    public AdminAccessStrategy(TransactionRepository transactionRepo) {
     }
 
     @Override
