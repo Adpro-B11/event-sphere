@@ -1,180 +1,68 @@
 package id.ac.ui.cs.advprog.eventsphere.report.model;
 
-import id.ac.ui.cs.advprog.eventsphere.report.observer.ReportObserver;
-import lombok.Getter;
-import lombok.Setter;
+import jakarta.persistence.*;
+import lombok.*;
 
-import java.util.ArrayList;
-
-import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
 import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportCategory;
+import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+@ToString(exclude = "messages")
+@Entity
+@Table(name = "reports")
 public class Report {
-    private String reportId;
-    private String attendeeId;
 
-    @Setter
-    private String eventId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @EqualsAndHashCode.Include
+    private UUID reportID;
 
-    @Setter
-    private String ticketId;
+    @Column(nullable = false)
+    private String title;
 
-    private String description;
-
+    @Column(nullable = false)
     private String category;
 
+    @Column(name = "category_reference")
+    private String categoryReference;
+
+    @Column(nullable = false)
     private String status;
 
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Setter
-    private LocalDateTime updatedAt;
+    @Column(name = "created_by", nullable = false)
+    private String createdBy;
 
-    @Setter
-    private List<String> attachments;
+    // Relasi One-to-Many dengan ReportMessage
+    @OneToMany(mappedBy = "report", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<ReportMessage> messages = new ArrayList<>();
 
-    private String responseMessage;
-
-    private List<ReportObserver> observers = new ArrayList<>();
-
-
-    public Report(String reportId, String attendeeId, String eventId, String ticketId,
-                  String description, String category, String status,
-                  LocalDateTime createdAt, LocalDateTime updatedAt,
-                  List<String> attachments, String responseMessage) {
-
-        if (attendeeId == null || attendeeId.isEmpty()) {
-            throw new IllegalArgumentException("Attendee ID cannot be null or empty");
-        }
-
-        if (description == null || description.isEmpty()) {
-            throw new IllegalArgumentException("Description cannot be null or empty");
-        }
-
-        if (category == null || !ReportCategory.contains(category)) {
-            throw new IllegalArgumentException("Report category cannot be null or invalid");
-        }
-
-        if (status == null) {
-            throw new IllegalArgumentException("Report status cannot be null");
-        }
-
-        this.reportId = reportId != null ? reportId : UUID.randomUUID().toString();
-        this.attendeeId = attendeeId;
-        this.eventId = eventId;
-        this.ticketId = ticketId;
-        this.description = description;
+    // Constructor yang digunakan oleh ReportFactory
+    public Report(String title, String category, String categoryReference, String createdBy) {
+        this.title = title;
         this.category = category;
-        this.status = status;
-        this.createdAt = createdAt != null ? createdAt : LocalDateTime.now();
-        this.updatedAt = updatedAt;
-        this.attachments = attachments;
-        this.responseMessage = responseMessage;
+        this.categoryReference = categoryReference;
+        this.createdBy = createdBy;
+        this.createdAt = LocalDateTime.now();
+        this.status = ReportStatus.PENDING.getValue();
     }
 
-    // Factory method for creating a new report
-    public static Report createNewReport(String attendeeId, String eventId, String ticketId,
-                                         String description, String category,
-                                         List<String> attachments) {
-        return new Report(
-                UUID.randomUUID().toString(),
-                attendeeId,
-                eventId,
-                ticketId,
-                description,
-                category,
-                ReportStatus.ON_PROGRESS.getValue(),
-                LocalDateTime.now(),
-                null,
-                attachments,
-                null
-        );
+    public void updateStatus(String newStatus) {
+        this.status = newStatus;
     }
 
-    public void setDescription(String description) {
-        if (description == null || description.isEmpty()) {
-            throw new IllegalArgumentException("Description cannot be null or empty");
-        }
-        this.description = description;
-    }
-
-    public void setCategory(String category) {
-        if (category == null || !ReportCategory.contains(category)) {
-            throw new IllegalArgumentException("Report category cannot be null or invalid");
-        }
-        this.category = category;
-    }
-
-    public void setStatus(String status) {
-        if (status == null || !ReportStatus.contains(status)) {
-            throw new IllegalArgumentException("Report status cannot be null or invalid");
-        }
-
-        String oldStatus = this.status;
-        this.status = status;
-        this.updatedAt = LocalDateTime.now();
-
-        if (!status.equals(oldStatus)) {
-            notifyObservers();
-        }
-
-    }
-
-    public void setResponseMessage(String responseMessage) {
-        String oldMessage = this.responseMessage;
-        this.responseMessage = responseMessage;
-        this.updatedAt = LocalDateTime.now();
-
-        if ((oldMessage == null && responseMessage != null) ||
-                (oldMessage != null && !oldMessage.equals(responseMessage))) {
-            notifyObservers();
-        }
-    }
-
-    // Method to add response and update status
-    public void resolveReport(String responseMessage) {
-        this.responseMessage = responseMessage;
-        String oldStatus = this.status;
-        this.status = ReportStatus.RESOLVED.getValue();
-        this.updatedAt = LocalDateTime.now();
-
-        // Always notify observers when resolving a report
-        notifyObservers();
-    }
-
-    // Method to add attachment
-    public void addAttachment(String attachmentUrl) {
-        if (this.attachments == null) {
-            throw new IllegalStateException("Attachments list is not initialized");
-        }
-        this.attachments.add(attachmentUrl);
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    // Observer pattern methods
-    public void addObserver(ReportObserver observer) {
-        if (observers == null) {
-            observers = new ArrayList<>();
-        }
-        observers.add(observer);
-    }
-
-    public void removeObserver(ReportObserver observer) {
-        if (observers != null) {
-            observers.remove(observer);
-        }
-    }
-
-    private void notifyObservers() {
-        if (observers != null) {
-            for (ReportObserver observer : observers) {
-                observer.update(this);
-            }
-        }
+    public void addMessage(String text, String sender) {
+        ReportMessage message = new ReportMessage(this, text, sender);
+        this.messages.add(message);
     }
 }

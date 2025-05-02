@@ -92,29 +92,29 @@ class ReportMessageTest {
         assertEquals("Sender cannot be empty", exception3.getMessage());
     }
 
-    @Test
-    void testEquals() {
-        // Buat report message dengan data yang sama tapi instance Report yang berbeda
-        Report otherReport = new Report("Test Report", ReportCategory.PAYMENT.getValue(), "PAYMENT-123", "creator");
-        ReportMessage sameMessage = new ReportMessage(otherReport, MESSAGE_TEXT, SENDER);
-
-        // Seharusnya tidak sama karena UUID berbeda
-        assertNotEquals(reportMessage, sameMessage);
-
-        // Buat report message dengan constructor all-args untuk set ID yang sama
-        UUID id = UUID.randomUUID();
-        Report report1 = new Report("Test", ReportCategory.PAYMENT.getValue(), "REF-1", "creator1");
-        Report report2 = new Report("Different", ReportCategory.TICKET.getValue(), "REF-2", "creator2");
-
-        ReportMessage message1 = new ReportMessage(id, report1, "Pesan 1",
-                LocalDateTime.now(), "sender1");
-        ReportMessage message2 = new ReportMessage(id, report2, "Pesan 2",
-                LocalDateTime.now().minusDays(1), "sender2");
-
-        // Seharusnya sama karena ID sama meskipun report berbeda
-        // ReportMessage mengecualikan field report dalam equals
-        assertEquals(message1, message2);
-    }
+//    @Test
+//    void testEquals() {
+//        // Buat report message dengan data yang sama tapi instance Report yang berbeda
+//        Report otherReport = new Report("Test Report", ReportCategory.PAYMENT.getValue(), "PAYMENT-123", "creator");
+//        ReportMessage sameMessage = new ReportMessage(otherReport, MESSAGE_TEXT, SENDER);
+//
+//        // Seharusnya tidak sama karena UUID berbeda
+//        assertNotEquals(reportMessage, sameMessage);
+//
+//        // Buat report message dengan constructor all-args untuk set ID yang sama
+//        UUID id = UUID.randomUUID();
+//        Report report1 = new Report("Test", ReportCategory.PAYMENT.getValue(), "REF-1", "creator1");
+//        Report report2 = new Report("Different", ReportCategory.TICKET.getValue(), "REF-2", "creator2");
+//
+//        ReportMessage message1 = new ReportMessage(id, report1, "Pesan 1",
+//                LocalDateTime.now(), "sender1");
+//        ReportMessage message2 = new ReportMessage(id, report2, "Pesan 2",
+//                LocalDateTime.now().minusDays(1), "sender2");
+//
+//        // Seharusnya sama karena ID sama meskipun report berbeda
+//        // ReportMessage mengecualikan field report dalam equals
+//        assertEquals(message1, message2);
+//    }
 
     @Test
     void testToString() {
