@@ -11,4 +11,5 @@ public interface TicketService {
     Ticket createTicket(User user, String eventId, TicketType type, double price, int quota);
     void deleteTicket(User user, String ticketId);
     Ticket viewTicket(String ticketId);
+    List<Ticket> viewTicketsByEvent(String eventId);
 }
