@@ -1,9 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.Transaction;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TopUpTransactionRepository;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TicketPurchaseTransactionRepository;
-
 import java.util.List;
 
 public class UserAccessStrategy implements AccessStrategy {

@@ -1,8 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.Transaction;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TopUpTransactionRepository;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TicketPurchaseTransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
