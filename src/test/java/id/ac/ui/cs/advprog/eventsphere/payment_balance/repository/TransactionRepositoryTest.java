@@ -121,4 +121,101 @@ public class TransactionRepositoryTest {
         assertEquals(1, remaining.size());
         assertEquals("trx-002", remaining.get(0).getTransactionId());
     }
+
+    @Test
+    void testCreateAndSaveWithInvalidType() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            repository.createAndSave("INVALID_TYPE", "trx-001", "user-01", 100000,
+                    "BANK_TRANSFER", Map.of("bankName", "Bank BCA"));
+        });
+    }
+
+    @Test
+    void testSaveNullTransaction() {
+        assertThrows(NullPointerException.class, () -> {
+            repository.save(null);
+        });
+    }
+
+    @Test
+    void testSaveTransactionWithNullId() {
+        TicketPurchaseTransaction trx = new TicketPurchaseTransaction(
+                null, "user-01", "TICKET_PURCHASE", 100000, Map.of("VIP", "1")
+        );
+        assertThrows(NullPointerException.class, () -> {
+            repository.save(trx);
+        });
+    }
+
+    @Test
+    void testFindByIdNotFound() {
+        Optional<Transaction> result = repository.findById("non-existent-id");
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFindByUserIdNotFound() {
+        List<Transaction> result = repository.findByUserId("non-existent-user");
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFindByStatusNotFound() {
+        repository.save(new TopUpTransaction("trx-001", "user-01", "TOPUP_BALANCE",
+                "BANK_TRANSFER", 50000, Map.of("accountNumber", "123")));
+        List<Transaction> result = repository.findByStatus("FAILED");
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFindByTypeNotFound() {
+        repository.save(new TopUpTransaction("trx-001", "user-01", "TOPUP_BALANCE",
+                "BANK_TRANSFER", 50000, Map.of("accountNumber", "123")));
+        List<Transaction> result = repository.findByType("TICKET_PURCHASE");
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFindAllTicketPurchasesWhenNoneExist() {
+        repository.save(new TopUpTransaction("trx-001", "user-01", "TOPUP_BALANCE",
+                "BANK_TRANSFER", 50000, Map.of("accountNumber", "123")));
+        List<TicketPurchaseTransaction> result = repository.findAllTicketPurchases();
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testFindAllTopUpsWhenNoneExist() {
+        repository.save(new TicketPurchaseTransaction("trx-001", "user-01", "TICKET_PURCHASE",
+                100000, Map.of("VIP", "1")));
+        List<TopUpTransaction> result = repository.findAllTopUps();
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testDeleteNonExistentId() {
+        // Should not throw exception
+        assertDoesNotThrow(() -> {
+            repository.deleteById("non-existent-id");
+        });
+    }
+
+    @Test
+    void testCreateAndSaveWithInvalidData() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            // Missing required bankName for BANK_TRANSFER
+            repository.createAndSave("TOPUP_BALANCE", "trx-001", "user-01", 100000,
+                    "BANK_TRANSFER", Map.of("accountNumber", "123"));
+        });
+    }
+
+    @Test
+    void testSaveInvalidTransactionStatus() {
+        TicketPurchaseTransaction trx = new TicketPurchaseTransaction(
+                "trx-001", "user-01", "TICKET_PURCHASE", 100000, Map.of("VIP", "1")
+        );
+        trx.setStatus("INVALID_STATUS");
+        assertThrows(IllegalArgumentException.class, () -> {
+            repository.save(trx);
+        });
+    }
 }
