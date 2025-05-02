@@ -39,6 +39,16 @@ public class TicketServiceImpl implements TicketService {
         return command.getResult();
     }
 
+    public void updateTicket(User user, String ticketId, Map<String, Object> updates) {
+        // blm implement user role
+//        if (user.getRole() != Role.ORGANIZER) {
+//            throw new UnauthorizedException("Only organizers can update tickets");
+//        }
+
+        TicketCommand command = new UpdateTicketCommand(repository, ticketId, updates);
+        command.execute();
+    }
+
     @Override
     public void deleteTicket(User user, String ticketId) {
         TicketCommand command = new DeleteTicketCommand(repository, ticketId);
