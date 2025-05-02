@@ -69,4 +69,22 @@ public class TicketServiceImplTest {
         assertEquals(2, result.size());
         verify(repository).findByEventId("event123");
     }
+
+    @Test
+    public void testUpdateTicketExecutesCommand() {
+        Map<String, Object> updates = new HashMap<>();
+        updates.put("price", 250.0);
+        updates.put("quota", 100);
+
+        Ticket existingTicket = new Ticket();
+        existingTicket.setId("ticket123");
+        existingTicket.setPrice(200.0);
+        existingTicket.setQuota(50);
+
+        when(repository.findById("ticket123")).thenReturn(existingTicket);
+
+        service.updateTicket(mockUser, "ticket123", updates);
+
+        verify(repository).update(any(Ticket.class));  // ← FIXED
+    }
 }
