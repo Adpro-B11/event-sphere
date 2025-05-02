@@ -2,7 +2,8 @@ package id.ac.ui.cs.advprog.eventsphere.payment_balance.model;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.TicketPurchaseTransaction;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactory;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactoryProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -13,120 +14,173 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class TicketPurchaseTransactionTest {
 
-    private Map<String, String> paymentData;
+    private Map<String, String> ticketData;
 
     @BeforeEach
     void setUp() {
-        paymentData = new HashMap<>();
+        ticketData = new HashMap<>();
     }
 
     @Test
     void testEmptyTicketDataThrowsException() {
         assertThrows(IllegalArgumentException.class, () -> {
-            new TicketPurchaseTransaction(
+            TransactionFactory factory = TransactionFactoryProducer.getFactory(
+                    TransactionType.TICKET_PURCHASE.name(),
                     "txn-201",
                     "user-201",
-                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
-                    paymentData
+                    null,
+                    ticketData
             );
+
+            factory.createTransaction();
         });
     }
 
     @Test
     void testTicketKeyIsNullThrowsException() {
-        paymentData.put(null, "1");
+        ticketData.put(null, "1");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new TicketPurchaseTransaction(
+            TransactionFactory factory = TransactionFactoryProducer.getFactory(
+                    TransactionType.TICKET_PURCHASE.name(),
                     "txn-202",
                     "user-202",
-                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
-                    paymentData
+                    null,
+                    ticketData
             );
+
+            factory.createTransaction();
         });
     }
 
     @Test
     void testTicketKeyIsEmptyStringThrowsException() {
-        paymentData.put("", "1");
+        ticketData.put("", "1");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new TicketPurchaseTransaction(
+            TransactionFactory factory = TransactionFactoryProducer.getFactory(
+                    TransactionType.TICKET_PURCHASE.name(),
                     "txn-203",
                     "user-203",
-                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
-                    paymentData
+                    null,
+                    ticketData
             );
+
+            factory.createTransaction();
         });
     }
 
     @Test
     void testTicketKeyIsWhitespaceOnlyThrowsException() {
-        paymentData.put("   ", "1");
+        ticketData.put("   ", "1");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new TicketPurchaseTransaction(
+            TransactionFactory factory = TransactionFactoryProducer.getFactory(
+                    TransactionType.TICKET_PURCHASE.name(),
                     "txn-204",
                     "user-204",
-                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
-                    paymentData
+                    null,
+                    ticketData
             );
+
+            factory.createTransaction();
         });
     }
 
     @Test
     void testNegativeTicketAmountThrowsException() {
-        paymentData.put("ConcertVIP", "-3");
+        ticketData.put("ConcertVIP", "-3");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new TicketPurchaseTransaction(
+            TransactionFactory factory = TransactionFactoryProducer.getFactory(
+                    TransactionType.TICKET_PURCHASE.name(),
                     "txn-205",
                     "user-205",
-                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
-                    paymentData
+                    null,
+                    ticketData
             );
+
+            factory.createTransaction();
         });
     }
 
     @Test
     void testZeroTicketAmountThrowsException() {
-        paymentData.put("ConcertVIP", "0");
+        ticketData.put("ConcertVIP", "0");
 
         assertThrows(IllegalArgumentException.class, () -> {
-            new TicketPurchaseTransaction(
+            TransactionFactory factory = TransactionFactoryProducer.getFactory(
+                    TransactionType.TICKET_PURCHASE.name(),
                     "txn-206",
                     "user-206",
-                    TransactionType.TICKET_PURCHASE.getValue(),
                     100000,
-                    paymentData
+                    null,
+                    ticketData
             );
+
+            factory.createTransaction();
         });
     }
 
     @Test
     void testTicketPurchaseSuccess() {
-        paymentData.put("ConcertVIP", "3");
-        paymentData.put("ConcertVVIP", "2");
+        ticketData.put("ConcertVIP", "3");
+        ticketData.put("ConcertVVIP", "2");
 
-        TicketPurchaseTransaction transaction = new TicketPurchaseTransaction(
+        TransactionFactory factory = TransactionFactoryProducer.getFactory(
+                TransactionType.TICKET_PURCHASE.name(),
                 "txn-207",
                 "user-207",
-                TransactionType.TICKET_PURCHASE.getValue(),
                 100000,
-                paymentData
+                null,
+                ticketData
         );
 
-        transaction.setValidateStatus();
+        Transaction transaction = factory.createTransaction();
+        ((TicketPurchaseTransaction) transaction).setValidateStatus();
 
         assertEquals("txn-207", transaction.getTransactionId());
         assertEquals("user-207", transaction.getUserId());
-        assertEquals(TransactionType.TICKET_PURCHASE.getValue(), transaction.getType());
-        assertEquals(TransactionStatus.SUCCESS.getValue(), transaction.getStatus());
+        assertEquals(TransactionType.TICKET_PURCHASE.name(), transaction.getType());
+        assertEquals(TransactionStatus.SUCCESS.name(), transaction.getStatus());
         assertEquals(100000, transaction.getAmount());
+
+        // Verify ticket data is preserved
+        Map<String, String> purchasedTickets = ((TicketPurchaseTransaction) transaction).getTicketData();
+        assertEquals("3", purchasedTickets.get("ConcertVIP"));
+        assertEquals("2", purchasedTickets.get("ConcertVVIP"));
+    }
+
+    @Test
+    void testTicketPurchaseWithMultipleTicketTypes() {
+        ticketData.put("Regular", "5");
+        ticketData.put("VIP", "2");
+        ticketData.put("VVIP", "1");
+
+        TransactionFactory factory = TransactionFactoryProducer.getFactory(
+                TransactionType.TICKET_PURCHASE.name(),
+                "txn-208",
+                "user-208",
+                250000,
+                null,
+                ticketData
+        );
+
+        Transaction transaction = factory.createTransaction();
+        ((TicketPurchaseTransaction) transaction).setValidateStatus();
+
+        assertEquals("txn-208", transaction.getTransactionId());
+        assertEquals(TransactionStatus.SUCCESS.name(), transaction.getStatus());
+
+        // Verify ticket data
+        Map<String, String> purchasedTickets = ((TicketPurchaseTransaction) transaction).getTicketData();
+        assertEquals("5", purchasedTickets.get("Regular"));
+        assertEquals("2", purchasedTickets.get("VIP"));
+        assertEquals("1", purchasedTickets.get("VVIP"));
     }
 }
