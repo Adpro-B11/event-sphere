@@ -1,9 +1,10 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactoryProducer;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -51,10 +52,15 @@ public class TransactionServiceImplTest {
     @Test
     void testCreateTransactionWithObject_ThrowsForUserStrategy() {
         transactionService.setStrategy(userStrategy);
-        Transaction mockTrx = mock(Transaction.class);
+        Transaction mockTrxx = mock(Transaction.class);
 
         assertThrows(UnsupportedOperationException.class, () -> {
-            transactionService.createTransaction(mockTrx);
+            transactionService.createTransaction("TOPUP_BALANCE",
+                    "txn-123",
+                    "user-456",
+                    500000,
+                    "BANK_TRANSFER",
+                    Map.of("accountNumber", "1234567890"));
         });
     }
 

@@ -63,7 +63,7 @@ public class UserAccessStrategyServiceTest {
 
         strategy.createTransaction(type, "txn-123", "user-456", 500000, "BANK_TRANSFER", Map.of());
 
-        verify(mockTrx).setValidateStatus();
+        verify(mockTrx).validateTransaction();
     }
 
     @Test

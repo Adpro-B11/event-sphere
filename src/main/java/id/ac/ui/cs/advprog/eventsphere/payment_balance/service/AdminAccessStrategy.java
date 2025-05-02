@@ -3,20 +3,13 @@ package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class AdminAccessStrategy implements AccessStrategy {
-
-    private final TopUpTransactionRepository topUpRepo;
-    private final TicketPurchaseTransactionRepository ticketRepo;
-
-    public AdminAccessStrategy(TopUpTransactionRepository topUpRepo, TicketPurchaseTransactionRepository ticketRepo) {
-        this.topUpRepo = topUpRepo;
-        this.ticketRepo = ticketRepo;
-    }
+    private final TransactionRepository transactionRepo;
 
     public AdminAccessStrategy(TransactionRepository transactionRepo) {
+        this.transactionRepo = transactionRepo;
     }
 
     @Override
@@ -26,23 +19,16 @@ public class AdminAccessStrategy implements AccessStrategy {
 
     @Override
     public void deleteTransaction(String transactionId) {
-        topUpRepo.deleteById(transactionId);
-        ticketRepo.deleteById(transactionId);
+        transactionRepo.deleteById(transactionId);
     }
 
     @Override
     public List<Transaction> viewAllTransactions() {
-        List<Transaction> all = new ArrayList<>();
-        all.addAll(topUpRepo.findAll());
-        all.addAll(ticketRepo.findAll());
-        return all;
+        return transactionRepo.findAll();
     }
 
     @Override
     public List<Transaction> filterTransactions(String status) {
-        List<Transaction> filtered = new ArrayList<>();
-        filtered.addAll(topUpRepo.findByStatus(status));
-        filtered.addAll(ticketRepo.findByStatus(status));
-        return filtered;
+        return transactionRepo.findByStatus(status);
     }
 }
