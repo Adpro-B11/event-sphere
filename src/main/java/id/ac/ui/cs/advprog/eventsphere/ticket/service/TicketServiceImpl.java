@@ -7,6 +7,9 @@ import id.ac.ui.cs.advprog.eventsphere.ticket.factory.TicketFactory;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
 import id.ac.ui.cs.advprog.eventsphere.ticket.repository.TicketRepository;
 
+import java.util.List;
+import java.util.Map;
+
 public class TicketServiceImpl implements TicketService {
     private final TicketRepository repository;
     private final TicketFactory factory;
@@ -22,6 +25,12 @@ public class TicketServiceImpl implements TicketService {
         TicketCommand command = new CreateTicketCommand(repository, ticket);
         command.execute();
         return ticket;
+    }
+
+    public Ticket viewTicket(String ticketId) {
+        ViewTicketCommand command = new ViewTicketCommand(repository, ticketId);
+        command.execute();
+        return command.getResult();
     }
 
     @Override
