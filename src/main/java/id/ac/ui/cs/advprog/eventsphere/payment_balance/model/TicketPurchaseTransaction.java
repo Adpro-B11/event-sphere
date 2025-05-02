@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.eventsphere.payment_balance;
+package id.ac.ui.cs.advprog.eventsphere.payment_balance.model;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
@@ -49,7 +49,12 @@ public class TicketPurchaseTransaction extends Transaction {
         }
     }
 
+    @Override
+    public void validateTransaction() {
+        setStatus(TransactionStatus.SUCCESS.name());
+    }
+
     public void setValidateStatus() {
-        super.setStatus(TransactionStatus.SUCCESS.name());
+        validateTransaction();
     }
 }

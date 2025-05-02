@@ -1,8 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.Transaction;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.TopUpTransaction;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.TicketPurchaseTransaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TopUpTransactionRepository;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TicketPurchaseTransactionRepository;
 

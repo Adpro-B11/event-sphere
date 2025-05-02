@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.eventsphere.payment_balance;
+package id.ac.ui.cs.advprog.eventsphere.payment_balance.model;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.PaymentMethod;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
@@ -10,8 +10,8 @@ import java.util.Map;
 @Getter
 public class TopUpTransaction extends Transaction {
 
-    private  String method;
-    private  Map<String, String> paymentData;
+    private String method;
+    private Map<String, String> paymentData;
 
     public TopUpTransaction(String transactionId, String userId, String type, String method, double amount, Map<String, String> paymentData) {
         super(transactionId, userId, type, TransactionStatus.FAILED.name(), amount);
@@ -45,21 +45,26 @@ public class TopUpTransaction extends Transaction {
         }
     }
 
-    public void setValidateStatus() {
+    @Override
+    public void validateTransaction() {
         String accountNumber = paymentData.get("accountNumber");
 
         if (method.equals(PaymentMethod.BANK_TRANSFER.name())) {
             if (accountNumber.length() != 10 || !accountNumber.matches("\\d+")) {
-                super.setStatus(TransactionStatus.FAILED.name());
+                setStatus(TransactionStatus.FAILED.name());
                 return;
             }
         } else if (method.equals(PaymentMethod.CREDIT_CARD.name())) {
             if (accountNumber.length() != 16 || !accountNumber.matches("\\d+")) {
-                super.setStatus(TransactionStatus.FAILED.name());
+                setStatus(TransactionStatus.FAILED.name());
                 return;
             }
         }
 
-        super.setStatus(TransactionStatus.SUCCESS.name());
+        setStatus(TransactionStatus.SUCCESS.name());
+    }
+
+    public void setValidateStatus() {
+        validateTransaction();
     }
 }
