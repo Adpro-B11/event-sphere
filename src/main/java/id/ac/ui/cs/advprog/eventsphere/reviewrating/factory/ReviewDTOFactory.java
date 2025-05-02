@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.eventsphere.reviewrating.dto;
+package id.ac.ui.cs.advprog.eventsphere.reviewrating.factory;
 
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
