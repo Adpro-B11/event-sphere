@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public enum ReportStatus {
     PENDING("PENDING"),
-    ON_PROGRESS("ON_PROGRESS"),
+    ON_PROGRESS("ON PROGRESS"),
     RESOLVED("RESOLVED");
 
     private final String value;
