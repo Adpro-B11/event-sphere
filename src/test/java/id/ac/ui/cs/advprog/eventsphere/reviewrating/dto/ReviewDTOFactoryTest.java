@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.dto;
 
-import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTOFactory;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.factory.ReviewDTOFactory;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
