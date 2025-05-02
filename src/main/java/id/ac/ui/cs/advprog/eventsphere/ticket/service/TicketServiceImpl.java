@@ -33,6 +33,12 @@ public class TicketServiceImpl implements TicketService {
         return command.getResult();
     }
 
+    public List<Ticket> viewTicketsByEvent(String eventId) {
+        ViewEventTicketsCommand command = new ViewEventTicketsCommand(repository, eventId);
+        command.execute();
+        return command.getResult();
+    }
+
     @Override
     public void deleteTicket(User user, String ticketId) {
         TicketCommand command = new DeleteTicketCommand(repository, ticketId);
