@@ -8,6 +8,8 @@ import id.ac.ui.cs.advprog.eventsphere.ticket.repository.TicketRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.*;
+
 import static org.mockito.Mockito.*;
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,7 +17,7 @@ public class TicketServiceImplTest {
 
     private TicketRepository repository;
     private TicketFactory factory;
-    private TicketServiceImpl service;
+    private TicketService service;
     private User mockUser;
 
     @BeforeEach
@@ -41,7 +43,18 @@ public class TicketServiceImplTest {
     @Test
     public void testDeleteTicketExecutesDeleteCommand() {
         service.deleteTicket(mockUser, "ticket123");
-
         verify(repository).delete("ticket123");
+    }
+
+    @Test
+    public void testViewTicketReturnsTicket() {
+        Ticket ticket = new Ticket();
+        when(repository.findById("ticket123")).thenReturn(ticket);
+
+        Ticket result = service.viewTicket("ticket123");
+
+        assertNotNull(result);
+        assertEquals(ticket, result);
+        verify(repository).findById("ticket123");
     }
 }
