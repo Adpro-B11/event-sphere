@@ -57,4 +57,16 @@ public class TicketServiceImplTest {
         assertEquals(ticket, result);
         verify(repository).findById("ticket123");
     }
+
+    @Test
+    public void testViewTicketsByEventReturnsListOfTickets() {
+        List<Ticket> tickets = List.of(new Ticket(), new Ticket());
+        when(repository.findByEventId("event123")).thenReturn(tickets);
+
+        List<Ticket> result = service.viewTicketsByEvent("event123");
+
+        assertNotNull(result);
+        assertEquals(2, result.size());
+        verify(repository).findByEventId("event123");
+    }
 }
