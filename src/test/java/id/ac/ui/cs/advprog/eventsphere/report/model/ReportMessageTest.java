@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.report.model;
 
 import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportCategory;
-import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
