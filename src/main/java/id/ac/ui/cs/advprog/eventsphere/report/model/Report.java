@@ -3,7 +3,6 @@ package id.ac.ui.cs.advprog.eventsphere.report.model;
 import jakarta.persistence.*;
 import lombok.*;
 
-import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportCategory;
 import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportStatus;
 
 import java.time.LocalDateTime;
