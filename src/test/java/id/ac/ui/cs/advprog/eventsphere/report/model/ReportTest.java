@@ -7,7 +7,6 @@ import org.junit.jupiter.api.Test;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -15,24 +14,28 @@ class ReportTest {
 
     private Report report;
     private final String TITLE = "Test Report";
+    private final String DESCRIPTION = "Test Description";
     private final String CATEGORY = ReportCategory.PAYMENT.getValue();
     private final String CATEGORY_REFERENCE = "PAYMENT-123";
+    private final String ATTACHMENT_PATH = "https://example.com/attachment";
     private final String CREATED_BY = "testuser";
 
     @BeforeEach
     void setUp() {
-        report = new Report(TITLE, CATEGORY, CATEGORY_REFERENCE, CREATED_BY);
+        report = new Report(TITLE, DESCRIPTION, CATEGORY, CATEGORY_REFERENCE, ATTACHMENT_PATH ,CREATED_BY);
     }
 
     @Test
     void testReportCreation() {
-        // Verifikasi semua field sudah diset dengan benar
         assertEquals(TITLE, report.getTitle());
+        assertEquals(DESCRIPTION, report.getDescription());
         assertEquals(CATEGORY, report.getCategory());
         assertEquals(CATEGORY_REFERENCE, report.getCategoryReference());
+        assertEquals(ATTACHMENT_PATH, report.getAttachmentPath());
         assertEquals(CREATED_BY, report.getCreatedBy());
+        assertTrue(report.getMessages().isEmpty());
 
-        // Status harusnya PENDING secara default
+        // Default status
         assertEquals(ReportStatus.PENDING.getValue(), report.getStatus());
 
         // CreatedAt harusnya diset ke waktu sekarang (kurang lebih)
@@ -43,36 +46,29 @@ class ReportTest {
         long timeDiffSeconds = Math.abs(createdAt.toEpochSecond(java.time.ZoneOffset.UTC) -
                 now.toEpochSecond(java.time.ZoneOffset.UTC));
         assertTrue(timeDiffSeconds < 5, "Waktu pembuatan harusnya dekat dengan waktu saat ini");
-
-        // List messages harusnya kosong
-        assertTrue(report.getMessages().isEmpty());
     }
 
     @Test
     void testUpdateStatus() {
-        // Status awal harusnya PENDING
+        // Default status
         assertEquals(ReportStatus.PENDING.getValue(), report.getStatus());
 
-        // Update ke ON_PROGRESS
         report.updateStatus(ReportStatus.ON_PROGRESS.getValue());
         assertEquals(ReportStatus.ON_PROGRESS.getValue(), report.getStatus());
 
-        // Update ke RESOLVED
         report.updateStatus(ReportStatus.RESOLVED.getValue());
         assertEquals(ReportStatus.RESOLVED.getValue(), report.getStatus());
     }
 
     @Test
     void testAddMessage() {
-        // Awalnya, tidak ada pesan
         assertTrue(report.getMessages().isEmpty());
 
-        // Tambahkan pesan
+        // Penambahan pesan ke-1
         String messageText = "Ini adalah pesan test";
         String sender = "pengirim1";
         report.addMessage(messageText, sender);
 
-        // Verifikasi pesan telah ditambahkan
         List<ReportMessage> messages = report.getMessages();
         assertEquals(1, messages.size());
 
@@ -85,41 +81,21 @@ class ReportTest {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime messageTime = addedMessage.getTimestamp();
 
-        // Izinkan sedikit perbedaan waktu (5 detik)
+        // Ada sedikit perbedaan waktu (5 detik)
         long timeDiffSeconds = Math.abs(messageTime.toEpochSecond(java.time.ZoneOffset.UTC) -
                 now.toEpochSecond(java.time.ZoneOffset.UTC));
         assertTrue(timeDiffSeconds < 5, "Waktu pesan harusnya dekat dengan waktu saat ini");
 
-        // Tambahkan pesan lain
+        // Penambahan pesan ke-2
         String messageText2 = "Pesan test kedua";
         String sender2 = "pengirim2";
         report.addMessage(messageText2, sender2);
 
-        // Verifikasi kedua pesan ada
         assertEquals(2, report.getMessages().size());
         assertEquals(messageText2, report.getMessages().get(1).getMessage());
         assertEquals(sender2, report.getMessages().get(1).getSender());
     }
 
-//    @Test
-//    void testReportEquals() {
-//        // Buat report baru dengan field yang sama
-//        Report sameReport = new Report(TITLE, CATEGORY, CATEGORY_REFERENCE, CREATED_BY);
-//
-//        // Keduanya seharusnya tidak sama karena UUID berbeda
-//        assertNotEquals(report, sameReport);
-//
-//        // Buat report dengan constructor all-args untuk set ID yang sama
-//        UUID id = UUID.randomUUID();
-//        Report report1 = new Report(id, TITLE, CATEGORY, CATEGORY_REFERENCE, ReportStatus.PENDING.getValue(),
-//                LocalDateTime.now(), CREATED_BY, List.of());
-//        Report report2 = new Report(id, "Judul Berbeda", ReportCategory.TICKET.getValue(), "TICKET-456",
-//                ReportStatus.RESOLVED.getValue(), LocalDateTime.now().minusDays(1),
-//                "userLain", List.of());
-//
-//        // Keduanya seharusnya sama karena ID sama, meskipun field lain berbeda
-//        assertEquals(report1, report2);
-//    }
 
     @Test
     void testToString() {
@@ -137,35 +113,16 @@ class ReportTest {
         assertFalse(reportString.contains("messages="));
     }
 
-//    @Test
-//    void testAllArgsConstructor() {
-//        UUID id = UUID.randomUUID();
-//        LocalDateTime created = LocalDateTime.now().minusDays(1);
-//        List<ReportMessage> messages = List.of(
-//                new ReportMessage(null, "Pesan test", "tester")
-//        );
-//
-//        Report customReport = new Report(id, TITLE, CATEGORY, CATEGORY_REFERENCE,
-//                ReportStatus.RESOLVED.getValue(), created, CREATED_BY, messages);
-//
-//        assertEquals(id, customReport.getReportID());
-//        assertEquals(TITLE, customReport.getTitle());
-//        assertEquals(CATEGORY, customReport.getCategory());
-//        assertEquals(CATEGORY_REFERENCE, customReport.getCategoryReference());
-//        assertEquals(ReportStatus.RESOLVED.getValue(), customReport.getStatus());
-//        assertEquals(created, customReport.getCreatedAt());
-//        assertEquals(CREATED_BY, customReport.getCreatedBy());
-//        assertEquals(1, customReport.getMessages().size());
-//    }
-
     @Test
     void testNoArgsConstructor() {
         Report emptyReport = new Report();
 
         assertNull(emptyReport.getReportID());
         assertNull(emptyReport.getTitle());
+        assertNull(emptyReport.getDescription());
         assertNull(emptyReport.getCategory());
         assertNull(emptyReport.getCategoryReference());
+        assertNull(emptyReport.getAttachmentPath());
         assertNull(emptyReport.getStatus());
         assertNull(emptyReport.getCreatedAt());
         assertNull(emptyReport.getCreatedBy());
