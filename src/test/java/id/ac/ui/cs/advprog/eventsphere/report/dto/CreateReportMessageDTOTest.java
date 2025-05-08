@@ -1,6 +1,5 @@
-package id.ac.ui.cs.advprog.eventsphere.report.dto;
+package id.ac.ui.cs.advprog.eventsphere.report.dto.message;
 
-import id.ac.ui.cs.advprog.eventsphere.report.dto.reportmessage.CreateReportMessageDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
