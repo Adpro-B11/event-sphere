@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.eventsphere.report.dto.message;
+package id.ac.ui.cs.advprog.eventsphere.report.dto;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

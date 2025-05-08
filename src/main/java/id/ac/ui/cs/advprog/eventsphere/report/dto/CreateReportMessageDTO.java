@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.eventsphere.report.dto.message;
+package id.ac.ui.cs.advprog.eventsphere.report.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
