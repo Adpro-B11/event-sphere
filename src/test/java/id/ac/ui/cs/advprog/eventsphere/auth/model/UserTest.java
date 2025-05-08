@@ -8,11 +8,12 @@ public class UserTest {
     @Test
     public void testCreateUser() {
         // Arrange
-        Long id = 1L;
+        String id = "user-123";
         String username = "testuser";
         String email = "test@example.com";
         String password = "Password123!";
         String phone = "1234567890";
+        double balance = 10.0;
 
         // Act
         User user = new User();
@@ -21,6 +22,7 @@ public class UserTest {
         user.setEmail(email);
         user.setPassword(password);
         user.setPhone(phone);
+        user.setBalance(balance);
 
         // Assert
         assertEquals(id, user.getId());
@@ -28,31 +30,24 @@ public class UserTest {
         assertEquals(email, user.getEmail());
         assertEquals(password, user.getPassword());
         assertEquals(phone, user.getPhone());
+        assertEquals(balance, user.getBalance());
     }
 
     @Test
     public void testInvalidEmail() {
-        // Arrange
         User user = new User();
-
-        // Act & Assert
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             user.setEmail("invalid-email");
         });
-
         assertTrue(exception.getMessage().contains("Invalid email format"));
     }
 
     @Test
     public void testWeakPassword() {
-        // Arrange
         User user = new User();
-
-        // Act & Assert
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             user.setPassword("weak");
         });
-
         assertTrue(exception.getMessage().contains("Password must be at least 8 characters"));
     }
 }
