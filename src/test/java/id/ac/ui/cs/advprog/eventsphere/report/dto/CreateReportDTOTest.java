@@ -5,9 +5,9 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class ReportDTOTest {
+class CreateReportDTOTest {
 
-    private ReportDTO reportDTO;
+    private CreateReportDTO createReportDTO;
     private final String TITLE = "Pembayaran Error";
     private final String DESCRIPTION = "Pembayaran tidak dapat diproses setelah checkout";
     private final String CATEGORY = "PAYMENT";
@@ -17,7 +17,7 @@ class ReportDTOTest {
 
     @BeforeEach
     void setUp() {
-        reportDTO = new ReportDTO(
+        createReportDTO = new CreateReportDTO(
                                 TITLE,
                                 DESCRIPTION,
                                 CATEGORY,
@@ -28,12 +28,12 @@ class ReportDTOTest {
 
     @Test
     void testConstructorAndGetters() {
-        assertEquals(TITLE, reportDTO.getTitle());
-        assertEquals(DESCRIPTION, reportDTO.getDescription());
-        assertEquals(CATEGORY, reportDTO.getCategory());
-        assertEquals(CATEGORY_REFERENCE, reportDTO.getCategoryReference());
-        assertEquals(ATTACHMENT_PATH, reportDTO.getAttachmentPath());
-        assertEquals(CREATED_BY, reportDTO.getCreatedBy());
+        assertEquals(TITLE, createReportDTO.getTitle());
+        assertEquals(DESCRIPTION, createReportDTO.getDescription());
+        assertEquals(CATEGORY, createReportDTO.getCategory());
+        assertEquals(CATEGORY_REFERENCE, createReportDTO.getCategoryReference());
+        assertEquals(ATTACHMENT_PATH, createReportDTO.getAttachmentPath());
+        assertEquals(CREATED_BY, createReportDTO.getCreatedBy());
     }
 
     @Test
@@ -45,24 +45,24 @@ class ReportDTOTest {
         String newAttachmentPath = "https://example.com/attachmentnew";
         String newCreatedBy = "user456";
 
-        reportDTO.setTitle(newTitle);
-        reportDTO.setDescription(newDescription);
-        reportDTO.setCategory(newCategory);
-        reportDTO.setCategoryReference(newCategoryReference);
-        reportDTO.setAttachmentPath(newAttachmentPath);
-        reportDTO.setCreatedBy(newCreatedBy);
+        createReportDTO.setTitle(newTitle);
+        createReportDTO.setDescription(newDescription);
+        createReportDTO.setCategory(newCategory);
+        createReportDTO.setCategoryReference(newCategoryReference);
+        createReportDTO.setAttachmentPath(newAttachmentPath);
+        createReportDTO.setCreatedBy(newCreatedBy);
 
-        assertEquals(newTitle, reportDTO.getTitle());
-        assertEquals(newDescription, reportDTO.getDescription());
-        assertEquals(newCategory, reportDTO.getCategory());
-        assertEquals(newCategoryReference, reportDTO.getCategoryReference());
-        assertEquals(newAttachmentPath, reportDTO.getAttachmentPath());
-        assertEquals(newCreatedBy, reportDTO.getCreatedBy());
+        assertEquals(newTitle, createReportDTO.getTitle());
+        assertEquals(newDescription, createReportDTO.getDescription());
+        assertEquals(newCategory, createReportDTO.getCategory());
+        assertEquals(newCategoryReference, createReportDTO.getCategoryReference());
+        assertEquals(newAttachmentPath, createReportDTO.getAttachmentPath());
+        assertEquals(newCreatedBy, createReportDTO.getCreatedBy());
     }
 
     @Test
     void testEquals() {
-        ReportDTO sameDTO = new ReportDTO(
+        CreateReportDTO sameDTO = new CreateReportDTO(
                                         TITLE,
                                         DESCRIPTION,
                                         CATEGORY,
@@ -70,9 +70,9 @@ class ReportDTOTest {
                                         ATTACHMENT_PATH,
                                         CREATED_BY);
 
-        assertEquals(reportDTO, sameDTO);
+        assertEquals(createReportDTO, sameDTO);
 
-        ReportDTO differentDTO = new ReportDTO(
+        CreateReportDTO differentDTO = new CreateReportDTO(
                                         "Judul berbeda",
                                             DESCRIPTION,
                                             CATEGORY,
@@ -80,12 +80,12 @@ class ReportDTOTest {
                                             ATTACHMENT_PATH,
                                             CREATED_BY);
 
-        assertNotEquals(reportDTO, differentDTO);
+        assertNotEquals(createReportDTO, differentDTO);
     }
 
     @Test
     void testHashCode() {
-        ReportDTO sameDTO = new ReportDTO(
+        CreateReportDTO sameDTO = new CreateReportDTO(
                 TITLE,
                 DESCRIPTION,
                 CATEGORY,
@@ -93,12 +93,12 @@ class ReportDTOTest {
                 ATTACHMENT_PATH,
                 CREATED_BY);
 
-        assertEquals(reportDTO.hashCode(), sameDTO.hashCode());
+        assertEquals(createReportDTO.hashCode(), sameDTO.hashCode());
     }
 
     @Test
     void testToString() {
-        String toString = reportDTO.toString();
+        String toString = createReportDTO.toString();
 
         assertTrue(toString.contains(TITLE));
         assertTrue(toString.contains(DESCRIPTION));

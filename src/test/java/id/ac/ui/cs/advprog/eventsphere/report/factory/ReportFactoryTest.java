@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.report.factory;
 
-import id.ac.ui.cs.advprog.eventsphere.report.dto.ReportDTO;
+import id.ac.ui.cs.advprog.eventsphere.report.dto.CreateReportDTO;
 import id.ac.ui.cs.advprog.eventsphere.report.model.Report;
 import id.ac.ui.cs.advprog.eventsphere.report.service.ReportService;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,15 +23,15 @@ public class ReportFactoryTest {
     @InjectMocks
     private ReportFactory reportFactory;
 
-    private ReportDTO validReportDTO;
-    private ReportDTO eventReportDTO;
-    private ReportDTO ticketReportDTO;
-    private ReportDTO paymentReportDTO;
+    private CreateReportDTO validCreateReportDTO;
+    private CreateReportDTO eventCreateReportDTO;
+    private CreateReportDTO ticketCreateReportDTO;
+    private CreateReportDTO paymentCreateReportDTO;
 
     @BeforeEach
     void setUp() {
         // Setup untuk DTO yang valid (kategori OTHER)
-        validReportDTO = new ReportDTO(
+        validCreateReportDTO = new CreateReportDTO(
                 "Masalah Umum",
                 "Ini adalah deskripsi masalah umum",
                 "OTHER",
@@ -41,7 +41,7 @@ public class ReportFactoryTest {
         );
 
         // Setup untuk DTO dengan kategori EVENT_ISSUE
-        eventReportDTO = new ReportDTO(
+        eventCreateReportDTO = new CreateReportDTO(
                 "Masalah Event",
                 "Ini adalah deskripsi masalah event",
                 "EVENT_ISSUE",
@@ -51,7 +51,7 @@ public class ReportFactoryTest {
         );
 
         // Setup untuk DTO dengan kategori TICKET
-        ticketReportDTO = new ReportDTO(
+        ticketCreateReportDTO = new CreateReportDTO(
                 "Masalah Tiket",
                 "Ini adalah deskripsi masalah tiket",
                 "TICKET",
@@ -61,7 +61,7 @@ public class ReportFactoryTest {
         );
 
         // Setup untuk DTO dengan kategori PAYMENT
-        paymentReportDTO = new ReportDTO(
+        paymentCreateReportDTO = new CreateReportDTO(
                 "Masalah Pembayaran",
                 "Ini adalah deskripsi masalah pembayaran",
                 "PAYMENT",
@@ -74,98 +74,98 @@ public class ReportFactoryTest {
     @Test
     void whenCreateReportWithValidData_thenSuccess() {
         Report mockReport = new Report(
-                validReportDTO.getTitle(),
-                validReportDTO.getDescription(),
-                validReportDTO.getCategory().toUpperCase(),
-                validReportDTO.getCategoryReference(),
-                validReportDTO.getAttachmentPath(),
-                validReportDTO.getCreatedBy()
+                validCreateReportDTO.getTitle(),
+                validCreateReportDTO.getDescription(),
+                validCreateReportDTO.getCategory().toUpperCase(),
+                validCreateReportDTO.getCategoryReference(),
+                validCreateReportDTO.getAttachmentPath(),
+                validCreateReportDTO.getCreatedBy()
         );
         when(reportService.createReport(any(Report.class))).thenReturn(mockReport);
 
-        Report result = reportFactory.createReport(validReportDTO);
+        Report result = reportFactory.createReport(validCreateReportDTO);
 
         assertNotNull(result);
-        assertEquals(validReportDTO.getTitle(), result.getTitle());
-        assertEquals(validReportDTO.getDescription(), result.getDescription());
-        assertEquals(validReportDTO.getCategory().toUpperCase(), result.getCategory());
-        assertEquals(validReportDTO.getCategoryReference(), result.getCategoryReference());
-        assertEquals(validReportDTO.getCreatedBy(), result.getCreatedBy());
+        assertEquals(validCreateReportDTO.getTitle(), result.getTitle());
+        assertEquals(validCreateReportDTO.getDescription(), result.getDescription());
+        assertEquals(validCreateReportDTO.getCategory().toUpperCase(), result.getCategory());
+        assertEquals(validCreateReportDTO.getCategoryReference(), result.getCategoryReference());
+        assertEquals(validCreateReportDTO.getCreatedBy(), result.getCreatedBy());
         verify(reportService, times(1)).createReport(any(Report.class));
     }
 
     @Test
     void whenCreateReportWithEventIssue_thenSuccess() {
         Report mockReport = new Report(
-                eventReportDTO.getTitle(),
-                eventReportDTO.getDescription(),
-                eventReportDTO.getCategory().toUpperCase(),
-                eventReportDTO.getCategoryReference(),
-                eventReportDTO.getAttachmentPath(),
-                eventReportDTO.getCreatedBy()
+                eventCreateReportDTO.getTitle(),
+                eventCreateReportDTO.getDescription(),
+                eventCreateReportDTO.getCategory().toUpperCase(),
+                eventCreateReportDTO.getCategoryReference(),
+                eventCreateReportDTO.getAttachmentPath(),
+                eventCreateReportDTO.getCreatedBy()
         );
         when(reportService.createReport(any(Report.class))).thenReturn(mockReport);
 
-        Report result = reportFactory.createReport(eventReportDTO);
+        Report result = reportFactory.createReport(eventCreateReportDTO);
 
         assertNotNull(result);
-        assertEquals(eventReportDTO.getTitle(), result.getTitle());
-        assertEquals(eventReportDTO.getDescription(), result.getDescription());
-        assertEquals(eventReportDTO.getCategory().toUpperCase(), result.getCategory());
-        assertEquals(eventReportDTO.getCategoryReference(), result.getCategoryReference());
-        assertEquals(eventReportDTO.getCreatedBy(), result.getCreatedBy());
+        assertEquals(eventCreateReportDTO.getTitle(), result.getTitle());
+        assertEquals(eventCreateReportDTO.getDescription(), result.getDescription());
+        assertEquals(eventCreateReportDTO.getCategory().toUpperCase(), result.getCategory());
+        assertEquals(eventCreateReportDTO.getCategoryReference(), result.getCategoryReference());
+        assertEquals(eventCreateReportDTO.getCreatedBy(), result.getCreatedBy());
         verify(reportService, times(1)).createReport(any(Report.class));
     }
 
     @Test
     void whenCreateReportWithTicketIssue_thenSuccess() {
         Report mockReport = new Report(
-                ticketReportDTO.getTitle(),
-                ticketReportDTO.getDescription(),
-                ticketReportDTO.getCategory().toUpperCase(),
-                ticketReportDTO.getCategoryReference(),
-                ticketReportDTO.getAttachmentPath(),
-                ticketReportDTO.getCreatedBy()
+                ticketCreateReportDTO.getTitle(),
+                ticketCreateReportDTO.getDescription(),
+                ticketCreateReportDTO.getCategory().toUpperCase(),
+                ticketCreateReportDTO.getCategoryReference(),
+                ticketCreateReportDTO.getAttachmentPath(),
+                ticketCreateReportDTO.getCreatedBy()
         );
         when(reportService.createReport(any(Report.class))).thenReturn(mockReport);
 
-        Report result = reportFactory.createReport(ticketReportDTO);
+        Report result = reportFactory.createReport(ticketCreateReportDTO);
 
         assertNotNull(result);
-        assertEquals(ticketReportDTO.getTitle(), result.getTitle());
-        assertEquals(ticketReportDTO.getDescription(), result.getDescription());
-        assertEquals(ticketReportDTO.getCategory().toUpperCase(), result.getCategory());
-        assertEquals(ticketReportDTO.getCategoryReference(), result.getCategoryReference());
-        assertEquals(ticketReportDTO.getCreatedBy(), result.getCreatedBy());
+        assertEquals(ticketCreateReportDTO.getTitle(), result.getTitle());
+        assertEquals(ticketCreateReportDTO.getDescription(), result.getDescription());
+        assertEquals(ticketCreateReportDTO.getCategory().toUpperCase(), result.getCategory());
+        assertEquals(ticketCreateReportDTO.getCategoryReference(), result.getCategoryReference());
+        assertEquals(ticketCreateReportDTO.getCreatedBy(), result.getCreatedBy());
         verify(reportService, times(1)).createReport(any(Report.class));
     }
 
     @Test
     void whenCreateReportWithPaymentIssue_thenSuccess() {
         Report mockReport = new Report(
-                paymentReportDTO.getTitle(),
-                paymentReportDTO.getDescription(),
-                paymentReportDTO.getCategory().toUpperCase(),
-                paymentReportDTO.getCategoryReference(),
-                paymentReportDTO.getAttachmentPath(),
-                paymentReportDTO.getCreatedBy()
+                paymentCreateReportDTO.getTitle(),
+                paymentCreateReportDTO.getDescription(),
+                paymentCreateReportDTO.getCategory().toUpperCase(),
+                paymentCreateReportDTO.getCategoryReference(),
+                paymentCreateReportDTO.getAttachmentPath(),
+                paymentCreateReportDTO.getCreatedBy()
         );
         when(reportService.createReport(any(Report.class))).thenReturn(mockReport);
 
-        Report result = reportFactory.createReport(paymentReportDTO);
+        Report result = reportFactory.createReport(paymentCreateReportDTO);
 
         assertNotNull(result);
-        assertEquals(paymentReportDTO.getTitle(), result.getTitle());
-        assertEquals(paymentReportDTO.getDescription(), result.getDescription());
-        assertEquals(paymentReportDTO.getCategory().toUpperCase(), result.getCategory());
-        assertEquals(paymentReportDTO.getCategoryReference(), result.getCategoryReference());
-        assertEquals(paymentReportDTO.getCreatedBy(), result.getCreatedBy());
+        assertEquals(paymentCreateReportDTO.getTitle(), result.getTitle());
+        assertEquals(paymentCreateReportDTO.getDescription(), result.getDescription());
+        assertEquals(paymentCreateReportDTO.getCategory().toUpperCase(), result.getCategory());
+        assertEquals(paymentCreateReportDTO.getCategoryReference(), result.getCategoryReference());
+        assertEquals(paymentCreateReportDTO.getCreatedBy(), result.getCreatedBy());
         verify(reportService, times(1)).createReport(any(Report.class));
     }
 
     @Test
     void whenCreateReportWithEmptyTitle_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "",
                 "Deskripsi valid",
                 "OTHER",
@@ -175,7 +175,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Title report can't be empty", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -183,7 +183,7 @@ public class ReportFactoryTest {
 
     @Test
     void whenCreateReportWithNullTitle_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 null,
                 "Deskripsi valid",
                 "OTHER",
@@ -193,7 +193,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Title report can't be empty", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -202,7 +202,7 @@ public class ReportFactoryTest {
     @Test
     void whenCreateReportWithTitleTooLong_thenThrowException() {
         String longTitle = "Ini adalah judul yang terlalu panjang dan melebihi batas 35 karakter yang ditentukan";
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 longTitle,
                 "Deskripsi valid",
                 "OTHER",
@@ -212,7 +212,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Title report cannot be more than 35 characters", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -220,7 +220,7 @@ public class ReportFactoryTest {
 
     @Test
     void whenCreateReportWithEmptyDescription_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 "",
                 "OTHER",
@@ -230,7 +230,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Description report can't be empty", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -238,7 +238,7 @@ public class ReportFactoryTest {
 
     @Test
     void whenCreateReportWithNullDescription_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 null,
                 "OTHER",
@@ -248,7 +248,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Description report can't be empty", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -258,7 +258,7 @@ public class ReportFactoryTest {
     void whenCreateReportWithDescriptionTooLong_thenThrowException() {
         String longDescription = "Ini adalah deskripsi yang sangat panjang dan melewati batas 100 karakter yang ditentukan oleh sistem. " +
                 "Deskripsi yang terlalu panjang seperti ini seharusnya memicu exception karena melewati batas.";
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 longDescription,
                 "OTHER",
@@ -268,7 +268,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Description report cannot be more than 100 characters", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -276,7 +276,7 @@ public class ReportFactoryTest {
 
     @Test
     void whenCreateReportWithInvalidCategory_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 "Deskripsi valid",
                 "INVALID_CATEGORY",
@@ -286,7 +286,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Category report not valid", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -294,7 +294,7 @@ public class ReportFactoryTest {
 
     @Test
     void whenCreateReportWithNullCategory_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 "Deskripsi valid",
                 null,
@@ -304,7 +304,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Category report can't be null", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -312,7 +312,7 @@ public class ReportFactoryTest {
 
     @Test
     void whenCreateReportWithEmptyCreatedBy_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 "Deskripsi valid",
                 "OTHER",
@@ -322,7 +322,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Report creator can't be empty", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -330,7 +330,7 @@ public class ReportFactoryTest {
 
     @Test
     void whenCreateReportWithNullCreatedBy_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 "Deskripsi valid",
                 "OTHER",
@@ -340,7 +340,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Report creator can't be empty", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -348,7 +348,7 @@ public class ReportFactoryTest {
 
     @Test
     void whenCreateOtherReportWithReference_thenThrowException() {
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 "Deskripsi valid",
                 "OTHER",
@@ -358,7 +358,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("No need Reference for category: OTHER", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
@@ -368,7 +368,7 @@ public class ReportFactoryTest {
     void whenCreateReportWithDefaultCase_thenThrowException() {
         // Arrange - Ini skenario edge case untuk branch coverage
         // mock untuk ReportCategory yang mengembalikan null untuk valueOf
-        ReportDTO invalidReportDTO = new ReportDTO(
+        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
                 "Judul Valid",
                 "Deskripsi valid",
                 "UNKNOWN",
@@ -378,7 +378,7 @@ public class ReportFactoryTest {
         );
 
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidReportDTO);
+            reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Category report not valid", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));

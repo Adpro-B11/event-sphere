@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.report.factory;
 
-import id.ac.ui.cs.advprog.eventsphere.report.dto.ReportDTO;
+import id.ac.ui.cs.advprog.eventsphere.report.dto.CreateReportDTO;
 import id.ac.ui.cs.advprog.eventsphere.report.enums.ReportCategory;
 import id.ac.ui.cs.advprog.eventsphere.report.model.Report;
 import id.ac.ui.cs.advprog.eventsphere.report.service.ReportService;
@@ -14,7 +14,7 @@ public class ReportFactory {
     private final ReportService ReportService;
 
     // Factory method
-    public Report createReport(ReportDTO newReport) {
+    public Report createReport(CreateReportDTO newReport) {
         String title = newReport.getTitle();
         String description = newReport.getDescription();
         String category = newReport.getCategory();
