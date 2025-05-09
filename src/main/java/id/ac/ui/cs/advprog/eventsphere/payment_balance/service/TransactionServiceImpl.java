@@ -20,6 +20,7 @@ public class TransactionServiceImpl implements TransactionService {
         this.strategy = strategy;
     }
 
+    @Override
     public void createTransaction(String type, String transactionId, String userId,
                                   double amount, String method, Map<String, String> data) {
         // Validate if user has sufficient balance for ticket purchase
@@ -60,7 +61,17 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Override
-    public List<Transaction> filterTransactions(String status) {
-        return strategy.filterTransactions(status);
+    public List<Transaction> viewUserTransactions(String userId) {
+        return strategy.viewUserTransactions(userId);
+    }
+
+    @Override
+    public List<Transaction> filterTransactions(String userId, String status, String type) {
+        return strategy.filterTransactions(userId, status, type);
+    }
+
+    @Override
+    public List<Transaction> filterTransactionsByType(String userId, String type) {
+        return strategy.filterTransactionsByType(userId, type);
     }
 }

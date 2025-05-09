@@ -1,133 +1,131 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
 import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactoryProducer;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactoryProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+
 import java.util.Map;
-import static org.junit.jupiter.api.Assertions.*;
+import java.util.UUID;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.*;
 
-public class TransactionServiceImplTest {
+@ExtendWith(MockitoExtension.class)
+class TransactionServiceImplTest {
 
-    private TransactionServiceImpl transactionService;
-    private AccessStrategy mockStrategy;
-    private UserAccessStrategy userStrategy;
-    private TransactionRepository transactionRepo;
+    @Mock
+    private TransactionRepository transactionRepository;
+
+    @Mock
     private UserService userBalanceService;
-    private TransactionFactoryProducer factoryProducer;
+
+    @Mock
+    private TransactionFactoryProducer factoryProducer;    // only needed by UserAccessStrategy
+
+    private UserAccessStrategy userStrategy;
+    private TransactionServiceImpl service;
+
+    private final String transactionId = UUID.randomUUID().toString();
+    private final String userId        = UUID.randomUUID().toString();
+    private final double amount        = 100.0;
+    private final String method        = "BANK_TRANSFER";
+    private final Map<String, String> data = Map.of("accountNumber", "123456");
 
     @BeforeEach
     void setUp() {
-        transactionRepo = mock(TransactionRepository.class);
-        factoryProducer = mock(TransactionFactoryProducer.class);
-        userStrategy = new UserAccessStrategy(transactionRepo, factoryProducer);
-
-        transactionService = new TransactionServiceImpl(userBalanceService);
+        // create the two objects under test
+        userStrategy = new UserAccessStrategy(transactionRepository, factoryProducer);
+        service      = new TransactionServiceImpl(userBalanceService);
     }
 
     @Test
-    void testCreateTransactionWithParameters_DelegatesToUserStrategy() {
-        transactionService.setStrategy(userStrategy);
+    void testTopUpBalance_Success_shouldCallAddBalance() {
+        // arrange: repository returns a transaction whose status is SUCCESS
+        Transaction mockTrx = mock(Transaction.class);
+        when(transactionRepository.createAndSave(
+                TransactionType.TOPUP_BALANCE.name(),
+                transactionId, userId, amount, method, data))
+                .thenReturn(mockTrx);
 
-        transactionService.createTransaction(
-                "TOPUP_BALANCE",
-                "txn-123",
-                "user-456",
-                500000,
-                "BANK_TRANSFER",
-                Map.of("accountNumber", "1234567890")
+        when(mockTrx.getStatus())
+                .thenReturn(TransactionStatus.SUCCESS.name());
+
+        // act
+        service.setStrategy(userStrategy);
+        service.createTransaction(
+                TransactionType.TOPUP_BALANCE.name(),
+                transactionId, userId, amount, method, data);
+
+        // assert: repo was used and balance was added
+        verify(transactionRepository).createAndSave(
+                TransactionType.TOPUP_BALANCE.name(),
+                transactionId, userId, amount, method, data);
+
+        verify(userBalanceService).addBalance(userId, amount);
+    }
+
+    @Test
+    void testTicketPurchase_Failed_shouldDeductThenRefund() {
+        // arrange: deductBalance returns true
+        when(userBalanceService.deductBalance(userId, amount)).thenReturn(true);
+
+        // repository returns a transaction whose status is FAILED
+        Transaction mockTrx = mock(Transaction.class);
+        when(transactionRepository.createAndSave(
+                TransactionType.TICKET_PURCHASE.name(),
+                transactionId, userId, amount, method, data))
+                .thenReturn(mockTrx);
+
+        when(mockTrx.getStatus())
+                .thenReturn(TransactionStatus.FAILED.name());
+
+        // act
+        service.setStrategy(userStrategy);
+        service.createTransaction(
+                TransactionType.TICKET_PURCHASE.name(),
+                transactionId, userId, amount, method, data);
+
+        // assert: balance was first deducted, then refunded on failure
+        verify(userBalanceService).deductBalance(userId, amount);
+        verify(transactionRepository).createAndSave(
+                TransactionType.TICKET_PURCHASE.name(),
+                transactionId, userId, amount, method, data);
+        verify(userBalanceService).addBalance(userId, amount);
+    }
+
+    @Test
+    void testDeleteTransactionByUserStrategy_ThrowsUnsupported() {
+        service.setStrategy(userStrategy);
+
+        assertThrows(UnsupportedOperationException.class, () ->
+                service.deleteTransaction("any-id")
         );
+    }
 
-        verify(transactionRepo).createAndSave(
-                "TOPUP_BALANCE",
-                "txn-123",
-                "user-456",
-                500000,
-                "BANK_TRANSFER",
-                Map.of("accountNumber", "1234567890")
+    @Test
+    void testViewAllTransactionsByUserStrategy_ThrowsUnsupported() {
+        service.setStrategy(userStrategy);
+
+        assertThrows(UnsupportedOperationException.class, () ->
+                service.viewAllTransactions()
         );
     }
 
     @Test
-    void testCreateTransactionWithObject_ThrowsForUserStrategy() {
-        transactionService.setStrategy(userStrategy);
-        Transaction mockTrxx = mock(Transaction.class);
+    void testFilterTransactionsByUserStrategy_ThrowsUnsupported() {
+        service.setStrategy(userStrategy);
 
-        assertThrows(UnsupportedOperationException.class, () -> {
-            transactionService.createTransaction("TOPUP_BALANCE",
-                    "txn-123",
-                    "user-456",
-                    500000,
-                    "BANK_TRANSFER",
-                    Map.of("accountNumber", "1234567890"));
-        });
-    }
-
-    @Test
-    void testCreateTransactionWithNonUserStrategy_ThrowsException() {
-        AccessStrategy adminStrategy = mock(AccessStrategy.class);
-        transactionService.setStrategy(adminStrategy);
-
-        assertThrows(UnsupportedOperationException.class, () -> {
-            transactionService.createTransaction(
-                    "TICKET_PURCHASE",
-                    "txn-456",
-                    "user-789",
-                    750000,
-                    null,
-                    Map.of("VIP", "2")
-            );
-        });
-    }
-
-    @Test
-    void testDeleteTransaction_DelegatesToStrategy() {
-        transactionService.setStrategy(mockStrategy);
-
-        transactionService.deleteTransaction("txn-123");
-
-        verify(mockStrategy).deleteTransaction("txn-123");
-    }
-
-    @Test
-    void testViewAllTransactions_DelegatesToStrategy() {
-        transactionService.setStrategy(mockStrategy);
-
-        transactionService.viewAllTransactions();
-
-        verify(mockStrategy).viewAllTransactions();
-    }
-
-    @Test
-    void testFilterTransactions_DelegatesToStrategy() {
-        transactionService.setStrategy(mockStrategy);
-
-        transactionService.filterTransactions("FAILED");
-
-        verify(mockStrategy).filterTransactions("FAILED");
-    }
-
-    @Test
-    void testSetStrategy_ChangesBehavior() {
-        transactionService.setStrategy(userStrategy);
-
-        assertDoesNotThrow(() ->
-                transactionService.createTransaction(
-                        "TOPUP_BALANCE",
-                        "txn-123",
-                        "user-456",
-                        500000,
-                        "BANK_TRANSFER",
-                        Map.of()
-                )
+        assertThrows(UnsupportedOperationException.class, () ->
+                service.filterTransactions(null,"SUCCESS",null)
         );
-
-        transactionService.setStrategy(mockStrategy);
-
-        transactionService.deleteTransaction("txn-123");
-        verify(mockStrategy).deleteTransaction("txn-123");
     }
+
 }

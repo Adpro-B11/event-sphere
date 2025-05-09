@@ -11,5 +11,7 @@ public interface TransactionService {
                            double amount, String method, Map<String, String> data);
     void deleteTransaction(String transactionId);
     List<Transaction> viewAllTransactions();
-    List<Transaction> filterTransactions(String status);
+    List<Transaction> viewUserTransactions(String userId);
+    List<Transaction> filterTransactions(String userId, String status, String type);
+    List<Transaction> filterTransactionsByType(String userId, String type);
 }
