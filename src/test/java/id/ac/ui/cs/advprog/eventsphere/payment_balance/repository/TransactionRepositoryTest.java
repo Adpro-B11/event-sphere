@@ -115,7 +115,7 @@ public class TransactionRepositoryTest {
     @Test
     void testFindByUserId() {
         transactionList.forEach(repository::save);
-        List<Transaction> result = repository.findByUserId("user-02");
+        List<Transaction> result = repository.findByFilters("user-02", null, null);
 
         assertEquals(1, result.size());
         assertEquals("trx-002", result.get(0).getTransactionId());
@@ -135,7 +135,7 @@ public class TransactionRepositoryTest {
     @Test
     void testFindByStatus() {
         transactionList.forEach(repository::save);
-        List<Transaction> successList = repository.findByStatus("SUCCESS");
+        List<Transaction> successList = repository.findByFilters(null, "SUCCESS", null);
 
         assertEquals(2, successList.size());
         assertTrue(successList.stream().allMatch(trx -> trx.getStatus().equals("SUCCESS")));
@@ -144,7 +144,7 @@ public class TransactionRepositoryTest {
     @Test
     void testFindByType() {
         transactionList.forEach(repository::save);
-        List<Transaction> ticketPurchaseList = repository.findByType("TICKET_PURCHASE");
+        List<Transaction> ticketPurchaseList = repository.findByFilters(null, null, "TICKET_PURCHASE");
 
         assertEquals(1, ticketPurchaseList.size());
         assertEquals("trx-001", ticketPurchaseList.get(0).getTransactionId());
@@ -154,13 +154,15 @@ public class TransactionRepositoryTest {
     @Test
     void testFindAllTicketPurchases() {
         transactionList.forEach(repository::save);
-        List<TicketPurchaseTransaction> ticketPurchases = repository.findAllTicketPurchases();
+        List<Transaction> ticketPurchases = repository.findByFilters(null, null, "TICKET_PURCHASE");
 
         assertEquals(1, ticketPurchases.size());
         assertEquals("trx-001", ticketPurchases.get(0).getTransactionId());
+        assertTrue(ticketPurchases.get(0) instanceof TicketPurchaseTransaction);
 
         // Verify ticket data
-        Map<String, String> ticketData = ticketPurchases.get(0).getTicketData();
+        TicketPurchaseTransaction ticketPurchase = (TicketPurchaseTransaction) ticketPurchases.get(0);
+        Map<String, String> ticketData = ticketPurchase.getTicketData();
         assertEquals("2", ticketData.get("VIP"));
         assertEquals("5", ticketData.get("REGULAR"));
         assertEquals("1", ticketData.get("PREMIUM"));
@@ -169,11 +171,24 @@ public class TransactionRepositoryTest {
     @Test
     void testFindAllTopUps() {
         transactionList.forEach(repository::save);
-        List<TopUpTransaction> topUps = repository.findAllTopUps();
+        List<Transaction> topUps = repository.findByFilters(null, null, "TOPUP_BALANCE");
 
         assertEquals(1, topUps.size());
         assertEquals("trx-002", topUps.get(0).getTransactionId());
-        assertEquals("CREDIT_CARD", topUps.get(0).getMethod());
+        assertTrue(topUps.get(0) instanceof TopUpTransaction);
+
+        TopUpTransaction topUp = (TopUpTransaction) topUps.get(0);
+        assertEquals("CREDIT_CARD", topUp.getMethod());
+    }
+
+    @Test
+    void testFindByMultipleFilters() {
+        transactionList.forEach(repository::save);
+        List<Transaction> filteredList = repository.findByFilters("user-01", "SUCCESS", "TICKET_PURCHASE");
+
+        assertEquals(1, filteredList.size());
+        assertEquals("trx-001", filteredList.get(0).getTransactionId());
+        assertTrue(filteredList.get(0) instanceof TicketPurchaseTransaction);
     }
 
     @Test
@@ -225,7 +240,7 @@ public class TransactionRepositoryTest {
 
     @Test
     void testFindByUserIdNotFound() {
-        List<Transaction> result = repository.findByUserId("non-existent-user");
+        List<Transaction> result = repository.findByFilters("non-existent-user", null, null);
         assertTrue(result.isEmpty());
     }
 
@@ -237,7 +252,7 @@ public class TransactionRepositoryTest {
         repository.save(new TicketPurchaseTransaction("trx-001", "user-01", "TICKET_PURCHASE",
                 50000, ticketData));
 
-        List<Transaction> result = repository.findByStatus("FAILED");
+        List<Transaction> result = repository.findByFilters(null, "FAILED", null);
         assertTrue(result.isEmpty());
     }
 
@@ -250,7 +265,7 @@ public class TransactionRepositoryTest {
         repository.save(new TopUpTransaction("trx-001", "user-01", "TOPUP_BALANCE",
                 "BANK_TRANSFER", 50000, paymentData));
 
-        List<Transaction> result = repository.findByType("TICKET_PURCHASE");
+        List<Transaction> result = repository.findByFilters(null, null, "TICKET_PURCHASE");
         assertTrue(result.isEmpty());
     }
 
@@ -263,7 +278,7 @@ public class TransactionRepositoryTest {
         repository.save(new TopUpTransaction("trx-001", "user-01", "TOPUP_BALANCE",
                 "BANK_TRANSFER", 50000, paymentData));
 
-        List<TicketPurchaseTransaction> result = repository.findAllTicketPurchases();
+        List<Transaction> result = repository.findByFilters(null, null, "TICKET_PURCHASE");
         assertTrue(result.isEmpty());
     }
 
@@ -276,7 +291,7 @@ public class TransactionRepositoryTest {
         repository.save(new TicketPurchaseTransaction("trx-001", "user-01", "TICKET_PURCHASE",
                 100000, ticketData));
 
-        List<TopUpTransaction> result = repository.findAllTopUps();
+        List<Transaction> result = repository.findByFilters(null, null, "TOPUP_BALANCE");
         assertTrue(result.isEmpty());
     }
 
@@ -345,14 +360,14 @@ public class TransactionRepositoryTest {
         Map<String, String> ticketData = new HashMap<>();
 
         assertThrows(IllegalArgumentException.class, () -> {
-        repository.createAndSave(
-                "TICKET_PURCHASE",
-                "trx-006",
-                "user-06",
-                0,
-                null,
-                ticketData
-        );});
+            repository.createAndSave(
+                    "TICKET_PURCHASE",
+                    "trx-006",
+                    "user-06",
+                    0,
+                    null,
+                    ticketData
+            );});
 
     }
 

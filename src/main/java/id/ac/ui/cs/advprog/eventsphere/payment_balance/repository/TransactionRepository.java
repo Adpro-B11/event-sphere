@@ -39,38 +39,11 @@ public class TransactionRepository {
         return new ArrayList<>(transactionStorage.values());
     }
 
-    public List<Transaction> findByUserId(String userId) {
-        Objects.requireNonNull(userId);
+    public List<Transaction> findByFilters(String userId, String status, String type) {
         return transactionStorage.values().stream()
-                .filter(trx -> userId.equals(trx.getUserId()))
-                .toList();
-    }
-
-    public List<Transaction> findByStatus(String status) {
-        Objects.requireNonNull(status);
-        return transactionStorage.values().stream()
-                .filter(trx -> status.equalsIgnoreCase(trx.getStatus()))
-                .toList();
-    }
-
-    public List<Transaction> findByType(String type) {
-        Objects.requireNonNull(type);
-        return transactionStorage.values().stream()
-                .filter(trx -> type.equalsIgnoreCase(trx.getType()))
-                .toList();
-    }
-
-    public List<TicketPurchaseTransaction> findAllTicketPurchases() {
-        return transactionStorage.values().stream()
-                .filter(trx -> trx instanceof TicketPurchaseTransaction)
-                .map(trx -> (TicketPurchaseTransaction) trx)
-                .toList();
-    }
-
-    public List<TopUpTransaction> findAllTopUps() {
-        return transactionStorage.values().stream()
-                .filter(trx -> trx instanceof TopUpTransaction)
-                .map(trx -> (TopUpTransaction) trx)
+                .filter(trx -> userId == null || userId.equals(trx.getUserId()))
+                .filter(trx -> status == null || status.equalsIgnoreCase(trx.getStatus()))
+                .filter(trx -> type == null || type.equalsIgnoreCase(trx.getType()))
                 .toList();
     }
 
