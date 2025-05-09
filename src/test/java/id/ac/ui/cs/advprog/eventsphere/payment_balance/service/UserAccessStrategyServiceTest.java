@@ -42,7 +42,7 @@ public class UserAccessStrategyServiceTest {
     void testCreateAndProcessTopUpTransaction_CallsRepoAndValidates() {
         String type = "TOPUP_BALANCE";
         String transactionId = "txn-123";
-        String userId = "user-456";
+        String userId = UUID.randomUUID().toString();
         double amount = 500000;
         String method = "BANK_TRANSFER";
         Map<String, String> data = Map.of("accountNumber", "1234567890", "bankName", "BCA");
@@ -62,7 +62,7 @@ public class UserAccessStrategyServiceTest {
     void testCreateAndProcessTicketPurchaseTransaction_CallsRepoAndValidates() {
         String type = "TICKET_PURCHASE";
         String transactionId = "txn-456";
-        String userId = "user-789";
+        String userId = UUID.randomUUID().toString();
         double amount = 750000;
         String method = null;
         Map<String, String> data = Map.of("VIP", "2", "Regular", "3");
