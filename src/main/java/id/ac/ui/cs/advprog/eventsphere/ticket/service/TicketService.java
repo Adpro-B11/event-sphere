@@ -13,4 +13,5 @@ public interface TicketService {
     Ticket viewTicket(String ticketId);
     List<Ticket> viewTicketsByEvent(String eventId);
     void updateTicket(User user, String ticketId, Map<String, Object> updates);
+    List<Ticket> getAllTickets();
 }
