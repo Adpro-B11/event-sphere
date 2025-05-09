@@ -5,7 +5,6 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.*;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.util.List;
 import java.util.Map;
@@ -101,8 +100,8 @@ public class UserAccessStrategyServiceTest {
     void testFilterTransactions_ThrowsUnsupportedOperation() {
         assertThrows(
                 UnsupportedOperationException.class,
-                () -> strategy.filterTransactions("SUCCESS"),
-                "User should not be able to filter transactions"
+                () -> strategy.filterTransactions(TEST_USER_ID, "SUCCESS", "TICKET_PURCHASE"),
+                "User should not be able to filter others transaction transactions"
         );
     }
 
