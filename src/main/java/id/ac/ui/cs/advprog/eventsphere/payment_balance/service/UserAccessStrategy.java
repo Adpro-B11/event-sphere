@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRep
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public class UserAccessStrategy implements AccessStrategy {
     private final TransactionRepository transactionRepo;
@@ -22,11 +23,23 @@ public class UserAccessStrategy implements AccessStrategy {
         throw new UnsupportedOperationException("User cannot create transactions directly");
     }
 
-    public void createTransaction(String type, String transactionId, String userId,
-                                  double amount, String method, Map<String, String> data) {
+    public Transaction createAndProcessTransaction(String type, String transactionId, String userId,
+                                                   double amount, String method, Map<String, String> data) {
         Transaction trx = transactionRepo.createAndSave(type, transactionId, userId,
                 amount, method, data);
         trx.validateTransaction();
+        return trx;
+    }
+
+    public List<Transaction> viewUserTransactions(String userId) {
+        if (userId == null || userId.isEmpty()) {
+            throw new IllegalArgumentException("User ID cannot be null or empty");
+        }
+
+        List<Transaction> allTransactions = transactionRepo.findAll();
+        return allTransactions.stream()
+                .filter(transaction -> userId.equals(transaction.getUserId()))
+                .collect(Collectors.toList());
     }
 
     @Override

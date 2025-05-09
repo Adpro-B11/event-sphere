@@ -17,6 +17,10 @@ public class AdminAccessStrategy implements AccessStrategy {
         throw new UnsupportedOperationException("Admin cannot create transactions");
     }
 
+    public List<Transaction> viewUserTransactions(String userId){
+        throw new UnsupportedOperationException("Admin cannot create transactions");
+    }
+
     @Override
     public void deleteTransaction(String transactionId) {
         transactionRepo.deleteById(transactionId);

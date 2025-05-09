@@ -8,5 +8,6 @@ public interface AccessStrategy {
     void createTransaction(Transaction transaction);
     void deleteTransaction(String transactionId);
     List<Transaction> viewAllTransactions();
+    List<Transaction> viewUserTransactions(String userId);
     List<Transaction> filterTransactions(String status);
 }

@@ -7,7 +7,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -17,6 +19,7 @@ public class UserAccessStrategyServiceTest {
     private TransactionRepository transactionRepo;
     private TransactionFactoryProducer factoryProducer;
     private UserAccessStrategy strategy;
+    private final String TEST_USER_ID = UUID.randomUUID().toString();
 
     @BeforeEach
     void setUp() {
@@ -26,7 +29,18 @@ public class UserAccessStrategyServiceTest {
     }
 
     @Test
-    void testCreateTopUpTransaction_CallsFactoryAndSaves() {
+    void testCreateTransaction_ThrowsUnsupportedOperation() {
+        Transaction mockTransaction = mock(Transaction.class);
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> strategy.createTransaction(mockTransaction),
+                "User should not be able to create transactions directly"
+        );
+    }
+
+    @Test
+    void testCreateAndProcessTopUpTransaction_CallsRepoAndValidates() {
         String type = "TOPUP_BALANCE";
         String transactionId = "txn-123";
         String userId = "user-456";
@@ -34,45 +48,35 @@ public class UserAccessStrategyServiceTest {
         String method = "BANK_TRANSFER";
         Map<String, String> data = Map.of("accountNumber", "1234567890", "bankName", "BCA");
 
-        strategy.createTransaction(type, transactionId, userId, amount, method, data);
+        Transaction mockTrx = mock(TopUpTransaction.class);
+        when(transactionRepo.createAndSave(eq(type), eq(transactionId), eq(userId), eq(amount), eq(method), eq(data)))
+                .thenReturn(mockTrx);
 
-        verify(factoryProducer).getFactory(type, transactionId, userId, amount, method, data);
+        Transaction result = strategy.createAndProcessTransaction(type, transactionId, userId, amount, method, data);
+
         verify(transactionRepo).createAndSave(type, transactionId, userId, amount, method, data);
+        verify(mockTrx).validateTransaction();
+        assertEquals(mockTrx, result);
     }
 
     @Test
-    void testCreateTicketPurchaseTransaction_CallsFactoryAndSaves() {
+    void testCreateAndProcessTicketPurchaseTransaction_CallsRepoAndValidates() {
         String type = "TICKET_PURCHASE";
         String transactionId = "txn-456";
         String userId = "user-789";
         double amount = 750000;
+        String method = null;
         Map<String, String> data = Map.of("VIP", "2", "Regular", "3");
 
-        strategy.createTransaction(type, transactionId, userId, amount, null, data);
-
-        verify(factoryProducer).getFactory(type, transactionId, userId, amount, null, data);
-        verify(transactionRepo).createAndSave(type, transactionId, userId, amount, null, data);
-    }
-
-    @Test
-    void testCreateTransaction_ValidatesStatusAutomatically() {
-        String type = "TOPUP_BALANCE";
-        Transaction mockTrx = mock(TopUpTransaction.class);
-        when(transactionRepo.createAndSave(any(), any(), any(), anyDouble(), any(), any()))
+        Transaction mockTrx = mock(TicketPurchaseTransaction.class);
+        when(transactionRepo.createAndSave(eq(type), eq(transactionId), eq(userId), eq(amount), eq(method), eq(data)))
                 .thenReturn(mockTrx);
 
-        strategy.createTransaction(type, "txn-123", "user-456", 500000, "BANK_TRANSFER", Map.of());
+        Transaction result = strategy.createAndProcessTransaction(type, transactionId, userId, amount, method, data);
 
+        verify(transactionRepo).createAndSave(type, transactionId, userId, amount, method, data);
         verify(mockTrx).validateTransaction();
-    }
-
-    @Test
-    void testCreateUnsupportedTransactionType_ThrowsException() {
-        String invalidType = "INVALID_TYPE";
-
-        assertThrows(IllegalArgumentException.class, () -> {
-            strategy.createTransaction(invalidType, "txn-123", "user-456", 500000, null, Map.of());
-        });
+        assertEquals(mockTrx, result);
     }
 
     @Test
@@ -103,18 +107,46 @@ public class UserAccessStrategyServiceTest {
     }
 
     @Test
-    void testCreateTransactionWithInvalidData_ThrowsException() {
-        Map<String, String> invalidData = Map.of("accountNumber", "1234567890");
+    void testViewUserTransactions_ReturnsOnlyUserTransactions() {
+        // Setup
+        Transaction userTrx1 = mock(Transaction.class);
+        when(userTrx1.getUserId()).thenReturn(TEST_USER_ID);
 
-        assertThrows(IllegalArgumentException.class, () -> {
-            strategy.createTransaction(
-                    "TOPUP_BALANCE",
-                    "txn-123",
-                    "user-456",
-                    500000,
-                    "BANK_TRANSFER",
-                    invalidData
-            );
-        });
+        Transaction userTrx2 = mock(Transaction.class);
+        when(userTrx2.getUserId()).thenReturn(TEST_USER_ID);
+
+        Transaction otherUserTrx = mock(Transaction.class);
+        when(otherUserTrx.getUserId()).thenReturn("other-user");
+
+        List<Transaction> allTransactions = List.of(userTrx1, otherUserTrx, userTrx2);
+        when(transactionRepo.findAll()).thenReturn(allTransactions);
+
+        // Execute
+        List<Transaction> userTransactions = strategy.viewUserTransactions(TEST_USER_ID);
+
+        // Verify
+        assertEquals(2, userTransactions.size());
+        assertTrue(userTransactions.contains(userTrx1));
+        assertTrue(userTransactions.contains(userTrx2));
+        assertFalse(userTransactions.contains(otherUserTrx));
+        verify(transactionRepo).findAll();
+    }
+
+    @Test
+    void testViewUserTransactions_WithEmptyUserId_ThrowsIllegalArgumentException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> strategy.viewUserTransactions(""),
+                "Should throw IllegalArgumentException when userId is empty"
+        );
+    }
+
+    @Test
+    void testViewUserTransactions_WithNullUserId_ThrowsIllegalArgumentException() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> strategy.viewUserTransactions(null),
+                "Should throw IllegalArgumentException when userId is null"
+        );
     }
 }
