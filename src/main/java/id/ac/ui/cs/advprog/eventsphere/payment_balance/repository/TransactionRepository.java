@@ -5,9 +5,12 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactor
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TicketPurchaseTransaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TopUpTransaction;
+import org.hibernate.validator.constraints.pl.REGON;
+import org.springframework.stereotype.Repository;
 
 import java.util.*;
 
+@Repository
 public class TransactionRepository {
     private final Map<String, Transaction> transactionStorage = new HashMap<>();
     private final TransactionFactoryProducer factoryProducer;

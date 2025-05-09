@@ -4,9 +4,12 @@ import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Map;
 
+@Service
 public class TransactionServiceImpl implements TransactionService {
     private AccessStrategy strategy;
     private final UserService userBalanceService;

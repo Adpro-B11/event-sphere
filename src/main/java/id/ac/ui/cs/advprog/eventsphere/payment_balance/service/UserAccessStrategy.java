@@ -3,11 +3,13 @@ package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactoryProducer;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Service
 public class UserAccessStrategy implements AccessStrategy {
     private final TransactionRepository transactionRepo;
     private final TransactionFactoryProducer factoryProducer;

@@ -1,9 +1,11 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.factory;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
+@Component
 public class TransactionFactoryProducer {
 
     public static TransactionFactory getFactory(String type, String transactionId, String userId, double amount,

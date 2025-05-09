@@ -2,9 +2,11 @@ package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class AdminAccessStrategy implements AccessStrategy {
     private final TransactionRepository transactionRepo;
 
