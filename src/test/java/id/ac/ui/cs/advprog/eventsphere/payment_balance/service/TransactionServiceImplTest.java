@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
+import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactoryProducer;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
@@ -15,6 +16,7 @@ public class TransactionServiceImplTest {
     private AccessStrategy mockStrategy;
     private UserAccessStrategy userStrategy;
     private TransactionRepository transactionRepo;
+    private UserService userBalanceService;
     private TransactionFactoryProducer factoryProducer;
 
     @BeforeEach
@@ -23,7 +25,7 @@ public class TransactionServiceImplTest {
         factoryProducer = mock(TransactionFactoryProducer.class);
         userStrategy = new UserAccessStrategy(transactionRepo, factoryProducer);
 
-        transactionService = new TransactionServiceImpl();
+        transactionService = new TransactionServiceImpl(userBalanceService);
     }
 
     @Test

@@ -1,11 +1,19 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
+import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import java.util.List;
 import java.util.Map;
 
 public class TransactionServiceImpl implements TransactionService {
     private AccessStrategy strategy;
+    private final UserService userBalanceService;
+
+    public TransactionServiceImpl(UserService userBalanceService) {
+        this.userBalanceService = userBalanceService;
+    }
 
     @Override
     public void setStrategy(AccessStrategy strategy) {
@@ -14,8 +22,28 @@ public class TransactionServiceImpl implements TransactionService {
 
     public void createTransaction(String type, String transactionId, String userId,
                                   double amount, String method, Map<String, String> data) {
+        // Validate if user has sufficient balance for ticket purchase
+        if (type.equals(TransactionType.TICKET_PURCHASE.name())) {
+            boolean hasSufficientBalance = userBalanceService.deductBalance(userId, amount);
+            if (!hasSufficientBalance) {
+                throw new IllegalStateException("Insufficient balance for ticket purchase");
+            }
+        }
+
         if (strategy instanceof UserAccessStrategy userStrategy) {
-            userStrategy.createTransaction(type, transactionId, userId, amount, method, data);
+            Transaction transaction = userStrategy.createAndProcessTransaction(type, transactionId, userId, amount, method, data);
+
+            // Process balance updates based on transaction result
+            if (transaction.getStatus().equals(TransactionStatus.SUCCESS.name())) {
+                if (type.equals(TransactionType.TOPUP_BALANCE.name())) {
+                    userBalanceService.addBalance(userId, amount);
+                }
+            } else {
+                // Refund if transaction failed for ticket purchase
+                if (type.equals(TransactionType.TICKET_PURCHASE.name())) {
+                    userBalanceService.addBalance(userId, amount);
+                }
+            }
         } else {
             throw new UnsupportedOperationException("Current strategy does not support this operation");
         }
