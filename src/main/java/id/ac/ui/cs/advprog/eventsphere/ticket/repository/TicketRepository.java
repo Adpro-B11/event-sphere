@@ -1,12 +1,14 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.repository;
 
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
+import org.springframework.stereotype.Repository;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
+@Repository
 public class TicketRepository {
     private Map<String, Ticket> tickets = new HashMap<>();
 
