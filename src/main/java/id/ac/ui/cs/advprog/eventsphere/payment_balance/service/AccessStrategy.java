@@ -9,5 +9,6 @@ public interface AccessStrategy {
     void deleteTransaction(String transactionId);
     List<Transaction> viewAllTransactions();
     List<Transaction> viewUserTransactions(String userId);
-    List<Transaction> filterTransactions(String status);
+    List<Transaction> filterTransactions(String userId,String status,String type);
+    List<Transaction> filterTransactionsByType(String userId, String type);
 }

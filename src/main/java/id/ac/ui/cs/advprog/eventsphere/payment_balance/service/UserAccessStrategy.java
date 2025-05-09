@@ -31,6 +31,7 @@ public class UserAccessStrategy implements AccessStrategy {
         return trx;
     }
 
+    @Override
     public List<Transaction> viewUserTransactions(String userId) {
         if (userId == null || userId.isEmpty()) {
             throw new IllegalArgumentException("User ID cannot be null or empty");
@@ -53,7 +54,25 @@ public class UserAccessStrategy implements AccessStrategy {
     }
 
     @Override
-    public List<Transaction> filterTransactions(String status) {
-        throw new UnsupportedOperationException("User cannot filter transactions");
+    public List<Transaction> filterTransactionsByType(String userId, String type) {
+        if (userId == null || userId.isEmpty()) {
+            throw new IllegalArgumentException("User ID cannot be null or empty");
+        }
+
+        // For regular users, we enforce that they can only filter their own transactions by type
+        List<Transaction> userTransactions = viewUserTransactions(userId);
+
+        if (type == null || type.isEmpty()) {
+            return userTransactions;
+        }
+
+        return userTransactions.stream()
+                .filter(transaction -> type.equals(transaction.getType()))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Transaction> filterTransactions(String userId,String status,String type) {
+        throw new UnsupportedOperationException("User cannot filter others transaction transactions");
     }
 }

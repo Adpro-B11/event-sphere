@@ -17,8 +17,9 @@ public class AdminAccessStrategy implements AccessStrategy {
         throw new UnsupportedOperationException("Admin cannot create transactions");
     }
 
+    @Override
     public List<Transaction> viewUserTransactions(String userId){
-        throw new UnsupportedOperationException("Admin cannot create transactions");
+        throw new UnsupportedOperationException("Admin cannot view own transactions");
     }
 
     @Override
@@ -32,7 +33,12 @@ public class AdminAccessStrategy implements AccessStrategy {
     }
 
     @Override
-    public List<Transaction> filterTransactions(String status) {
-        return transactionRepo.findByStatus(status);
+    public List<Transaction> filterTransactions(String userId,String status,String type) {
+        return transactionRepo.findByFilters(userId,status,type);
+    }
+
+    @Override
+    public List<Transaction> filterTransactionsByType(String userId, String type) {
+        return filterTransactions(userId,null,type);
     }
 }
