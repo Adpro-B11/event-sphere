@@ -27,15 +27,15 @@ class TransactionFactoryProducerTest {
         paymentData.put("accountNumber", "1234567890");
 
         TransactionFactory factory = TransactionFactoryProducer.getFactory(
-                TransactionType.TOPUP_BALANCE.name(),
+                TransactionType.TOPUP_BALANCE.getValue(),
                 "txn-001",
                 "user-123",
                 50000,
-                PaymentMethod.BANK_TRANSFER.name(),
+                PaymentMethod.BANK_TRANSFER.getValue(),
                 paymentData
         );
 
-        assertTrue(factory instanceof TopUpTransactionFactory);
+        assertInstanceOf(TopUpTransactionFactory.class, factory);
     }
 
     @Test
@@ -43,11 +43,11 @@ class TransactionFactoryProducerTest {
         ticketData.put("ConcertVIP", "3");
 
         TransactionFactory factory = TransactionFactoryProducer.getFactory(
-                TransactionType.TICKET_PURCHASE.name(),
+                TransactionType.TICKET_PURCHASE.getValue(),
                 "txn-207",
                 "user-207",
                 100000,
-                null,
+                PaymentMethod.IN_APP_BALANCE.getValue(),
                 ticketData
         );
 
@@ -56,15 +56,15 @@ class TransactionFactoryProducerTest {
 
     @Test
     void testGetFactoryForInvalidTransactionType() {
-        assertThrows(IllegalArgumentException.class, () -> {
-            TransactionFactoryProducer.getFactory(
-                    "INVALID_TYPE",
-                    "txn-002",
-                    "user-456",
-                    50000,
-                    PaymentMethod.BANK_TRANSFER.name(),
-                    paymentData
-            );
-        });
+        assertThrows(IllegalArgumentException.class, () ->
+                TransactionFactoryProducer.getFactory(
+                        "INVALID_TYPE",
+                        "txn-002",
+                        "user-456",
+                        50000,
+                        PaymentMethod.BANK_TRANSFER.getValue(),
+                        paymentData
+                )
+        );
     }
 }
