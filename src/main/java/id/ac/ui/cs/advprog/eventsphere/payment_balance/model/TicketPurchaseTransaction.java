@@ -17,20 +17,16 @@ public class TicketPurchaseTransaction extends Transaction {
     public TicketPurchaseTransaction(String transactionId,
                                      String userId,
                                      String type,
-                                     String method,
                                      double amount,
+                                     String method,
                                      Map<String, String> ticketData) {
-        super(transactionId,
-                userId,
-                type,
-                TransactionStatus.PENDING.name(),
-                amount);
+        super(transactionId, userId, type, amount);
 
         if (!Objects.equals(type, TransactionType.TICKET_PURCHASE.name())) {
             throw new IllegalArgumentException("Invalid transaction type: " + type);
         }
 
-        if (!Objects.equals(method,PaymentMethod.IN_APP_BALANCE.name())) {
+        if (Objects.equals(method,PaymentMethod.IN_APP_BALANCE.name())) {
             throw new IllegalArgumentException("Invalid payment method: " + method);
         }
 
@@ -38,11 +34,12 @@ public class TicketPurchaseTransaction extends Transaction {
 
         this.method = method;
         this.ticketData = ticketData;
+        setStatus(TransactionStatus.PENDING.name());
     }
 
 
     @Override
-    protected void validateTransaction(String method, Map<String, String> ticketData) {
+    public void validateTransaction(String method, Map<String, String> ticketData) {
         if (ticketData == null || ticketData.isEmpty()) {
             throw new IllegalArgumentException("Ticket data must not be null or empty.");
         }
