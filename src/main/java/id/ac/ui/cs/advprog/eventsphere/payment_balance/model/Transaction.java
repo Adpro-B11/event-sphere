@@ -5,24 +5,22 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import lombok.Getter;
 
 import java.util.Map;
+import java.time.LocalDateTime;
 
 @Getter
 public abstract class Transaction {
-    private String transactionId;
-    private String userId;
-    private String type;
+    private final String transactionId;
+    private final String userId;
+    private final String type;
     private String status;
-    private double amount;
+    private final double amount;
+    private final LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 
-    public Transaction(String transactionId, String userId, String type, String status, double amount) {
-        if (!TransactionType.contains(type)) {
-            throw new IllegalArgumentException("Invalid transaction type: " + type);
-        }
-
-        if (!TransactionStatus.contains(status)) {
-            throw new IllegalArgumentException("Invalid transaction status: " + status);
-        }
-
+    protected Transaction(String transactionId,
+                          String userId,
+                          String type,
+                          double amount) {
         if (amount < 0) {
             throw new IllegalArgumentException("amount must be positive");
         }
@@ -30,8 +28,9 @@ public abstract class Transaction {
         this.transactionId = transactionId;
         this.userId = userId;
         this.type = type;
-        this.status = status;
         this.amount = amount;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = this.createdAt;
     }
 
     public void setStatus(String status) {
@@ -39,7 +38,8 @@ public abstract class Transaction {
             throw new IllegalArgumentException("Invalid transaction status: " + status);
         }
         this.status = status;
+        this.updatedAt = LocalDateTime.now();
     }
 
-    protected abstract void validateTransaction(String method, Map<String, String> paymentData);
+    public abstract void validateTransaction(String method, Map<String, String> paymentData);
 }
