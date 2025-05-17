@@ -21,7 +21,7 @@ public class TopUpTransaction extends Transaction {
             throw new IllegalArgumentException("Invalid transaction type.");
         }
 
-        if (!PaymentMethod.contains(method)) {
+        if (Objects.equals(method, PaymentMethod.IN_APP_BALANCE.getValue())) {
             throw new IllegalArgumentException("Invalid payment method.");
         }
 
