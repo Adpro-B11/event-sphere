@@ -4,6 +4,8 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import lombok.Getter;
 
+import java.util.Map;
+
 @Getter
 public abstract class Transaction {
     private String transactionId;
@@ -39,5 +41,5 @@ public abstract class Transaction {
         this.status = status;
     }
 
-    public abstract void validateTransaction();
+    protected abstract void validateTransaction(String method, Map<String, String> paymentData);
 }

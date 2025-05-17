@@ -15,7 +15,7 @@ public class TopUpTransaction extends Transaction {
     private Map<String, String> paymentData;
 
     public TopUpTransaction(String transactionId, String userId, String type, String method, double amount, Map<String, String> paymentData) {
-        super(transactionId, userId, type, TransactionStatus.FAILED.name(), amount);
+        super(transactionId, userId, type, TransactionStatus.PENDING.name(), amount);
 
         if (!Objects.equals(type, TransactionType.TOPUP_BALANCE.getValue())) {
             throw new IllegalArgumentException("Invalid transaction type.");
@@ -25,13 +25,14 @@ public class TopUpTransaction extends Transaction {
             throw new IllegalArgumentException("Invalid payment method.");
         }
 
-        validateInput(method, paymentData);
+        validateTransaction(method, paymentData);
 
         this.method = method;
         this.paymentData = paymentData;
     }
 
-    private void validateInput(String method, Map<String, String> paymentData) {
+    @Override
+    protected void validateTransaction(String method, Map<String, String> paymentData) {
         String accountNumber = paymentData.get("accountNumber");
 
         if (accountNumber == null || accountNumber.trim().isEmpty()) {
@@ -43,29 +44,14 @@ public class TopUpTransaction extends Transaction {
             if (bankName == null || bankName.trim().isEmpty()) {
                 throw new IllegalArgumentException("Bank name must not be null or empty for bank transfers.");
             }
-        }
-    }
-
-    @Override
-    public void validateTransaction() {
-        String accountNumber = paymentData.get("accountNumber");
-
-        if (method.equals(PaymentMethod.BANK_TRANSFER.name())) {
             if (accountNumber.length() != 10 || !accountNumber.matches("\\d+")) {
-                setStatus(TransactionStatus.FAILED.name());
-                return;
+                throw new IllegalArgumentException("Bank account number format is incorrect.");
             }
         } else if (method.equals(PaymentMethod.CREDIT_CARD.name())) {
             if (accountNumber.length() != 16 || !accountNumber.matches("\\d+")) {
-                setStatus(TransactionStatus.FAILED.name());
-                return;
+                throw new IllegalArgumentException("Credit Card number format is incorrect.");
             }
         }
-
-        setStatus(TransactionStatus.SUCCESS.name());
     }
 
-    public void setValidateStatus() {
-        validateTransaction();
-    }
 }
