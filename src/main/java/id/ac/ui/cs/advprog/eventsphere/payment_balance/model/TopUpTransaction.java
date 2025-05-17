@@ -14,14 +14,19 @@ public class TopUpTransaction extends Transaction {
     private String method;
     private Map<String, String> paymentData;
 
-    public TopUpTransaction(String transactionId, String userId, String type, String method, double amount, Map<String, String> paymentData) {
-        super(transactionId, userId, type, TransactionStatus.PENDING.name(), amount);
+    public TopUpTransaction(String transactionId,
+                            String userId,
+                            String type,
+                            double amount,
+                            String method,
+                            Map<String, String> paymentData) {
+        super(transactionId, userId, type, amount);
 
         if (!Objects.equals(type, TransactionType.TOPUP_BALANCE.getValue())) {
             throw new IllegalArgumentException("Invalid transaction type.");
         }
 
-        if (Objects.equals(method, PaymentMethod.IN_APP_BALANCE.getValue())) {
+        if (!Objects.equals(method, PaymentMethod.IN_APP_BALANCE.getValue())) {
             throw new IllegalArgumentException("Invalid payment method.");
         }
 
@@ -32,7 +37,7 @@ public class TopUpTransaction extends Transaction {
     }
 
     @Override
-    protected void validateTransaction(String method, Map<String, String> paymentData) {
+    public void validateTransaction(String method, Map<String, String> paymentData) {
         String accountNumber = paymentData.get("accountNumber");
 
         if (accountNumber == null || accountNumber.trim().isEmpty()) {

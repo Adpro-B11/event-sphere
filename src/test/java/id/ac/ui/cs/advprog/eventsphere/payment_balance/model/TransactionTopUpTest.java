@@ -9,53 +9,55 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TransactionTopUpTest {
 
     private Map<String, String> paymentData;
+    private String userId;
 
     @BeforeEach
     void setUp() {
         paymentData = new HashMap<>();
+        userId = UUID.randomUUID().toString();
     }
 
     @Test
-    void testCreateTopUpTransactionSuccess() {
+    void testCreateTopUpTransactionPending() {
         paymentData.put("bankName", "Bank ABC");
         paymentData.put("accountNumber", "1234567890");
 
-        Transaction transaction = TransactionFactoryProducer.getFactory(
-                TransactionType.TOPUP_BALANCE.name(),
+        var transaction = TransactionFactoryProducer.getFactory(
+                TransactionType.TOPUP_BALANCE.getValue(),
                 "txn-001",
-                "user-123",
+                userId,
                 50000,
-                PaymentMethod.BANK_TRANSFER.name(),
+                PaymentMethod.BANK_TRANSFER.getValue(),
                 paymentData
         ).createTransaction();
 
-        // valid init → status remains PENDING
         assertEquals("txn-001", transaction.getTransactionId());
-        assertEquals("user-123", transaction.getUserId());
-        assertEquals(TransactionType.TOPUP_BALANCE.name(), transaction.getType());
-        assertEquals(PaymentMethod.BANK_TRANSFER.name(),
+        assertEquals(userId, transaction.getUserId());
+        assertEquals(TransactionType.TOPUP_BALANCE.getValue(), transaction.getType());
+        assertEquals(PaymentMethod.BANK_TRANSFER.getValue(),
                 ((TopUpTransaction) transaction).getMethod());
-        assertEquals(TransactionStatus.PENDING.name(), transaction.getStatus());
+        assertEquals(TransactionStatus.PENDING.getValue(), transaction.getStatus());
     }
 
     @Test
     void testInvalidAccountNumberTooShort() {
         paymentData.put("bankName", "Bank XYZ");
-        paymentData.put("accountNumber", "12345678"); // < 10 digits
+        paymentData.put("accountNumber", "12345678");
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-002",
-                        "user-456",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -68,11 +70,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-003",
-                        "user-789",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -85,11 +87,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-004",
-                        "user-890",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -98,15 +100,15 @@ public class TransactionTopUpTest {
     @Test
     void testInvalidAccountNumberTooLong() {
         paymentData.put("bankName", "Bank KLM");
-        paymentData.put("accountNumber", "1234567890123"); // 13 digits
+        paymentData.put("accountNumber", "1234567890123");
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-005",
-                        "user-999",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -119,11 +121,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-006",
-                        "user-234",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -136,11 +138,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-007",
-                        "user-345",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -153,11 +155,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-008",
-                        "user-456",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -170,11 +172,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-009",
-                        "user-567",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -187,11 +189,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-010",
-                        "user-678",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -200,63 +202,64 @@ public class TransactionTopUpTest {
     @Test
     void testWhitespaceAccountNumberThrowsException() {
         paymentData.put("bankName", "Bank XYZ");
-        paymentData.put("accountNumber", "          "); // spaces only
+        paymentData.put("accountNumber", "          ");
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-011",
-                        "user-789",
+                        userId,
                         50000,
-                        PaymentMethod.BANK_TRANSFER.name(),
+                        PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData
                 ).createTransaction()
         );
     }
 
     @Test
-    void testValidCreditCardTransactionSuccess() {
+    void testValidCreditCardTransactionPending() {
         paymentData.put("accountNumber", "1234567812345678");
 
-        Transaction transaction = TransactionFactoryProducer.getFactory(
-                TransactionType.TOPUP_BALANCE.name(),
+        var transaction = TransactionFactoryProducer.getFactory(
+                TransactionType.TOPUP_BALANCE.getValue(),
                 "txn-100",
-                "user-100",
+                userId,
                 50000,
-                PaymentMethod.CREDIT_CARD.name(),
+                PaymentMethod.CREDIT_CARD.getValue(),
                 paymentData
         ).createTransaction();
 
-        assertEquals(TransactionStatus.PENDING.name(), transaction.getStatus());
+        assertEquals(transaction.getUserId(), userId);
+        assertEquals(TransactionStatus.PENDING.getValue(), transaction.getStatus());
     }
 
     @Test
-    void testCardNumberTooShortIsRejected() {
-        paymentData.put("accountNumber", "123456789012345"); // 15 digits
+    void testCreditCardTooShortIsRejected() {
+        paymentData.put("accountNumber", "123456789012345");
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-101",
-                        "user-101",
+                        userId,
                         50000,
-                        PaymentMethod.CREDIT_CARD.name(),
+                        PaymentMethod.CREDIT_CARD.getValue(),
                         paymentData
                 ).createTransaction()
         );
     }
 
     @Test
-    void testCardNumberTooLongIsRejected() {
-        paymentData.put("accountNumber", "12345678901234567"); // 17 digits
+    void testCreditCardTooLongIsRejected() {
+        paymentData.put("accountNumber", "12345678901234567");
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-102",
-                        "user-102",
+                        userId,
                         50000,
-                        PaymentMethod.CREDIT_CARD.name(),
+                        PaymentMethod.CREDIT_CARD.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -268,11 +271,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-103",
-                        "user-103",
+                        userId,
                         50000,
-                        PaymentMethod.CREDIT_CARD.name(),
+                        PaymentMethod.CREDIT_CARD.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -284,11 +287,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-104",
-                        "user-104",
+                        userId,
                         50000,
-                        PaymentMethod.CREDIT_CARD.name(),
+                        PaymentMethod.CREDIT_CARD.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -300,11 +303,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-105",
-                        "user-105",
+                        userId,
                         50000,
-                        PaymentMethod.CREDIT_CARD.name(),
+                        PaymentMethod.CREDIT_CARD.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -312,15 +315,15 @@ public class TransactionTopUpTest {
 
     @Test
     void testWhitespaceCardNumberThrowsException() {
-        paymentData.put("accountNumber", "                "); // spaces only
+        paymentData.put("accountNumber", "                ");
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-106",
-                        "user-106",
+                        userId,
                         50000,
-                        PaymentMethod.CREDIT_CARD.name(),
+                        PaymentMethod.CREDIT_CARD.getValue(),
                         paymentData
                 ).createTransaction()
         );
@@ -332,11 +335,11 @@ public class TransactionTopUpTest {
 
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
-                        TransactionType.TOPUP_BALANCE.name(),
+                        TransactionType.TOPUP_BALANCE.getValue(),
                         "txn-107",
-                        "user-107",
+                        userId,
                         50000,
-                        PaymentMethod.CREDIT_CARD.name(),
+                        PaymentMethod.CREDIT_CARD.getValue(),
                         paymentData
                 ).createTransaction()
         );
