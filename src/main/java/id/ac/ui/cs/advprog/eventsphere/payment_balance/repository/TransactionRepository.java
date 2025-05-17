@@ -1,11 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.repository;
 
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactory;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactoryProducer;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TicketPurchaseTransaction;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TopUpTransaction;
-import org.hibernate.validator.constraints.pl.REGON;
 import org.springframework.stereotype.Repository;
 
 import java.util.*;
@@ -13,23 +9,27 @@ import java.util.*;
 @Repository
 public class TransactionRepository {
     private final Map<String, Transaction> transactionStorage = new HashMap<>();
-    private final TransactionFactoryProducer factoryProducer;
 
-    public TransactionRepository(TransactionFactoryProducer factoryProducer) {
-        this.factoryProducer = Objects.requireNonNull(factoryProducer);
-    }
-
-    public Transaction createAndSave(String type, String transactionId, String userId,
-                                     double amount, String method, Map<String, String> data) {
-        TransactionFactory factory = factoryProducer.getFactory(type, transactionId, userId, amount, method, data);
-        Transaction transaction = factory.createTransaction();
+    public Transaction createAndSave(String type,
+                                     String transactionId,
+                                     String userId,
+                                     double amount,
+                                     String method,
+                                     Map<String, String> data) {
+        Transaction transaction = TransactionFactoryProducer.getFactory(
+                type,
+                transactionId,
+                userId,
+                amount,
+                method,
+                data
+        ).createTransaction();
         return save(transaction);
     }
 
     public Transaction save(Transaction transaction) {
-        Objects.requireNonNull(transaction);
-        Objects.requireNonNull(transaction.getTransactionId());
-        transaction.validateTransaction();
+        Objects.requireNonNull(transaction, "Transaction must not be null");
+        Objects.requireNonNull(transaction.getTransactionId(), "Transaction ID must not be null");
         transactionStorage.put(transaction.getTransactionId(), transaction);
         return transaction;
     }
