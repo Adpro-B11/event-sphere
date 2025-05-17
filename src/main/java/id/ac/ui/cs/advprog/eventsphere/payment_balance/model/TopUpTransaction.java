@@ -26,14 +26,15 @@ public class TopUpTransaction extends Transaction {
             throw new IllegalArgumentException("Invalid transaction type.");
         }
 
-        if (!Objects.equals(method, PaymentMethod.IN_APP_BALANCE.getValue())) {
-            throw new IllegalArgumentException("Invalid payment method.");
+        if (Objects.equals(method, PaymentMethod.IN_APP_BALANCE.getValue())) {
+            throw new IllegalArgumentException("Invalid payment method: " + method);
         }
 
         validateTransaction(method, paymentData);
 
         this.method = method;
         this.paymentData = paymentData;
+        setStatus(TransactionStatus.PENDING.name());
     }
 
     @Override
