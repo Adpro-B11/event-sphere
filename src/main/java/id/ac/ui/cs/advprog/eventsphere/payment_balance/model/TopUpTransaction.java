@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import lombok.Getter;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 public class TopUpTransaction extends Transaction {
@@ -16,7 +17,7 @@ public class TopUpTransaction extends Transaction {
     public TopUpTransaction(String transactionId, String userId, String type, String method, double amount, Map<String, String> paymentData) {
         super(transactionId, userId, type, TransactionStatus.FAILED.name(), amount);
 
-        if (!TransactionType.contains(type)) {
+        if (!Objects.equals(type, TransactionType.TOPUP_BALANCE.getValue())) {
             throw new IllegalArgumentException("Invalid transaction type.");
         }
 

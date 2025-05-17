@@ -5,6 +5,7 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import lombok.Getter;
 
 import java.util.Map;
+import java.util.Objects;
 
 @Getter
 public class TicketPurchaseTransaction extends Transaction {
@@ -14,7 +15,7 @@ public class TicketPurchaseTransaction extends Transaction {
     public TicketPurchaseTransaction(String transactionId, String userId, String type, double amount, Map<String, String> ticketData) {
         super(transactionId, userId, type, TransactionStatus.FAILED.name(), amount);
 
-        if (!TransactionType.contains(type)) {
+        if (!Objects.equals(type, TransactionType.TICKET_PURCHASE.getValue())) {
             throw new IllegalArgumentException("Invalid transaction type.");
         }
 
