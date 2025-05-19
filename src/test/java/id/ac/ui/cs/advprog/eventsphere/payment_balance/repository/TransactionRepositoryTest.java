@@ -135,7 +135,14 @@ public class TransactionRepositoryTest {
     @Test
     void testFindByUserId() {
         transactionList.forEach(repository::save);
-        List<Transaction> result = repository.findByFilters(userId2, null, null);
+        List<Transaction> result = repository.findByFilters(
+                userId2,
+                null,
+                null,
+                null,
+                null,
+                null
+        );
 
         assertEquals(1, result.size());
         assertEquals("trx-002", result.getFirst().getTransactionId());
@@ -154,7 +161,14 @@ public class TransactionRepositoryTest {
     @Test
     void testFindByStatus() {
         transactionList.forEach(repository::save);
-        List<Transaction> list = repository.findByFilters(null, TransactionStatus.SUCCESS.getValue(), null);
+        List<Transaction> list = repository.findByFilters(
+                null,
+                TransactionStatus.SUCCESS.getValue(),
+                null,
+                null,
+                null,
+                null
+        );
 
         assertEquals(2, list.size());
         assertTrue(list.stream().allMatch(t -> t.getStatus().equals(TransactionStatus.SUCCESS.getValue())));
@@ -163,7 +177,14 @@ public class TransactionRepositoryTest {
     @Test
     void testFindByType() {
         transactionList.forEach(repository::save);
-        List<Transaction> list = repository.findByFilters(null, null, TransactionType.TICKET_PURCHASE.getValue());
+        List<Transaction> list = repository.findByFilters(
+                null,
+                null,
+                TransactionType.TICKET_PURCHASE.getValue(),
+                null,
+                null,
+                null
+        );
 
         assertEquals(1, list.size());
         assertEquals("trx-001", list.getFirst().getTransactionId());
@@ -175,7 +196,10 @@ public class TransactionRepositoryTest {
         List<Transaction> list = repository.findByFilters(
                 userId1,
                 TransactionStatus.SUCCESS.getValue(),
-                TransactionType.TICKET_PURCHASE.getValue()
+                TransactionType.TICKET_PURCHASE.getValue(),
+                null,
+                null,
+                null
         );
 
         assertEquals(1, list.size());
@@ -232,7 +256,15 @@ public class TransactionRepositoryTest {
 
     @Test
     void testFindByUserIdNotFound() {
-        assertTrue(repository.findByFilters("unknown", null, null).isEmpty());
+        List<Transaction> result = repository.findByFilters(
+                "unknown",
+                null,
+                null,
+                null,
+                null,
+                null
+        );
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -247,7 +279,15 @@ public class TransactionRepositoryTest {
                 ticketData
         );
         repository.save(trx);
-        assertTrue(repository.findByFilters(null, TransactionStatus.FAILED.getValue(), null).isEmpty());
+        List<Transaction> result = repository.findByFilters(
+                null,
+                TransactionStatus.FAILED.getValue(),
+                null,
+                null,
+                null,
+                null
+        );
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -262,7 +302,15 @@ public class TransactionRepositoryTest {
                 paymentData
         );
         repository.save(trx);
-        assertTrue(repository.findByFilters(null, null, TransactionType.TICKET_PURCHASE.getValue()).isEmpty());
+        List<Transaction> result = repository.findByFilters(
+                null,
+                null,
+                TransactionType.TICKET_PURCHASE.getValue(),
+                null,
+                null,
+                null
+        );
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -277,7 +325,15 @@ public class TransactionRepositoryTest {
                 paymentData
         );
         repository.save(trx);
-        assertTrue(repository.findByFilters(null, null, TransactionType.TICKET_PURCHASE.getValue()).isEmpty());
+        List<Transaction> result = repository.findByFilters(
+                null,
+                null,
+                TransactionType.TICKET_PURCHASE.getValue(),
+                null,
+                null,
+                null
+        );
+        assertTrue(result.isEmpty());
     }
 
     @Test
@@ -292,7 +348,15 @@ public class TransactionRepositoryTest {
                 ticketData
         );
         repository.save(trx);
-        assertTrue(repository.findByFilters(null, null, TransactionType.TOPUP_BALANCE.getValue()).isEmpty());
+        List<Transaction> result = repository.findByFilters(
+                null,
+                null,
+                TransactionType.TOPUP_BALANCE.getValue(),
+                null,
+                null,
+                null
+        );
+        assertTrue(result.isEmpty());
     }
 
     @Test
