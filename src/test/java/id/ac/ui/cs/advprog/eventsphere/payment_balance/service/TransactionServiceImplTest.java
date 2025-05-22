@@ -1,11 +1,11 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.service;
 
 import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.PaymentMethod;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.factory.TransactionFactoryProducer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,117 +15,133 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TransactionServiceImplTest {
 
     @Mock
-    private TransactionRepository transactionRepository;
+    private TransactionRepository repository;
 
     @Mock
-    private UserService userBalanceService;
+    private UserService userService;
 
-    @Mock
-    private TransactionFactoryProducer factoryProducer;    // only needed by UserAccessStrategy
-
-    private UserAccessStrategy userStrategy;
     private TransactionServiceImpl service;
 
-    private final String transactionId = UUID.randomUUID().toString();
-    private final String userId        = UUID.randomUUID().toString();
-    private final double amount        = 100.0;
-    private final String method        = "BANK_TRANSFER";
-    private final Map<String, String> data = Map.of("accountNumber", "123456");
+    private String userId;
+    private double amount;
+    private String method;
+    private Map<String, String> data;
 
     @BeforeEach
     void setUp() {
-        // create the two objects under test
-        userStrategy = new UserAccessStrategy(transactionRepository, factoryProducer);
-        service      = new TransactionServiceImpl(userBalanceService);
+        service = new TransactionServiceImpl(repository, userService);
+        userId = UUID.randomUUID().toString();
+        amount = 1000.0;
+        method = PaymentMethod.BANK_TRANSFER.getValue();
+        data = Map.of("bankName", "BCA", "accountNumber", "1234567890");
     }
 
     @Test
-    void testTopUpBalance_Success_shouldCallAddBalance() {
-        // arrange: repository returns a transaction whose status is SUCCESS
-        Transaction mockTrx = mock(Transaction.class);
-        when(transactionRepository.createAndSave(
-                TransactionType.TOPUP_BALANCE.name(),
-                transactionId, userId, amount, method, data))
-                .thenReturn(mockTrx);
-
-        when(mockTrx.getStatus())
-                .thenReturn(TransactionStatus.SUCCESS.name());
+    void testTopUpBalance_Success_shouldCallAddBalance_andSetSuccess() {
+        // arrange
+        Transaction mockTx = mock(Transaction.class);
+        when(repository.createAndSave(eq(TransactionType.TOPUP_BALANCE.getValue()),
+                anyString(), eq(userId), eq(amount), eq(method), eq(data)))
+                .thenReturn(mockTx);
+        when(repository.update(mockTx)).thenReturn(mockTx);
 
         // act
-        service.setStrategy(userStrategy);
-        service.createTransaction(
-                TransactionType.TOPUP_BALANCE.name(),
-                transactionId, userId, amount, method, data);
+        Transaction result = service.createTopUpTransaction(userId, amount, method, data);
 
-        // assert: repo was used and balance was added
-        verify(transactionRepository).createAndSave(
-                TransactionType.TOPUP_BALANCE.name(),
-                transactionId, userId, amount, method, data);
-
-        verify(userBalanceService).addBalance(userId, amount);
+        // assert
+        verify(userService).addBalance(userId, amount);
+        verify(mockTx).setStatus(TransactionStatus.SUCCESS.getValue());
+        verify(repository).update(mockTx);
+        assertSame(mockTx, result);
     }
 
     @Test
-    void testTicketPurchase_Failed_shouldDeductThenRefund() {
-        // arrange: deductBalance returns true
-        when(userBalanceService.deductBalance(userId, amount)).thenReturn(true);
-
-        // repository returns a transaction whose status is FAILED
-        Transaction mockTrx = mock(Transaction.class);
-        when(transactionRepository.createAndSave(
-                TransactionType.TICKET_PURCHASE.name(),
-                transactionId, userId, amount, method, data))
-                .thenReturn(mockTrx);
-
-        when(mockTrx.getStatus())
-                .thenReturn(TransactionStatus.FAILED.name());
+    void testTopUpBalance_FailureOnException_shouldSetFailed() {
+        // arrange
+        Transaction mockTx = mock(Transaction.class);
+        when(repository.createAndSave(anyString(), anyString(), anyString(), anyDouble(), anyString(), anyMap()))
+                .thenReturn(mockTx);
+        when(repository.update(mockTx)).thenReturn(mockTx);
+        doThrow(new RuntimeException("up error"))
+                .when(userService).addBalance(userId, amount);
 
         // act
-        service.setStrategy(userStrategy);
-        service.createTransaction(
-                TransactionType.TICKET_PURCHASE.name(),
-                transactionId, userId, amount, method, data);
+        Transaction result = service.createTopUpTransaction(userId, amount, method, data);
 
-        // assert: balance was first deducted, then refunded on failure
-        verify(userBalanceService).deductBalance(userId, amount);
-        verify(transactionRepository).createAndSave(
-                TransactionType.TICKET_PURCHASE.name(),
-                transactionId, userId, amount, method, data);
-        verify(userBalanceService).addBalance(userId, amount);
+        // assert
+        verify(userService).addBalance(userId, amount);
+        verify(mockTx).setStatus(TransactionStatus.FAILED.getValue());
+        verify(repository).update(mockTx);
+        assertSame(mockTx, result);
     }
 
     @Test
-    void testDeleteTransactionByUserStrategy_ThrowsUnsupported() {
-        service.setStrategy(userStrategy);
+    void testTicketPurchase_Success_shouldDeductBalance_andSetSuccess() {
+        // arrange
+        Transaction mockTx = mock(Transaction.class);
+        when(repository.createAndSave(eq(TransactionType.TICKET_PURCHASE.getValue()),
+                anyString(), eq(userId), eq(amount), anyString(), eq(data)))
+                .thenReturn(mockTx);
+        when(repository.update(mockTx)).thenReturn(mockTx);
 
-        assertThrows(UnsupportedOperationException.class, () ->
-                service.deleteTransaction("any-id")
-        );
+        // act
+        Transaction result = service.createTicketPurchaseTransaction(userId, amount, data);
+
+        // assert
+        verify(userService).deductBalance(userId, amount);
+        verify(mockTx).setStatus(TransactionStatus.SUCCESS.getValue());
+        verify(repository).update(mockTx);
+        assertSame(mockTx, result);
     }
 
     @Test
-    void testViewAllTransactionsByUserStrategy_ThrowsUnsupported() {
-        service.setStrategy(userStrategy);
+    void testTicketPurchase_FailureOnDeduct_shouldSetFailed() {
+        // arrange
+        Transaction mockTx = mock(Transaction.class);
+        when(repository.createAndSave(anyString(), anyString(), anyString(), anyDouble(), anyString(), anyMap()))
+                .thenReturn(mockTx);
+        when(repository.update(mockTx)).thenReturn(mockTx);
+        doThrow(new RuntimeException("deduct error"))
+                .when(userService).deductBalance(userId, amount);
 
-        assertThrows(UnsupportedOperationException.class, () ->
-                service.viewAllTransactions()
-        );
+        // act
+        Transaction result = service.createTicketPurchaseTransaction(userId, amount, data);
+
+        // assert
+        verify(userService).deductBalance(userId, amount);
+        verify(mockTx).setStatus(TransactionStatus.FAILED.getValue());
+        verify(repository).update(mockTx);
+        assertSame(mockTx, result);
     }
 
     @Test
-    void testFilterTransactionsByUserStrategy_ThrowsUnsupported() {
-        service.setStrategy(userStrategy);
+    void testDeleteTransactionByUser_shouldThrowSecurityException() {
+        String currentUserId = "some-user-id";
+        service.initStrategy(false, currentUserId);
 
-        assertThrows(UnsupportedOperationException.class, () ->
-                service.filterTransactions(null,"SUCCESS",null)
+        UnsupportedOperationException ex = assertThrows(
+                UnsupportedOperationException.class,
+                () -> service.deleteTransaction("any-tx-id", false)
+        );
+        assertEquals(
+                "User cannot delete transactions.",
+                ex.getMessage()
         );
     }
 
+
+    @Test
+    void testDeleteTransactionByAdmin_shouldCallRepository() {
+        service.initStrategy(true, userId);
+        service.deleteTransaction("tx-123", true);
+        verify(repository).deleteById("tx-123");
+    }
 }
