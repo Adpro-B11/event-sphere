@@ -5,16 +5,17 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TicketPurchaseTrans
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class TicketPurchaseTransactionFactory implements TransactionFactory {
-    private final String transactionId;
-    private final String userId;
+    private final UUID transactionId;
+    private final UUID userId;
     private final double amount;
     private final String method;
     private final Map<String, String> ticketData;
 
-    public TicketPurchaseTransactionFactory(String transactionId,
-                                            String userId,
+    public TicketPurchaseTransactionFactory(UUID transactionId,
+                                            UUID userId,
                                             double amount,
                                             String method,
                                             Map<String, String> ticketData) {
@@ -30,7 +31,7 @@ public class TicketPurchaseTransactionFactory implements TransactionFactory {
         return new TicketPurchaseTransaction(
                 transactionId,
                 userId,
-                TransactionType.TICKET_PURCHASE.getValue(),
+                TransactionType.TICKET_PURCHASE.name(),
                 amount,
                 method,
                 ticketData

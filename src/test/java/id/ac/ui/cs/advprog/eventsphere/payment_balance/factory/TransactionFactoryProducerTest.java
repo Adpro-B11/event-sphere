@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -14,11 +15,15 @@ class TransactionFactoryProducerTest {
 
     private Map<String, String> paymentData;
     private Map<String, String> ticketData;
+    private String transactionId;
+    private String userId;
 
     @BeforeEach
     void setUp() {
         paymentData = new HashMap<>();
         ticketData = new HashMap<>();
+        transactionId = UUID.randomUUID().toString();
+        userId = UUID.randomUUID().toString();
     }
 
     @Test
@@ -28,8 +33,8 @@ class TransactionFactoryProducerTest {
 
         TransactionFactory factory = TransactionFactoryProducer.getFactory(
                 TransactionType.TOPUP_BALANCE.getValue(),
-                "txn-001",
-                "user-123",
+                transactionId,
+                userId,
                 50000,
                 PaymentMethod.BANK_TRANSFER.getValue(),
                 paymentData
@@ -44,8 +49,8 @@ class TransactionFactoryProducerTest {
 
         TransactionFactory factory = TransactionFactoryProducer.getFactory(
                 TransactionType.TICKET_PURCHASE.getValue(),
-                "txn-207",
-                "user-207",
+                transactionId,
+                userId,
                 100000,
                 PaymentMethod.IN_APP_BALANCE.getValue(),
                 ticketData
@@ -59,8 +64,8 @@ class TransactionFactoryProducerTest {
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
                         "INVALID_TYPE",
-                        "txn-002",
-                        "user-456",
+                        transactionId,
+                        userId,
                         50000,
                         PaymentMethod.BANK_TRANSFER.getValue(),
                         paymentData

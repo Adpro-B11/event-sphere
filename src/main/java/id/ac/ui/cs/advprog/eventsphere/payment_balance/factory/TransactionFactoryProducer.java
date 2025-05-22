@@ -1,13 +1,17 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.factory;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
+import java.util.UUID;
 
+@Component
 public class TransactionFactoryProducer {
+
     public static TransactionFactory getFactory(String type,
-                                                String transactionId,
-                                                String userId,
+                                                UUID transactionId,
+                                                UUID userId,
                                                 double amount,
                                                 String method,
                                                 Map<String, String> data) {
@@ -21,5 +25,18 @@ public class TransactionFactoryProducer {
             );
         }
         throw new IllegalArgumentException("Unknown transaction type: " + type);
+    }
+
+    // Overloaded method for convenience when working with String IDs
+    public static TransactionFactory getFactory(String type,
+                                                String transactionId,
+                                                String userId,
+                                                double amount,
+                                                String method,
+                                                Map<String, String> data) {
+        UUID transactionUuid = UUID.fromString(transactionId);
+        UUID userUuid = UUID.fromString(userId);
+
+        return getFactory(type, transactionUuid, userUuid, amount, method, data);
     }
 }

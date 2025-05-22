@@ -5,16 +5,17 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TopUpTransaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 
 import java.util.Map;
+import java.util.UUID;
 
 public class TopUpTransactionFactory implements TransactionFactory {
-    private final String transactionId;
-    private final String userId;
+    private final UUID transactionId;
+    private final UUID userId;
     private final double amount;
     private final String method;
     private final Map<String, String> paymentData;
 
-    public TopUpTransactionFactory(String transactionId,
-                                   String userId,
+    public TopUpTransactionFactory(UUID transactionId,
+                                   UUID userId,
                                    double amount,
                                    String method,
                                    Map<String, String> paymentData) {
