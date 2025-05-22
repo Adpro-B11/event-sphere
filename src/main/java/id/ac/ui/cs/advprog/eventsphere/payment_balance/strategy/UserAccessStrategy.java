@@ -1,0 +1,43 @@
+package id.ac.ui.cs.advprog.eventsphere.payment_balance.strategy;
+
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+public class UserAccessStrategy implements AccessStrategy {
+    private final TransactionRepository repository;
+    private final String currentUserId;
+
+    public UserAccessStrategy(TransactionRepository repository, String currentUserId) {
+        this.repository = repository;
+        this.currentUserId = currentUserId;
+    }
+
+    @Override
+    public Optional<Transaction> findById(String transactionId) {
+        Optional<Transaction> opt = repository.findById(transactionId);
+        return opt.filter(trx -> currentUserId.equals(trx.getUserId()));
+    }
+
+    @Override
+    public List<Transaction> viewAllTransactions() {
+        return repository.findByFilters(currentUserId, null, null, null, null, null);
+    }
+
+    @Override
+    public List<Transaction> viewUserTransactions(String userId) {
+        return repository.findByFilters(currentUserId, null, null, null, null, null);
+    }
+
+    @Override
+    public List<Transaction> filterTransactions(String userId, String status, String type, String method, LocalDateTime createdAfter, LocalDateTime createdBefore) {
+        return repository.findByFilters(currentUserId, status, type, method, createdAfter, createdBefore);
+    }
+
+    @Override
+    public void deleteTransaction(String transactionId) {
+        throw new UnsupportedOperationException("User cannot delete transactions.");
+    }
+}

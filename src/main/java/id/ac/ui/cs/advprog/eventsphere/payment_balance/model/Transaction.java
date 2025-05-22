@@ -1,24 +1,47 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.model;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 
+import jakarta.persistence.*;
 import java.util.Map;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
+@Entity
+@Table(name = "transactions")
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "transaction_type", discriminatorType = DiscriminatorType.STRING)
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class Transaction {
-    private final String transactionId;
-    private final String userId;
-    private final String type;
+
+    @Id
+    @Column(name = "transaction_id", columnDefinition = "BINARY(16)")
+    private UUID transactionId;
+
+    @Column(name = "user_id", nullable = false, columnDefinition = "BINARY(16)")
+    private UUID userId;
+
+    @Column(name = "type", nullable = false)
+    private String type;
+
+    @Column(name = "status")
     private String status;
-    private final double amount;
-    private final LocalDateTime createdAt;
+
+    @Column(name = "amount", nullable = false)
+    private double amount;
+
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    protected Transaction(String transactionId,
-                          String userId,
+    protected Transaction(UUID transactionId,
+                          UUID userId,
                           String type,
                           double amount) {
         if (amount < 0) {
@@ -38,6 +61,11 @@ public abstract class Transaction {
             throw new IllegalArgumentException("Invalid transaction status: " + status);
         }
         this.status = status;
+        this.updatedAt = LocalDateTime.now();
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
 
