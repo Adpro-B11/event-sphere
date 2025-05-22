@@ -140,9 +140,8 @@ public class UserServiceTest {
 
         when(userRepository.findById(validUserId)).thenReturn(Optional.of(testUser));
         
-        boolean result = userService.deductBalance(validUserId, amountToDeduct);
+        userService.deductBalance(validUserId, amountToDeduct);
 
-        assertTrue(result);
         assertEquals(initialBalance - amountToDeduct, testUser.getBalance());
         verify(userRepository).findById(validUserId);
         verify(userRepository).save(testUser);
@@ -154,9 +153,8 @@ public class UserServiceTest {
 
         when(userRepository.findById(validUserId)).thenReturn(Optional.of(testUser));
 
-        boolean result = userService.deductBalance(validUserId, amountToDeduct);
+        userService.deductBalance(validUserId, amountToDeduct);
 
-        assertTrue(result);
         assertEquals(0.0, testUser.getBalance());
         verify(userRepository).findById(validUserId);
         verify(userRepository).save(testUser);
@@ -169,9 +167,12 @@ public class UserServiceTest {
 
         when(userRepository.findById(validUserId)).thenReturn(Optional.of(testUser));
 
-        boolean result = userService.deductBalance(validUserId, amountToDeduct);
+        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () ->
+                userService.deductBalance(validUserId, amountToDeduct)
+        );
 
-        assertFalse(result);
+        assertEquals("User Balance is not enough to purchase tickets", exception.getMessage());
+
         assertEquals(initialBalance, testUser.getBalance());
         verify(userRepository).findById(validUserId);
         verify(userRepository, never()).save(any(User.class));

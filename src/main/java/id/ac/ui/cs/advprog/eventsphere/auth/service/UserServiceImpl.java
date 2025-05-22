@@ -52,7 +52,7 @@ public class UserServiceImpl implements UserService {
 
 
     @Override
-    public boolean deductBalance(String userId, double amount) {
+    public void deductBalance(String userId, double amount) {
         if (amount <= 0) {
             throw new IllegalArgumentException("Amount must be positive");
         }
@@ -65,12 +65,11 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
         if (user.getBalance() < amount) {
-            return false;
+            throw new IllegalArgumentException("User Balance is nout enough to purchase tickets");
         }
 
         user.setBalance(user.getBalance() - amount);
         userRepository.save(user);
-        return true;
     }
 
 
