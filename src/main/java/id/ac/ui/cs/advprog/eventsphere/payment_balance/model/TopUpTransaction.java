@@ -4,18 +4,34 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.PaymentMethod;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 
+import jakarta.persistence.*;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
+@Entity
+@DiscriminatorValue("TOPUP_BALANCE")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TopUpTransaction extends Transaction {
 
+    @Column(name = "payment_method")
     private String method;
+
+    @ElementCollection
+    @CollectionTable(
+            name = "payment_data",
+            joinColumns = @JoinColumn(name = "transaction_id")
+    )
+    @MapKeyColumn(name = "data_key")
+    @Column(name = "data_value")
     private Map<String, String> paymentData;
 
-    public TopUpTransaction(String transactionId,
-                            String userId,
+    public TopUpTransaction(UUID transactionId,
+                            UUID userId,
                             String type,
                             double amount,
                             String method,
@@ -59,5 +75,4 @@ public class TopUpTransaction extends Transaction {
             }
         }
     }
-
 }
