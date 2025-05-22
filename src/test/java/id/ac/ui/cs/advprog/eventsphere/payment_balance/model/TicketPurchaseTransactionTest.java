@@ -16,22 +16,23 @@ import static org.junit.jupiter.api.Assertions.*;
 class TicketPurchaseTransactionTest {
 
     private Map<String, String> ticketData;
-    private String userId;
+    private UUID userId;
 
     @BeforeEach
     void setUp() {
         ticketData = new HashMap<>();
-        userId = UUID.randomUUID().toString();
+        userId = UUID.randomUUID();
     }
 
     @Test
     void testEmptyTicketDataThrowsException() {
+        UUID txId = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
                         TransactionType.TICKET_PURCHASE.getValue(),
-                        "txn-201",
-                        userId,
-                        100000,
+                        txId.toString(),
+                        userId.toString(),
+                        100_000,
                         PaymentMethod.IN_APP_BALANCE.getValue(),
                         ticketData
                 ).createTransaction()
@@ -41,12 +42,13 @@ class TicketPurchaseTransactionTest {
     @Test
     void testTicketKeyIsNullThrowsException() {
         ticketData.put(null, "1");
+        UUID txId = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
                         TransactionType.TICKET_PURCHASE.getValue(),
-                        "txn-202",
-                        userId,
-                        100000,
+                        txId.toString(),
+                        userId.toString(),
+                        100_000,
                         PaymentMethod.IN_APP_BALANCE.getValue(),
                         ticketData
                 ).createTransaction()
@@ -56,12 +58,13 @@ class TicketPurchaseTransactionTest {
     @Test
     void testTicketKeyIsEmptyStringThrowsException() {
         ticketData.put("", "1");
+        UUID txId = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
                         TransactionType.TICKET_PURCHASE.getValue(),
-                        "txn-203",
-                        userId,
-                        100000,
+                        txId.toString(),
+                        userId.toString(),
+                        100_000,
                         PaymentMethod.IN_APP_BALANCE.getValue(),
                         ticketData
                 ).createTransaction()
@@ -71,12 +74,13 @@ class TicketPurchaseTransactionTest {
     @Test
     void testTicketKeyIsWhitespaceOnlyThrowsException() {
         ticketData.put("   ", "1");
+        UUID txId = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
                         TransactionType.TICKET_PURCHASE.getValue(),
-                        "txn-204",
-                        userId,
-                        100000,
+                        txId.toString(),
+                        userId.toString(),
+                        100_000,
                         PaymentMethod.IN_APP_BALANCE.getValue(),
                         ticketData
                 ).createTransaction()
@@ -86,12 +90,13 @@ class TicketPurchaseTransactionTest {
     @Test
     void testNegativeTicketAmountThrowsException() {
         ticketData.put("ConcertVIP", "-3");
+        UUID txId = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
                         TransactionType.TICKET_PURCHASE.getValue(),
-                        "txn-205",
-                        userId,
-                        100000,
+                        txId.toString(),
+                        userId.toString(),
+                        100_000,
                         PaymentMethod.IN_APP_BALANCE.getValue(),
                         ticketData
                 ).createTransaction()
@@ -101,12 +106,13 @@ class TicketPurchaseTransactionTest {
     @Test
     void testZeroTicketAmountThrowsException() {
         ticketData.put("ConcertVIP", "0");
+        UUID txId = UUID.randomUUID();
         assertThrows(IllegalArgumentException.class, () ->
                 TransactionFactoryProducer.getFactory(
                         TransactionType.TICKET_PURCHASE.getValue(),
-                        "txn-206",
-                        userId,
-                        100000,
+                        txId.toString(),
+                        userId.toString(),
+                        100_000,
                         PaymentMethod.IN_APP_BALANCE.getValue(),
                         ticketData
                 ).createTransaction()
@@ -117,23 +123,23 @@ class TicketPurchaseTransactionTest {
     void testTicketPurchasePending() {
         ticketData.put("ConcertVIP", "3");
         ticketData.put("ConcertVVIP", "2");
+        UUID txId = UUID.randomUUID();
 
         var transaction = TransactionFactoryProducer.getFactory(
                 TransactionType.TICKET_PURCHASE.getValue(),
-                "txn-207",
-                userId,
-                100000,
+                txId.toString(),
+                userId.toString(),
+                100_000,
                 PaymentMethod.IN_APP_BALANCE.getValue(),
                 ticketData
         ).createTransaction();
 
-        assertEquals("txn-207", transaction.getTransactionId());
+        assertEquals(txId, transaction.getTransactionId());
         assertEquals(userId, transaction.getUserId());
         assertEquals(TransactionType.TICKET_PURCHASE.getValue(), transaction.getType());
-        assertEquals(PaymentMethod.IN_APP_BALANCE.getValue(),
-                ((TicketPurchaseTransaction) transaction).getMethod());
+        assertEquals(PaymentMethod.IN_APP_BALANCE.getValue(), ((TicketPurchaseTransaction) transaction).getMethod());
         assertEquals(TransactionStatus.PENDING.getValue(), transaction.getStatus());
-        assertEquals(100000, transaction.getAmount());
+        assertEquals(100_000, transaction.getAmount());
 
         Map<String, String> purchasedTickets = ((TicketPurchaseTransaction) transaction).getTicketData();
         assertEquals("3", purchasedTickets.get("ConcertVIP"));
@@ -145,17 +151,18 @@ class TicketPurchaseTransactionTest {
         ticketData.put("Regular", "5");
         ticketData.put("VIP", "2");
         ticketData.put("VVIP", "1");
+        UUID txId = UUID.randomUUID();
 
         var transaction = TransactionFactoryProducer.getFactory(
                 TransactionType.TICKET_PURCHASE.getValue(),
-                "txn-208",
-                userId,
-                250000,
+                txId.toString(),
+                userId.toString(),
+                250_000,
                 PaymentMethod.IN_APP_BALANCE.getValue(),
                 ticketData
         ).createTransaction();
 
-        assertEquals("txn-208", transaction.getTransactionId());
+        assertEquals(txId, transaction.getTransactionId());
         assertEquals(TransactionStatus.PENDING.getValue(), transaction.getStatus());
 
         Map<String, String> purchasedTickets = ((TicketPurchaseTransaction) transaction).getTicketData();

@@ -4,18 +4,34 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.PaymentMethod;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 
+import jakarta.persistence.*;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
+@Entity
+@DiscriminatorValue("TICKET_PURCHASE")
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class TicketPurchaseTransaction extends Transaction {
 
+    @Column(name = "payment_method")
     private String method;
-    private final Map<String, String> ticketData;
 
-    public TicketPurchaseTransaction(String transactionId,
-                                     String userId,
+    @ElementCollection
+    @CollectionTable(
+            name = "ticket_data",
+            joinColumns = @JoinColumn(name = "transaction_id")
+    )
+    @MapKeyColumn(name = "ticket_type")
+    @Column(name = "quantity")
+    private Map<String, String> ticketData;
+
+    public TicketPurchaseTransaction(UUID transactionId,
+                                     UUID userId,
                                      String type,
                                      double amount,
                                      String method,
@@ -26,7 +42,7 @@ public class TicketPurchaseTransaction extends Transaction {
             throw new IllegalArgumentException("Invalid transaction type: " + type);
         }
 
-        if (Objects.equals(method,PaymentMethod.IN_APP_BALANCE.name())) {
+        if (!Objects.equals(method, PaymentMethod.IN_APP_BALANCE.name())) {
             throw new IllegalArgumentException("Invalid payment method: " + method);
         }
 
@@ -36,7 +52,6 @@ public class TicketPurchaseTransaction extends Transaction {
         this.ticketData = ticketData;
         setStatus(TransactionStatus.PENDING.name());
     }
-
 
     @Override
     public void validateTransaction(String method, Map<String, String> ticketData) {
