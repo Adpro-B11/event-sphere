@@ -1,37 +1,28 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.controller;
 
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionStatus;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.enums.TransactionType;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TicketPurchaseTransaction;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TopUpTransaction;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.service.AdminAccessStrategy;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.service.TransactionService;
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.service.UserAccessStrategy;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.hamcrest.Matchers.hasSize;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
-import static org.hamcrest.Matchers.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@SpringBootTest
-@AutoConfigureMockMvc
-public class TransactionControllerTest {
+@WebMvcTest(TransactionController.class)
+class TransactionControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -39,425 +30,230 @@ public class TransactionControllerTest {
     @MockBean
     private TransactionService transactionService;
 
-    @MockBean
-    private AdminAccessStrategy adminAccessStrategy;
+    @Autowired
+    private ObjectMapper mapper;
 
-    @MockBean
-    private UserAccessStrategy userAccessStrategy;
-
-    private final String USER_ID = UUID.randomUUID().toString();
-    private final String ADMIN_ID = "admin-123";
+    private String userId;
+    private String adminId;
 
     @BeforeEach
-    public void setup() {
-        reset(transactionService, adminAccessStrategy, userAccessStrategy);
+    void setUp() {
+        // userId dan adminId sudah diinisialisasi sebagai String dari UUID
+        userId = UUID.randomUUID().toString();
+        adminId = UUID.randomUUID().toString();
     }
 
-    // Stub void setStrategy(...) since it returns void
-    private void mockUserAuthentication() {
-        doNothing().when(transactionService).setStrategy(any());
-    }
-
-    private void mockAdminAuthentication() {
-        doNothing().when(transactionService).setStrategy(any());
-    }
-
+    // --- TOP-UP ENDPOINT ---
     @Test
-    public void testTopUpBalance_Success() throws Exception {
-        String requestBody = """
-                {
-                    "amount": 100.0,
-                    "method": "CREDIT_CARD",
-                    "data": {
-                        "cardNumber": "1234-5678-9012-3456"
-                    }
-                }
-                """;
+    void whenTopUpSuccess_thenReturnsCreatedAndId() throws Exception {
+        UUID transactionId = UUID.randomUUID(); // Membuat UUID baru
+        Transaction tx = mock(Transaction.class);
+        when(tx.getTransactionId()).thenReturn(transactionId); 
+        when(transactionService.createTopUpTransaction(eq(userId), eq(100.0), eq("CREDIT_CARD"), anyMap()))
+                .thenReturn(tx);
+
+        String json = mapper.writeValueAsString(Map.of(
+                "userId", userId,
+                "amount", 100.0,
+                "method", "CREDIT_CARD",
+                "paymentData", Map.of()
+        ));
 
         mockMvc.perform(post("/api/transactions/topup")
-                        .header("User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                        .content(json))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.transactionId", not(emptyString())));
+                .andExpect(jsonPath("$.transactionId").value(transactionId.toString())); // Membandingkan dengan String dari UUID
 
-        ArgumentCaptor<String> typeCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Double> amountCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<String> methodCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Map> dataCaptor = ArgumentCaptor.forClass(Map.class);
-
-        verify(transactionService).setStrategy(eq(userAccessStrategy));
-        verify(transactionService).createTransaction(
-                typeCaptor.capture(),
-                anyString(),
-                userIdCaptor.capture(),
-                amountCaptor.capture(),
-                methodCaptor.capture(),
-                dataCaptor.capture()
-        );
-
-        assertEquals(TransactionType.TOPUP_BALANCE.name(), typeCaptor.getValue());
-        assertEquals(USER_ID, userIdCaptor.getValue());
-        assertEquals(100.0, amountCaptor.getValue());
-        assertEquals("CREDIT_CARD", methodCaptor.getValue());
-        assertEquals("1234-5678-9012-3456", dataCaptor.getValue().get("cardNumber"));
+        verify(transactionService).createTopUpTransaction(userId, 100.0, "CREDIT_CARD", anyMap());
     }
 
     @Test
-    public void testTopUpBalance_InvalidAmount() throws Exception {
-        String requestBody = """
-                {
-                    "amount": -100.0,
-                    "method": "CREDIT_CARD"
-                }
-                """;
+    void whenTopUpInvalidAmount_thenReturnsBadRequest() throws Exception {
+        when(transactionService.createTopUpTransaction(anyString(), eq(-50.0), anyString(), anyMap()))
+                .thenThrow(new IllegalArgumentException("Invalid amount"));
 
-        doThrow(new IllegalArgumentException("Amount must be positive"))
-                .when(transactionService).createTransaction(anyString(), anyString(), anyString(), eq(-100.0), anyString(), anyMap());
+        String json = mapper.writeValueAsString(Map.of(
+                "userId", userId,
+                "amount", -50.0,
+                "method", "BANK_TRANSFER"
+        ));
 
         mockMvc.perform(post("/api/transactions/topup")
-                        .header("User-Id", USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                        .content(json))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", is("Amount must be positive")));
-
-        verify(transactionService).setStrategy(eq(userAccessStrategy));
+                .andExpect(jsonPath("$.message").value("Invalid amount"));
     }
 
     @Test
-    public void testPurchaseTicket_Success() throws Exception {
-        mockUserAuthentication();
+    void whenTopUpMissingMethod_thenReturnsBadRequest() throws Exception {
+        String json = mapper.writeValueAsString(Map.of(
+                "userId", userId,
+                "amount", 50.0
+        ));
 
-        String requestBody = """
-        {
-            "amount": 50.0,
-            "eventId": "event-123"
-        }
-        """;
-
-        mockMvc.perform(post("/api/transactions/purchase-ticket")
-                        .header("User-Id", USER_ID)
+        mockMvc.perform(post("/api/transactions/topup")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                        .content(json))
+                .andExpect(status().isBadRequest());
+    }
+
+    // --- PURCHASE ENDPOINT ---
+    @Test
+    void whenPurchaseSuccess_thenReturnsCreatedAndId() throws Exception {
+        UUID transactionId = UUID.randomUUID();
+        Transaction tx = mock(Transaction.class);
+        when(tx.getTransactionId()).thenReturn(transactionId); 
+        when(transactionService.createTicketPurchaseTransaction(eq(userId), eq(75.0), anyMap()))
+                .thenReturn(tx);
+
+        String json = mapper.writeValueAsString(Map.of(
+                "userId", userId,
+                "amount", 75.0,
+                "ticketData", Map.of("VIP","1")
+        ));
+
+        mockMvc.perform(post("/api/transactions/purchase")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.success", is(true)))
-                .andExpect(jsonPath("$.transactionId", not(emptyString())));
+                .andExpect(jsonPath("$.transactionId").value(transactionId.toString())); // Membandingkan dengan String dari UUID
 
-        ArgumentCaptor<String> typeCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<String> userIdCaptor = ArgumentCaptor.forClass(String.class);
-        ArgumentCaptor<Double> amountCaptor = ArgumentCaptor.forClass(Double.class);
-        ArgumentCaptor<Map> dataCaptor = ArgumentCaptor.forClass(Map.class);
-
-        verify(transactionService).setStrategy(eq(userAccessStrategy));
-        verify(transactionService).createTransaction(
-                typeCaptor.capture(),
-                anyString(),
-                userIdCaptor.capture(),
-                amountCaptor.capture(),
-                eq("BALANCE"),
-                dataCaptor.capture()
-        );
-
-        assertEquals(TransactionType.TICKET_PURCHASE.name(), typeCaptor.getValue());
-        assertEquals(USER_ID, userIdCaptor.getValue());
-        assertEquals(50.0, amountCaptor.getValue());
-        assertEquals("event-123", dataCaptor.getValue().get("eventId"));
+        verify(transactionService).createTicketPurchaseTransaction(userId, 75.0, anyMap());
     }
 
     @Test
-    public void testPurchaseTicket_InsufficientBalance() throws Exception {
-        mockUserAuthentication();
+    void whenPurchaseInsufficient_thenReturnsBadRequest() throws Exception {
+        when(transactionService.createTicketPurchaseTransaction(anyString(), anyDouble(), anyMap()))
+                .thenThrow(new IllegalStateException("Insufficient balance"));
 
-        String requestBody = """
-        {
-            "amount": 500.0,
-            "eventId": "event-123"
-        }
-        """;
+        String json = mapper.writeValueAsString(Map.of(
+                "userId", userId,
+                "amount", 500.0,
+                "ticketData", Map.of("VIP","1")
+        ));
 
-        doThrow(new IllegalStateException("Insufficient balance for ticket purchase"))
-                .when(transactionService).createTransaction(anyString(), anyString(), anyString(), anyDouble(), anyString(), anyMap());
-
-        mockMvc.perform(post("/api/transactions/purchase-ticket")
-                        .header("User-Id", USER_ID)
+        mockMvc.perform(post("/api/transactions/purchase")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
+                        .content(json))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", is("Insufficient balance")));
+                .andExpect(jsonPath("$.message").value("Insufficient balance"));
     }
 
     @Test
-    public void testPurchaseTicket_MissingEventId() throws Exception {
-        mockUserAuthentication();
+    void whenPurchaseMissingData_thenReturnsBadRequest() throws Exception {
+        String json = mapper.writeValueAsString(Map.of(
+                "userId", userId,
+                "amount", 30.0
+        ));
 
-        String requestBody = """
-        {
-            "amount": 50.0
-        }
-        """;
-
-        mockMvc.perform(post("/api/transactions/purchase-ticket")
-                        .header("User-Id", USER_ID)
+        mockMvc.perform(post("/api/transactions/purchase")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)));
+                        .content(json))
+                .andExpect(status().isBadRequest());
     }
 
-    private List<Transaction> getMockTransactions() {
-        List<Transaction> mockTransactions = new ArrayList<>();
-
-        // TopUpTransaction
-        Map<String, String> paymentData = new HashMap<>();
-        paymentData.put("accountNumber", "1234567890123456");
-        Transaction topUp = new TopUpTransaction(
-                "trx-123",
-                USER_ID,
-                TransactionType.TOPUP_BALANCE.name(),
-                "CREDIT_CARD",
-                100.0,
-                paymentData
-        );
-        topUp.setStatus(TransactionStatus.SUCCESS.name());
-
-        // TicketPurchaseTransaction
-        Map<String, String> ticketData = new HashMap<>();
-        ticketData.put("event-123", "2");
-        Transaction purchase = new TicketPurchaseTransaction(
-                "trx-456",
-                USER_ID,
-                TransactionType.TICKET_PURCHASE.name(),
-                50.0,
-                ticketData
-        );
-        purchase.setStatus(TransactionStatus.SUCCESS.name());
-
-        mockTransactions.add(topUp);
-        mockTransactions.add(purchase);
-        return mockTransactions;
-    }
-
+    // --- GET BY ID ---
     @Test
-    public void testGetUserTransactions_Success() throws Exception {
-        mockUserAuthentication();
-        List<Transaction> mockTransactions = getMockTransactions();
+    void whenGetByIdFound_thenReturnsOk() throws Exception {
+        UUID txId = UUID.randomUUID(); 
+        Transaction tx = mock(Transaction.class);
+        when(tx.getTransactionId()).thenReturn(txId); 
+        when(transactionService.getTransactionById(eq(txId.toString()), eq(userId), eq(false))) 
+                .thenReturn(Optional.of(tx));
 
-        when(transactionService.viewUserTransactions(USER_ID)).thenReturn(mockTransactions);
-
-        mockMvc.perform(get("/api/transactions/user")
-                        .header("User-Id", USER_ID))
+        mockMvc.perform(get("/api/transactions/{id}", txId.toString()) 
+                        .param("currentUserId", userId)
+                        .param("isAdmin", "false"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].type", is(TransactionType.TOPUP_BALANCE.name())))
-                .andExpect(jsonPath("$[0].status", is(TransactionStatus.SUCCESS.name())))
-                .andExpect(jsonPath("$[0].amount", is(100.0)))
-                .andExpect(jsonPath("$[1].type", is(TransactionType.TICKET_PURCHASE.name())))
-                .andExpect(jsonPath("$[1].amount", is(50.0)));
-
-        verify(transactionService).setStrategy(eq(userAccessStrategy));
-        verify(transactionService).viewUserTransactions(USER_ID);
+                .andExpect(jsonPath("$.transactionId").value(txId.toString())); // Membandingkan dengan String dari UUID
     }
 
     @Test
-    public void testFilterUserTransactionsByType_Success() throws Exception {
-        mockUserAuthentication();
+    void whenGetByIdNotFound_thenReturnsNotFound() throws Exception {
+        String txId = UUID.randomUUID().toString(); 
+        when(transactionService.getTransactionById(eq(txId), eq(userId), eq(false)))
+                .thenReturn(Optional.empty());
 
-        // Ambil semua transaksi mock
-        List<Transaction> allTransactions = getMockTransactions();
-
-        // Filter hanya transaksi TOPUP_BALANCE
-        List<Transaction> filteredTransactions = allTransactions.stream()
-                .filter(t -> t.getType().equals(TransactionType.TOPUP_BALANCE.name()))
-                .collect(Collectors.toList());
-
-        when(transactionService.filterTransactionsByType(USER_ID, TransactionType.TOPUP_BALANCE.name()))
-                .thenReturn(filteredTransactions);
-
-        mockMvc.perform(get("/api/transactions/user/filter")
-                        .header("User-Id", USER_ID)
-                        .param("type", TransactionType.TOPUP_BALANCE.name()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].transactionId", is("trx-123")))
-                .andExpect(jsonPath("$[0].type", is(TransactionType.TOPUP_BALANCE.name())))
-                .andExpect(jsonPath("$[0].status", is(TransactionStatus.SUCCESS.name())))
-                .andExpect(jsonPath("$[0].amount", is(100.0)))
-                .andExpect(jsonPath("$[0].method", is("CREDIT_CARD")))
-                .andExpect(jsonPath("$[0].paymentData.accountNumber", is("1234567890123456")));
-
-        verify(transactionService).setStrategy(eq(userAccessStrategy));
-        verify(transactionService).filterTransactionsByType(USER_ID, TransactionType.TOPUP_BALANCE.name());
+        mockMvc.perform(get("/api/transactions/{id}", txId)
+                        .param("currentUserId", userId)
+                        .param("isAdmin", "false"))
+                .andExpect(status().isNotFound());
     }
 
     @Test
-    public void testFilterUserTransactionsByType_EmptyResults() throws Exception {
-        mockUserAuthentication();
+    void whenGetByIdAdmin_thenReturnsOk() throws Exception {
+        UUID txId = UUID.randomUUID(); 
+        Transaction tx = mock(Transaction.class);
+        when(transactionService.getTransactionById(eq(txId.toString()), eq(adminId), eq(true))) 
+                .thenReturn(Optional.of(tx));
 
-        List<Transaction> emptyTransactions = new ArrayList<>();
+        mockMvc.perform(get("/api/transactions/{id}", txId.toString()) 
+                        .param("currentUserId", adminId)
+                        .param("isAdmin", "true"))
+                .andExpect(status().isOk());
+    }
 
-        when(transactionService.filterTransactionsByType(USER_ID, TransactionType.TICKET_PURCHASE.name()))
-                .thenReturn(emptyTransactions);
+    // --- LIST/FILTER ---
+    @Test
+    void whenListUser_thenReturnsOk() throws Exception {
+        when(transactionService.filterTransactions(eq(userId), eq(false), any(), any(), any(), any(), any()))
+                .thenReturn(List.of());
 
-        mockMvc.perform(get("/api/transactions/user/filter")
-                        .header("User-Id", USER_ID)
-                        .param("type", TransactionType.TICKET_PURCHASE.name()))
+        mockMvc.perform(get("/api/transactions")
+                        .param("currentUserId", userId)
+                        .param("isAdmin", "false"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
-
-        verify(transactionService).setStrategy(eq(userAccessStrategy));
-        verify(transactionService).filterTransactionsByType(USER_ID, TransactionType.TICKET_PURCHASE.name());
     }
 
     @Test
-    public void testGetAllTransactions_AdminSuccess() throws Exception {
-        mockAdminAuthentication();
-        List<Transaction> mockTransactions = getMockTransactions();
+    void whenListAdminWithFilters_thenReturnsOk() throws Exception {
+        when(transactionService.filterTransactions(eq(null), eq(true), eq("SUCCESS"), eq("TOPUP_BALANCE"), eq("BANK_TRANSFER"), any(), any()))
+                .thenReturn(List.of(mock(Transaction.class)));
 
-        when(transactionService.viewAllTransactions()).thenReturn(mockTransactions);
-
-        mockMvc.perform(get("/api/transactions/all")
-                        .header("User-Id", ADMIN_ID))
+        mockMvc.perform(get("/api/transactions")
+                        .param("currentUserId", adminId)
+                        .param("isAdmin", "true")
+                        .param("status", "SUCCESS")
+                        .param("type", "TOPUP_BALANCE")
+                        .param("method", "BANK_TRANSFER"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].type", is(TransactionType.TOPUP_BALANCE.name())))
-                .andExpect(jsonPath("$[0].status", is(TransactionStatus.SUCCESS.name())))
-                .andExpect(jsonPath("$[0].amount", is(100.0)))
-                .andExpect(jsonPath("$[1].type", is(TransactionType.TICKET_PURCHASE.name())))
-                .andExpect(jsonPath("$[1].status", is(TransactionStatus.SUCCESS.name())))
-                .andExpect(jsonPath("$[1].amount", is(50.0)));
-
-        verify(transactionService).setStrategy(eq(adminAccessStrategy));
-        verify(transactionService).viewAllTransactions();
+                .andExpect(jsonPath("$", hasSize(1)));
     }
 
-
+    // --- DELETE ---
     @Test
-    public void testGetAllTransactions_UserForbidden() throws Exception {
-        mockUserAuthentication();
+    void whenDeleteAdmin_thenReturnsNoContent() throws Exception {
+        String txId = UUID.randomUUID().toString(); 
+        doNothing().when(transactionService).deleteTransaction(eq(txId), eq(true));
 
-        mockMvc.perform(get("/api/transactions/all")
-                        .header("User-Id", USER_ID))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", is("Access denied")));
-
-        verify(transactionService, never()).viewAllTransactions();
+        mockMvc.perform(delete("/api/transactions/{id}", txId)
+                        .param("currentUserId", adminId)
+                        .param("isAdmin", "true"))
+                .andExpect(status().isNoContent());
     }
 
     @Test
-    public void testFilterTransactions_AdminSuccess() throws Exception {
-        mockAdminAuthentication();
-        List<Transaction> mockTransactions = getMockTransactions();
-
-        when(transactionService.filterTransactions(USER_ID,
-                TransactionStatus.SUCCESS.name(),
-                TransactionType.TOPUP_BALANCE.name()))
-                .thenReturn(mockTransactions);
-
-        mockMvc.perform(get("/api/transactions/filter")
-                        .header("User-Id", ADMIN_ID)
-                        .param("userId", USER_ID)
-                        .param("status", TransactionStatus.SUCCESS.name())
-                        .param("type", TransactionType.TOPUP_BALANCE.name()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
-                .andExpect(jsonPath("$[0].type", is(TransactionType.TOPUP_BALANCE.name())))
-                .andExpect(jsonPath("$[0].status", is(TransactionStatus.SUCCESS.name())))
-                .andExpect(jsonPath("$[0].amount", is(100.0)));
-
-        verify(transactionService).setStrategy(eq(adminAccessStrategy));
-        verify(transactionService).filterTransactions(USER_ID,
-                TransactionStatus.SUCCESS.name(),
-                TransactionType.TOPUP_BALANCE.name());
+    void whenDeleteUser_thenReturnsForbidden() throws Exception {
+        String txId = UUID.randomUUID().toString(); 
+        mockMvc.perform(delete("/api/transactions/{id}", txId)
+                        .param("currentUserId", userId)
+                        .param("isAdmin", "false"))
+                .andExpect(status().isForbidden());
     }
 
     @Test
-    public void testFilterTransactions_AdminWithPartialParameters() throws Exception {
-        mockAdminAuthentication();
-        List<Transaction> mockTransactions = getMockTransactions();
+    void whenDeleteNotFound_thenReturnsBadRequest() throws Exception {
+        String txId = UUID.randomUUID().toString(); 
+        doThrow(new java.util.NoSuchElementException("Not found"))
+                .when(transactionService).deleteTransaction(eq(txId), eq(true));
 
-        when(transactionService.filterTransactions(null, null,
-                TransactionType.TOPUP_BALANCE.name()))
-                .thenReturn(mockTransactions);
-
-        mockMvc.perform(get("/api/transactions/filter")
-                        .header("User-Id", ADMIN_ID)
-                        .param("type", TransactionType.TOPUP_BALANCE.name()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)));
-
-        verify(transactionService).setStrategy(eq(adminAccessStrategy));
-        verify(transactionService).filterTransactions(null, null,
-                TransactionType.TOPUP_BALANCE.name());
-    }
-
-    @Test
-    public void testFilterTransactions_UserForbidden() throws Exception {
-        mockUserAuthentication();
-
-        mockMvc.perform(get("/api/transactions/filter")
-                        .header("User-Id", USER_ID)
-                        .param("userId", USER_ID)
-                        .param("status", TransactionStatus.SUCCESS.name())
-                        .param("type", TransactionType.TOPUP_BALANCE.name()))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", is("Access denied")));
-
-        verify(transactionService, never()).filterTransactions(anyString(), anyString(), anyString());
-    }
-
-    @Test
-    public void testDeleteTransaction_AdminSuccess() throws Exception {
-        mockAdminAuthentication();
-
-        String transactionId = "transaction-123";
-
-        mockMvc.perform(delete("/api/transactions/" + transactionId)
-                        .header("User-Id", ADMIN_ID))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.success", is(true)));
-
-        verify(transactionService).setStrategy(eq(adminAccessStrategy));
-        verify(transactionService).deleteTransaction(transactionId);
-    }
-
-    @Test
-    public void testDeleteTransaction_UserForbidden() throws Exception {
-        mockUserAuthentication();
-
-        String transactionId = "transaction-123";
-
-        mockMvc.perform(delete("/api/transactions/" + transactionId)
-                        .header("User-Id", USER_ID))
-                .andExpect(status().isForbidden())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", is("Access denied")));
-
-        verify(transactionService, never()).deleteTransaction(anyString());
-    }
-
-    @Test
-    public void testDeleteTransaction_TransactionNotFound() throws Exception {
-        mockAdminAuthentication();
-
-        String transactionId = "nonexistent-transaction";
-
-        doThrow(new NoSuchElementException("Transaction not found"))
-                .when(transactionService).deleteTransaction(transactionId);
-
-        mockMvc.perform(delete("/api/transactions/" + transactionId)
-                        .header("User-Id", ADMIN_ID))
+        mockMvc.perform(delete("/api/transactions/{id}", txId)
+                        .param("currentUserId", adminId)
+                        .param("isAdmin", "true"))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.success", is(false)))
-                .andExpect(jsonPath("$.message", is("Transaction not found")));
-
-        verify(transactionService).setStrategy(eq(adminAccessStrategy));
-        verify(transactionService).deleteTransaction(transactionId);
+                .andExpect(jsonPath("$.message").value("Not found"));
     }
 }
