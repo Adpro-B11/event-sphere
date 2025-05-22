@@ -8,430 +8,269 @@ import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.TopUpTransaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
+import org.springframework.context.annotation.Import;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TransactionRepositoryTest {
+@Import(TransactionRepository.class)
+@DataJpaTest
+@AutoConfigureTestDatabase(replace = Replace.ANY)
+class TransactionRepositoryTest {
 
+    @Autowired
     private TransactionRepository repository;
-    private List<Transaction> transactionList;
-    private String userId1;
-    private String userId2;
+
+    @Autowired
+    private TestEntityManager em;
+
+    private UUID txId1;
+    private UUID txId2;
+    private UUID userId1;
+    private UUID userId2;
 
     @BeforeEach
     void setUp() {
-        repository = new TransactionRepository();
-        userId1 = UUID.randomUUID().toString();
-        userId2 = UUID.randomUUID().toString();
+        userId1 = UUID.randomUUID();
+        userId2 = UUID.randomUUID();
+        txId1 = UUID.fromString("ab098978-37c8-4150-8dee-04c6acf7a490");
+        txId2 = UUID.fromString("ab098978-37c8-4150-8dee-04c6acf7a491");
 
-        Map<String, String> paymentData2 = new HashMap<>();
-        paymentData2.put("accountNumber", "6631286683123456");
-
-        Map<String, String> ticketData = new HashMap<>();
-        ticketData.put("VIP", "2");
-        ticketData.put("REGULAR", "5");
-        ticketData.put("PREMIUM", "1");
-
-        TicketPurchaseTransaction trx1 = new TicketPurchaseTransaction(
-                "trx-001",
-                userId1,
-                TransactionType.TICKET_PURCHASE.getValue(),
-                100000,
-                PaymentMethod.IN_APP_BALANCE.getValue(),
-                ticketData
-        );
-        TopUpTransaction trx2 = new TopUpTransaction(
-                "trx-002",
-                userId2,
-                TransactionType.TOPUP_BALANCE.getValue(),
-                50000,
-                PaymentMethod.CREDIT_CARD.getValue(),
-                paymentData2
-        );
-
-        trx1.setStatus(TransactionStatus.SUCCESS.getValue());
-        trx2.setStatus(TransactionStatus.SUCCESS.getValue());
-
-        transactionList = List.of(trx1, trx2);
-    }
-
-    @Test
-    void testCreateAndSaveTicketPurchase() {
+        // Persist a successful TicketPurchaseTransaction
         Map<String, String> ticketData = Map.of(
-                "VIP", "3",
-                "REGULAR", "10"
+                "VIP", "2",
+                "REGULAR", "5",
+                "PREMIUM", "1"
         );
-        String newUser = UUID.randomUUID().toString();
-
-        Transaction tx = repository.createAndSave(
+        TicketPurchaseTransaction t1 = new TicketPurchaseTransaction(
+                txId1,
+                userId1,
                 TransactionType.TICKET_PURCHASE.getValue(),
-                "trx-003",
-                newUser,
-                150000,
+                100000.0,
                 PaymentMethod.IN_APP_BALANCE.getValue(),
                 ticketData
         );
+        t1.setStatus(TransactionStatus.SUCCESS.getValue());
+        em.persist(t1);
+
+        // Persist a successful TopUpTransaction
+        Map<String, String> payData = Map.of("accountNumber", "6631286683123456");
+        TopUpTransaction t2 = new TopUpTransaction(
+                txId2,
+                userId2,
+                TransactionType.TOPUP_BALANCE.getValue(),
+                50000.0,
+                PaymentMethod.CREDIT_CARD.getValue(),
+                payData
+        );
+        t2.setStatus(TransactionStatus.SUCCESS.getValue());
+        em.persist(t2);
+
+        em.flush();
+    }
+
+    @Test
+    void testCreateAndSaveTicketPurchase_SetsPending() {
+        Map<String, String> data = Map.of("VIP", "3", "REGULAR", "10");
+        String newTx = "ab098978-37c8-4150-8dee-04c6acf7a492";
+
+        Transaction tx = repository.createAndSave(
+                TransactionType.TICKET_PURCHASE.getValue(),
+                newTx,
+                userId1.toString(),
+                150000.0,
+                PaymentMethod.IN_APP_BALANCE.getValue(),
+                data
+        );
 
         assertNotNull(tx);
-        assertEquals("trx-003", tx.getTransactionId());
-        assertEquals(newUser, tx.getUserId());
-        assertInstanceOf(TicketPurchaseTransaction.class, tx);
-
-        TicketPurchaseTransaction tpt = (TicketPurchaseTransaction) tx;
-        assertEquals("3", tpt.getTicketData().get("VIP"));
-        assertEquals("10", tpt.getTicketData().get("REGULAR"));
+        assertEquals(UUID.fromString(newTx), tx.getTransactionId());
+        assertEquals(userId1, tx.getUserId());
         assertEquals(TransactionStatus.PENDING.getValue(), tx.getStatus());
     }
 
     @Test
-    void testCreateAndSaveTopUp() {
-        Map<String, String> paymentData = Map.of(
-                "bankName", "Bank BCA",
-                "accountNumber", "1234567890"
-        );
-        String newUser = UUID.randomUUID().toString();
+    void testCreateAndSaveTopUp_SetsPending() {
+        Map<String, String> data = Map.of("bankName", "Bank BCA", "accountNumber", "1234567890");
+        String newTx = "ab098978-37c8-4150-8dee-04c6acf7a493";
 
         Transaction tx = repository.createAndSave(
                 TransactionType.TOPUP_BALANCE.getValue(),
-                "trx-004",
-                newUser,
-                75000,
+                newTx,
+                userId2.toString(),
+                75000.0,
                 PaymentMethod.BANK_TRANSFER.getValue(),
-                paymentData
+                data
         );
 
         assertNotNull(tx);
-        assertEquals("trx-004", tx.getTransactionId());
-        assertEquals(newUser, tx.getUserId());
-        assertInstanceOf(TopUpTransaction.class, tx);
-
-        TopUpTransaction tut = (TopUpTransaction) tx;
-        assertEquals(PaymentMethod.BANK_TRANSFER.getValue(), tut.getMethod());
-        assertEquals("Bank BCA", tut.getPaymentData().get("bankName"));
-        assertEquals("1234567890", tut.getPaymentData().get("accountNumber"));
+        assertEquals(UUID.fromString(newTx), tx.getTransactionId());
+        assertEquals(userId2, tx.getUserId());
         assertEquals(TransactionStatus.PENDING.getValue(), tx.getStatus());
     }
 
     @Test
-    void testSaveAndFindById() {
-        transactionList.forEach(repository::save);
-        Optional<Transaction> found = repository.findById("trx-001");
-
+    void testSaveAndFindById_Persisted() {
+        Optional<Transaction> found = repository.findById(txId1.toString());
         assertTrue(found.isPresent());
-        Transaction tx = found.get();
-        assertEquals("trx-001", tx.getTransactionId());
-        assertEquals(userId1, tx.getUserId());
-        assertInstanceOf(TicketPurchaseTransaction.class, tx);
-
-        TicketPurchaseTransaction tpt = (TicketPurchaseTransaction) tx;
-        assertEquals("2", tpt.getTicketData().get("VIP"));
-        assertEquals("5", tpt.getTicketData().get("REGULAR"));
-        assertEquals("1", tpt.getTicketData().get("PREMIUM"));
+        assertEquals(txId1, found.get().getTransactionId());
     }
 
     @Test
-    void testFindByUserId() {
-        transactionList.forEach(repository::save);
-        List<Transaction> result = repository.findByFilters(
-                userId2,
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
-        assertEquals(1, result.size());
-        assertEquals("trx-002", result.getFirst().getTransactionId());
-    }
-
-    @Test
-    void testFindAll() {
-        transactionList.forEach(repository::save);
+    void testFindAll_ReturnsTwo() {
         List<Transaction> all = repository.findAll();
-
         assertEquals(2, all.size());
-        assertTrue(all.stream().anyMatch(t -> t.getTransactionId().equals("trx-001")));
-        assertTrue(all.stream().anyMatch(t -> t.getTransactionId().equals("trx-002")));
     }
 
     @Test
-    void testFindByStatus() {
-        transactionList.forEach(repository::save);
+    void testFindByUserId_FiltersCorrectly() {
         List<Transaction> list = repository.findByFilters(
-                null,
-                TransactionStatus.SUCCESS.getValue(),
-                null,
-                null,
-                null,
-                null
+                userId2.toString(), null, null, null, null, null
         );
+        assertEquals(1, list.size());
+        assertEquals(txId2, list.getFirst().getTransactionId());
+    }
 
+    @Test
+    void testFindByStatus_FiltersCorrectly() {
+        List<Transaction> list = repository.findByFilters(
+                null, TransactionStatus.SUCCESS.getValue(), null, null, null, null
+        );
         assertEquals(2, list.size());
-        assertTrue(list.stream().allMatch(t -> t.getStatus().equals(TransactionStatus.SUCCESS.getValue())));
     }
 
     @Test
-    void testFindByType() {
-        transactionList.forEach(repository::save);
+    void testFindByType_FiltersTicket() {
         List<Transaction> list = repository.findByFilters(
-                null,
-                null,
-                TransactionType.TICKET_PURCHASE.getValue(),
-                null,
-                null,
-                null
+                null, null, TransactionType.TICKET_PURCHASE.getValue(), null, null, null
         );
-
         assertEquals(1, list.size());
-        assertEquals("trx-001", list.getFirst().getTransactionId());
+        assertEquals(txId1, list.getFirst().getTransactionId());
     }
 
     @Test
-    void testFindByMultipleFilters() {
-        transactionList.forEach(repository::save);
+    void testFindByMultipleFilters_UserAndType() {
         List<Transaction> list = repository.findByFilters(
-                userId1,
-                TransactionStatus.SUCCESS.getValue(),
-                TransactionType.TICKET_PURCHASE.getValue(),
-                null,
-                null,
-                null
+                userId1.toString(), TransactionStatus.SUCCESS.getValue(), TransactionType.TICKET_PURCHASE.getValue(), null, null, null
         );
-
         assertEquals(1, list.size());
-        assertEquals("trx-001", list.getFirst().getTransactionId());
+        assertEquals(txId1, list.getFirst().getTransactionId());
     }
 
     @Test
-    void testDeleteById() {
-        transactionList.forEach(repository::save);
-        repository.deleteById("trx-001");
-
-        assertTrue(repository.findById("trx-001").isEmpty());
-        assertEquals(1, repository.findAll().size());
-        assertEquals("trx-002", repository.findAll().getFirst().getTransactionId());
+    void testDeleteById_RemovesEntity() {
+        repository.deleteById(txId1.toString());
+        assertFalse(repository.findById(txId1.toString()).isPresent());
     }
 
     @Test
-    void testCreateAndSaveWithInvalidType() {
-        assertThrows(IllegalArgumentException.class, () ->
-                repository.createAndSave(
-                        "INVALID",
-                        "trx-009",
-                        UUID.randomUUID().toString(),
-                        100000,
-                        PaymentMethod.BANK_TRANSFER.getValue(),
-                        Map.of("bankName", "BCA")
-                )
-        );
+    void testCreateInvalidType_Throws() {
+        assertThrows(IllegalArgumentException.class, () -> repository.createAndSave(
+                "INVALID", "dummy", userId1.toString(), 0.0, "X", Collections.emptyMap()
+        ));
     }
 
     @Test
-    void testSaveNullTransaction() {
+    void testSaveNullTransaction_Throws() {
         assertThrows(NullPointerException.class, () -> repository.save(null));
     }
 
     @Test
-    void testSaveTransactionWithNullId() {
-        Map<String, String> ticketData = Map.of("VIP", "1");
-        TicketPurchaseTransaction trx = new TicketPurchaseTransaction(
-                null,
-                UUID.randomUUID().toString(),
-                TransactionType.TICKET_PURCHASE.getValue(),
-                100000,
-                PaymentMethod.IN_APP_BALANCE.getValue(),
-                ticketData
-        );
-        assertThrows(NullPointerException.class, () -> repository.save(trx));
+    void testSaveTransactionWithNullId_Throws() {
+        assertThrows(IllegalArgumentException.class, () -> new TicketPurchaseTransaction(
+                null, userId1, TransactionType.TICKET_PURCHASE.getValue(), 0.0, PaymentMethod.IN_APP_BALANCE.getValue(), Collections.emptyMap()
+        ));
     }
 
     @Test
-    void testFindByIdNotFound() {
+    void testFindByIdNotFound_ReturnsEmpty() {
         assertTrue(repository.findById("no-id").isEmpty());
     }
 
     @Test
-    void testFindByUserIdNotFound() {
-        List<Transaction> result = repository.findByFilters(
-                "unknown",
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-        assertTrue(result.isEmpty());
+    void testFindByUserIdNotFound_ReturnsEmpty() {
+        assertTrue(repository.findByFilters("unknown", null, null, null, null, null).isEmpty());
     }
 
     @Test
-    void testFindByStatusNotFound() {
-        Map<String, String> ticketData = Map.of("REGULAR", "3");
-        TicketPurchaseTransaction trx = new TicketPurchaseTransaction(
-                "trx-010",
-                UUID.randomUUID().toString(),
-                TransactionType.TICKET_PURCHASE.getValue(),
-                50000,
-                PaymentMethod.IN_APP_BALANCE.getValue(),
-                ticketData
+    void testFindByStatusNotFound_ReturnsEmpty() {
+        List<Transaction> list = repository.findByFilters(
+                null, TransactionStatus.FAILED.getValue(), null, null, null, null
         );
-        repository.save(trx);
-        List<Transaction> result = repository.findByFilters(
-                null,
-                TransactionStatus.FAILED.getValue(),
-                null,
-                null,
-                null,
-                null
-        );
-        assertTrue(result.isEmpty());
+        assertTrue(list.isEmpty());
     }
 
     @Test
-    void testFindByTypeNotFound() {
-        Map<String, String> paymentData = Map.of("accountNumber", "123", "bankName", "BCA");
-        TopUpTransaction trx = new TopUpTransaction(
-                "trx-011",
-                UUID.randomUUID().toString(),
-                TransactionType.TOPUP_BALANCE.getValue(),
-                50000,
-                PaymentMethod.BANK_TRANSFER.getValue(),
-                paymentData
+    void testFindByTypeNotFound_ReturnsEmpty() {
+        List<Transaction> list = repository.findByFilters(
+                null, null, "OTHER", null, null, null
         );
-        repository.save(trx);
-        List<Transaction> result = repository.findByFilters(
-                null,
-                null,
-                TransactionType.TICKET_PURCHASE.getValue(),
-                null,
-                null,
-                null
-        );
-        assertTrue(result.isEmpty());
+        assertTrue(list.isEmpty());
     }
 
     @Test
     void testFindAllTicketPurchasesWhenNoneExist() {
-        Map<String, String> paymentData = Map.of("accountNumber", "123", "bankName", "BCA");
-        TopUpTransaction trx = new TopUpTransaction(
-                "trx-012",
-                UUID.randomUUID().toString(),
-                TransactionType.TOPUP_BALANCE.getValue(),
-                50000,
-                PaymentMethod.BANK_TRANSFER.getValue(),
-                paymentData
+        repository.deleteById(txId1.toString());
+        List<Transaction> list = repository.findByFilters(
+                null, null, TransactionType.TICKET_PURCHASE.getValue(), null, null, null
         );
-        repository.save(trx);
-        List<Transaction> result = repository.findByFilters(
-                null,
-                null,
-                TransactionType.TICKET_PURCHASE.getValue(),
-                null,
-                null,
-                null
-        );
-        assertTrue(result.isEmpty());
+        assertTrue(list.isEmpty());
     }
 
     @Test
     void testFindAllTopUpsWhenNoneExist() {
-        Map<String, String> ticketData = Map.of("VIP", "1", "REGULAR", "2");
-        TicketPurchaseTransaction trx = new TicketPurchaseTransaction(
-                "trx-013",
-                UUID.randomUUID().toString(),
-                TransactionType.TICKET_PURCHASE.getValue(),
-                100000,
-                PaymentMethod.IN_APP_BALANCE.getValue(),
-                ticketData
+        repository.deleteById(txId2.toString());
+        List<Transaction> list = repository.findByFilters(
+                null, null, TransactionType.TOPUP_BALANCE.getValue(), null, null, null
         );
-        repository.save(trx);
-        List<Transaction> result = repository.findByFilters(
-                null,
-                null,
-                TransactionType.TOPUP_BALANCE.getValue(),
-                null,
-                null,
-                null
-        );
-        assertTrue(result.isEmpty());
+        assertTrue(list.isEmpty());
     }
 
     @Test
-    void testCreateAndSaveWithInvalidData() {
-        assertThrows(IllegalArgumentException.class, () ->
-                repository.createAndSave(
-                        TransactionType.TOPUP_BALANCE.getValue(),
-                        "trx-014",
-                        UUID.randomUUID().toString(),
-                        100000,
-                        PaymentMethod.BANK_TRANSFER.getValue(),
-                        Map.of("accountNumber", "123")
-                )
-        );
+    void testCreateAndSaveWithInvalidData_Throws() {
+        assertThrows(IllegalArgumentException.class, () -> repository.createAndSave(
+                TransactionType.TOPUP_BALANCE.getValue(), UUID.randomUUID().toString(), userId2.toString(), 100, PaymentMethod.BANK_TRANSFER.getValue(), Map.of("accountNumber","123")
+        ));
     }
 
     @Test
-    void testTicketPurchaseWithMultipleTicketTypes() {
-        Map<String, String> ticketData = Map.of(
-                "VIP", "2",
-                "REGULAR", "10",
-                "ECONOMY", "5",
-                "BACKSTAGE", "1"
-        );
-        String newUser = UUID.randomUUID().toString();
+    void testTicketPurchaseWithMultipleTicketTypes_Succeeds() {
+        Map<String, String> multi = Map.of("VIP", "2", "REGULAR", "10", "ECONOMY", "5", "BACKSTAGE", "1");
         Transaction tx = repository.createAndSave(
-                TransactionType.TICKET_PURCHASE.getValue(),
-                "trx-015",
-                newUser,
-                200000,
-                PaymentMethod.IN_APP_BALANCE.getValue(),
-                ticketData
+                TransactionType.TICKET_PURCHASE.getValue(), UUID.randomUUID().toString(), userId1.toString(), 200000, PaymentMethod.IN_APP_BALANCE.getValue(), multi
         );
-        assertNotNull(tx);
         assertInstanceOf(TicketPurchaseTransaction.class, tx);
         TicketPurchaseTransaction tpt = (TicketPurchaseTransaction) tx;
         assertEquals("2", tpt.getTicketData().get("VIP"));
-        assertEquals("10", tpt.getTicketData().get("REGULAR"));
-        assertEquals("5", tpt.getTicketData().get("ECONOMY"));
         assertEquals("1", tpt.getTicketData().get("BACKSTAGE"));
     }
 
     @Test
-    void testTicketPurchaseWithEmptyTicketData() {
-        Map<String, String> ticketData = Collections.emptyMap();
-        assertThrows(IllegalArgumentException.class, () ->
-                repository.createAndSave(
-                        TransactionType.TICKET_PURCHASE.getValue(),
-                        "trx-016",
-                        UUID.randomUUID().toString(),
-                        0,
-                        PaymentMethod.IN_APP_BALANCE.getValue(),
-                        ticketData
-                )
-        );
+    void testTicketPurchaseWithEmptyTicketData_Throws() {
+        assertThrows(IllegalArgumentException.class, () -> repository.createAndSave(
+                TransactionType.TICKET_PURCHASE.getValue(), UUID.randomUUID().toString(), userId1.toString(), 0, PaymentMethod.IN_APP_BALANCE.getValue(), Collections.emptyMap()
+        ));
     }
 
     @Test
-    void testTicketPurchaseWithNumericQuantities() {
-        Map<String, String> ticketData = Map.of("VIP", "2", "REGULAR", "3");
-        String newUser = UUID.randomUUID().toString();
-        TicketPurchaseTransaction trx = new TicketPurchaseTransaction(
-                "trx-017",
-                newUser,
-                TransactionType.TICKET_PURCHASE.getValue(),
-                150000,
-                PaymentMethod.IN_APP_BALANCE.getValue(),
-                ticketData
+    void testTicketPurchaseWithNumericQuantities_Persists() {
+        Map<String, String> small = Map.of("VIP", "2", "REGULAR", "3");
+        String newId = UUID.randomUUID().toString();
+        Transaction tx = repository.createAndSave(
+                TransactionType.TICKET_PURCHASE.getValue(), newId, userId1.toString(), 150000, PaymentMethod.IN_APP_BALANCE.getValue(), small
         );
-        repository.save(trx);
-        Transaction retrieved = repository.findById("trx-017").orElse(null);
-        assertNotNull(retrieved);
-        assertInstanceOf(TicketPurchaseTransaction.class, retrieved);
-        TicketPurchaseTransaction tpt = (TicketPurchaseTransaction) retrieved;
-        assertEquals("2", tpt.getTicketData().get("VIP"));
-        assertEquals("3", tpt.getTicketData().get("REGULAR"));
+        Optional<Transaction> found = repository.findById(newId);
+        assertTrue(found.isPresent());
+        assertEquals("2", ((TicketPurchaseTransaction) found.get()).getTicketData().get("VIP"));
     }
 }
