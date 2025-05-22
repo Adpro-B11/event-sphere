@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.eventsphere.payment_balance.strategy;
 
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -17,13 +18,13 @@ public class UserAccessStrategy implements AccessStrategy {
 
     @Override
     public Optional<Transaction> findById(String transactionId) {
-        Optional<Transaction> opt = repository.findById(transactionId);
-        return opt.filter(trx -> currentUserId.equals(trx.getUserId()));
+        return repository.findById(transactionId)
+                .filter(t -> t.getUserId().toString().equals(currentUserId));
     }
 
     @Override
     public List<Transaction> viewAllTransactions() {
-        return repository.findByFilters(currentUserId, null, null, null, null, null);
+        throw new UnsupportedOperationException("User cannot view all transactions.");
     }
 
     @Override
@@ -32,7 +33,12 @@ public class UserAccessStrategy implements AccessStrategy {
     }
 
     @Override
-    public List<Transaction> filterTransactions(String userId, String status, String type, String method, LocalDateTime createdAfter, LocalDateTime createdBefore) {
+    public List<Transaction> filterTransactions(String userId,
+                                                String status,
+                                                String type,
+                                                String method,
+                                                LocalDateTime createdAfter,
+                                                LocalDateTime createdBefore) {
         return repository.findByFilters(currentUserId, status, type, method, createdAfter, createdBefore);
     }
 

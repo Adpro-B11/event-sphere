@@ -1,65 +1,113 @@
 package id.ac.ui.cs.advprog.eventsphere.payment_balance.strategy;
 
-import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.*;
+import id.ac.ui.cs.advprog.eventsphere.payment_balance.model.Transaction;
 import id.ac.ui.cs.advprog.eventsphere.payment_balance.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.UUID;
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-class UserAccessStrategyServiceTest {
-    private TransactionRepository repo;
-    private AccessStrategy strategy;
-    private final String USER = UUID.randomUUID().toString();
-    private final LocalDateTime now = LocalDateTime.now();
+class UserAccessStrategyTest {
+
+    private TransactionRepository repository;
+    private UserAccessStrategy strategy;
+    private String currentUserIdStr;
+    private LocalDateTime after, before;
 
     @BeforeEach
-    void setup() {
-        repo = mock(TransactionRepository.class);
-        strategy = new UserAccessStrategy(repo, USER);
+    void setUp() {
+        repository = mock(TransactionRepository.class);
+        UUID currentUserId = UUID.randomUUID();
+        currentUserIdStr = currentUserId.toString();
+        strategy = new UserAccessStrategy(repository, currentUserIdStr);
+        after = LocalDateTime.now().minusDays(1);
+        before = LocalDateTime.now();
     }
 
     @Test
-    void findById_returnsOnlyIfOwner() {
-        Transaction t = mock(Transaction.class);
-        when(t.getUserId()).thenReturn(USER);
-        when(repo.findById("tx1")).thenReturn(Optional.of(t));
-        assertTrue(strategy.findById("tx1").isPresent());
+    void findById_userOwnsTransaction_returnsTransaction() {
+        UUID txId = UUID.randomUUID();
+        String txIdStr = txId.toString();
 
-        Transaction other = mock(Transaction.class);
-        when(other.getUserId()).thenReturn("someoneElse");
-        when(repo.findById("tx2")).thenReturn(Optional.of(other));
-        assertTrue(strategy.findById("tx2").isEmpty());
+        Transaction tx = mock(Transaction.class);
+        when(tx.getUserId()).thenReturn(UUID.fromString(currentUserIdStr));
+        when(repository.findById(txIdStr)).thenReturn(Optional.of(tx));
+
+        Optional<Transaction> result = strategy.findById(txIdStr);
+
+        assertTrue(result.isPresent());
+        assertSame(tx, result.get());
+        verify(repository).findById(txIdStr);
     }
 
     @Test
-    void viewAllTransactions_filtersByUser() {
-        Transaction t1 = mock(Transaction.class), t2 = mock(Transaction.class), t3 = mock(Transaction.class);
-        when(t1.getUserId()).thenReturn(USER);
-        when(t2.getUserId()).thenReturn("X");
-        when(t3.getUserId()).thenReturn(USER);
-        when(repo.findByFilters(eq(USER), any(), any(), any(), any(), any()))
-                .thenReturn(List.of(t1, t3));
-        List<Transaction> own = strategy.viewAllTransactions();
-        assertEquals(2, own.size());
-        assertTrue(own.contains(t1) && own.contains(t3));
+    void findById_userDoesNotOwnTransaction_returnsEmpty() {
+        UUID txId = UUID.randomUUID();
+        String txIdStr = txId.toString();
+
+        Transaction tx = mock(Transaction.class);
+        when(tx.getUserId()).thenReturn(UUID.randomUUID());
+        when(repository.findById(txIdStr)).thenReturn(Optional.of(tx));
+
+        Optional<Transaction> result = strategy.findById(txIdStr);
+
+        assertTrue(result.isEmpty());
+        verify(repository).findById(txIdStr);
     }
 
     @Test
-    void filterTransactions_delegatesToRepoWithCorrectArgs() {
-        strategy.filterTransactions(USER, "SUCCESS", "TOPUP", "BANK", now.minusDays(1), now);
-        verify(repo).findByFilters(USER, "SUCCESS", "TOPUP", "BANK", now.minusDays(1), now);
+    void findById_transactionNotFound_returnsEmpty() {
+        String txIdStr = UUID.randomUUID().toString();
+        when(repository.findById(txIdStr)).thenReturn(Optional.empty());
+
+        Optional<Transaction> result = strategy.findById(txIdStr);
+
+        assertTrue(result.isEmpty());
+        verify(repository).findById(txIdStr);
     }
 
+
     @Test
-    void deleteTransaction_throws() {
+    void viewAllTransactions_throwsUnsupported() {
         assertThrows(UnsupportedOperationException.class,
-                () -> strategy.deleteTransaction("tx1"));
+                () -> strategy.viewAllTransactions());
+    }
+
+    @Test
+    void viewUserTransactions_delegatesToRepositoryWithCurrentUser() {
+        List<Transaction> txList = Collections.singletonList(mock(Transaction.class));
+        when(repository.findByFilters(currentUserIdStr, null, null, null, null, null))
+                .thenReturn(txList);
+
+        List<Transaction> result = strategy.viewUserTransactions("ignored");
+
+        assertEquals(txList, result);
+        verify(repository).findByFilters(currentUserIdStr, null, null, null, null, null);
+    }
+
+    @Test
+    void filterTransactions_delegatesToRepositoryWithCurrentUser() {
+        List<Transaction> txList = Collections.singletonList(mock(Transaction.class));
+        when(repository.findByFilters(currentUserIdStr, "FAILED", "TICKET_PURCHASE", "IN_APP_BALANCE", after, before))
+                .thenReturn(txList);
+
+        List<Transaction> result = strategy.filterTransactions(
+                currentUserIdStr, "FAILED", "TICKET_PURCHASE", "IN_APP_BALANCE", after, before);
+
+        assertEquals(txList, result);
+        verify(repository).findByFilters(currentUserIdStr, "FAILED", "TICKET_PURCHASE", "IN_APP_BALANCE", after, before);
+    }
+
+    @Test
+    void deleteTransaction_throwsUnsupported() {
+        assertThrows(UnsupportedOperationException.class,
+                () -> strategy.deleteTransaction("tx-999"));
     }
 }
