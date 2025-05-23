@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.service.EventService;
 import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -29,7 +28,7 @@ class EventControllerTest {
     @MockitoBean
     private EventService eventService;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void testCreateEvent() throws Exception {
@@ -43,10 +42,11 @@ class EventControllerTest {
 
         willDoNothing().given(eventService).createEvent(any(Event.class));
 
-        mockMvc.perform(post("/events")
+        mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(event)))
                 .andExpect(status().isCreated())
+                // controller sets Location: /events/{id}
                 .andExpect(header().string("Location", matchesPattern(".*/events/.+")));
 
         then(eventService).should().createEvent(any(Event.class));
@@ -60,7 +60,7 @@ class EventControllerTest {
         event.setTitle("Konser");
         given(eventService.findById(id)).willReturn(event);
 
-        mockMvc.perform(get("/events/{id}", id))
+        mockMvc.perform(get("/api/events/{id}", id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.title").value("Konser"));
@@ -71,7 +71,7 @@ class EventControllerTest {
         String id = "notfound";
         given(eventService.findById(id)).willThrow(new NoSuchElementException());
 
-        mockMvc.perform(get("/events/{id}", id))
+        mockMvc.perform(get("/api/events/{id}", id))
                 .andExpect(status().isNotFound());
     }
 
@@ -81,7 +81,7 @@ class EventControllerTest {
         Event e2 = new Event(); e2.setId("2"); e2.setTitle("A2");
         given(eventService.findAllEvents()).willReturn(List.of(e1, e2));
 
-        mockMvc.perform(get("/events"))
+        mockMvc.perform(get("/api/events"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("1"));
@@ -91,12 +91,15 @@ class EventControllerTest {
     void testUpdateEventInfo() throws Exception {
         String id = "123";
         Event updated = new Event();
-        updated.setTitle("New"); updated.setDescription("NewDesc");
-        updated.setDate("2025-07-01"); updated.setLocation("L");
+        updated.setTitle("New");
+        updated.setDescription("NewDesc");
+        updated.setDate("2025-07-01");
+        updated.setLocation("L");
         updated.setPrice(200.0);
+
         willDoNothing().given(eventService).updateEventInfo(eq(id), any(Event.class));
 
-        mockMvc.perform(put("/events/{id}", id)
+        mockMvc.perform(put("/api/events/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updated)))
                 .andExpect(status().isOk());
@@ -110,7 +113,7 @@ class EventControllerTest {
         String body = "{\"status\":\"PUBLISHED\"}";
         willDoNothing().given(eventService).updateStatus(eq(id), eq("PUBLISHED"));
 
-        mockMvc.perform(patch("/events/{id}/status", id)
+        mockMvc.perform(patch("/api/events/{id}/status", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(status().isOk());
@@ -123,7 +126,7 @@ class EventControllerTest {
         String id = "123";
         willDoNothing().given(eventService).deleteEvent(id);
 
-        mockMvc.perform(delete("/events/{id}", id))
+        mockMvc.perform(delete("/api/events/{id}", id))
                 .andExpect(status().isNoContent());
 
         then(eventService).should().deleteEvent(id);
