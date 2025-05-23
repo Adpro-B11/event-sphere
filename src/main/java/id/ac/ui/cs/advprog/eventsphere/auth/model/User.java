@@ -35,6 +35,10 @@ public class User implements UserDetails {
         return null; // Not needed in main service
     }
 
+    public String getDisplayName() {
+        return this.username;
+    }
+
     @Override
     public String getUsername() {
         return email;
