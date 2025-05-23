@@ -1,3 +1,8 @@
+val seleniumJavaVersion = "4.14.1"
+val seleniumJupiterVersion = "5.0.1"
+val webdrivermanagerVersion = "5.6.3"
+val junitJupiterVersion = "5.9.1"
+
 plugins {
     java
     jacoco
@@ -10,14 +15,15 @@ version = "0.0.1-SNAPSHOT"
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
-val seleniumJavaVersion = "4.14.1"
-val seleniumJupiterVersion = "5.0.1"
-val webdrivermanagerVersion = "5.6.3"
-val junitJupiterVersion = "5.9.1"
+configurations {
+    compileOnly {
+        extendsFrom(configurations.annotationProcessor.get())
+    }
+}
 
 repositories {
     mavenCentral()
@@ -27,14 +33,19 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    // Dependensi JPA
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
 
     compileOnly("org.projectlombok:lombok")
-    developmentOnly("org.springframework.boot:spring-boot-devtools")
-    annotationProcessor("org.projectlombok:lombok")
-    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    developmentOnly("org.springframework.boot:spring-boot-devtools")
+
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
+    annotationProcessor("org.projectlombok:lombok")
+
+    // H2 untuk development/testing
     runtimeOnly("com.h2database:h2")
+    //  PostgreSQL
     runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
@@ -42,58 +53,51 @@ dependencies {
     testImplementation("io.github.bonigarcia:selenium-jupiter:$seleniumJupiterVersion")
     testImplementation("io.github.bonigarcia:webdrivermanager:$webdrivermanagerVersion")
     testImplementation("org.junit.jupiter:junit-jupiter:$junitJupiterVersion")
+
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
-// Define functionalTest source set that also picks up src/test/java
-sourceSets {
-    val functionalTest by creating {
-        java {
-            srcDirs("src/functionalTest/java", "src/test/java")
-        }
-        resources {
-            srcDirs("src/functionalTest/resources", "src/test/resources")
-        }
-        compileClasspath += sourceSets["main"].output + sourceSets["test"].output
-        runtimeClasspath += output + compileClasspath
-    }
-}
-
-configurations {
-    // extend test dependencies to functionalTest
-    named("functionalTestImplementation") {
-        extendsFrom(configurations.testImplementation.get())
-    }
-    named("functionalTestRuntimeOnly") {
-        extendsFrom(configurations.testRuntimeOnly.get())
-    }
-}
-
-// Standard test task: exclude controller tests
-tasks.named<Test>("test") {
-    useJUnitPlatform()
-    filter {
-        excludeTestsMatching("*ControllerTest")
-    }
-    finalizedBy(tasks.named("jacocoTestReport"))
-    environment("DB_URL", System.getenv("DB_URL") ?: "jdbc:h2:mem:testdb")
-    environment("DB_USERNAME", System.getenv("DB_USERNAME") ?: "sa")
-    environment("DB_PASSWORD", System.getenv("DB_PASSWORD") ?: "")
-}
-
-// functionalTest task: include only controller tests
-tasks.register<Test>("functionalTest") {
-    description = "Runs functional (Controller) tests."
+tasks.register<Test>(name = "unitTest") {
+    description = "Runs unit tests."
     group = "verification"
-    testClassesDirs = sourceSets["functionalTest"].output.classesDirs
-    classpath = sourceSets["functionalTest"].runtimeClasspath
-    useJUnitPlatform()
+
     filter {
-        includeTestsMatching("*ControllerTest")
+        excludeTestsMatching("*FunctionalTest")
     }
 }
 
-// Ensure check runs both
-tasks.named("check") {
-    dependsOn("functionalTest")
+tasks.register<Test>(name = "functionalTest") {
+    description = "Runs functional tests."
+    group = "verification"
+
+    filter {
+        includeTestsMatching("*FunctionalTest")
+    }
+}
+
+tasks.test {
+    filter {
+        excludeTestsMatching("*FunctionalTest")
+    }
+
+    finalizedBy(tasks.jacocoTestReport)
+}
+
+tasks.jacocoTestReport {
+    dependsOn(tasks.test)
+
+    reports {
+        xml.required.set(true)  // Enable XML report for SonarCloud
+        html.required.set(true) // Optional: Enables HTML report for local debugging
+    }
+}
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+}
+
+tasks {
+    bootJar {
+        mainClass.set("id.ac.ui.cs.advprog.eventsphere.EventSphereApplication")  // Your main class
+    }
 }
