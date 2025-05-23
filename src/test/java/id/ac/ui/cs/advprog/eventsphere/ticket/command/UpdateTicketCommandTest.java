@@ -10,6 +10,7 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -36,7 +37,7 @@ class UpdateTicketCommandTest {
         mockTicket.setQuota(200);
         mockTicket.setRemaining(200);
 
-        when(repository.findById(ticketId)).thenReturn(mockTicket);
+        when(repository.findById(ticketId)).thenReturn(Optional.of(mockTicket));
 
         updates = new HashMap<>();
         updates.put("price", 120.0);
@@ -49,7 +50,7 @@ class UpdateTicketCommandTest {
         command.execute();
 
         verify(repository, times(1)).findById(ticketId);
-        verify(repository, times(1)).update(mockTicket);
+        verify(repository, times(1)).save(mockTicket);
         assertEquals(120.0, mockTicket.getPrice());
     }
 
@@ -61,7 +62,7 @@ class UpdateTicketCommandTest {
 
         command.execute();
 
-        verify(repository, times(1)).update(mockTicket);
+        verify(repository, times(1)).save(mockTicket);
         assertEquals(300, mockTicket.getQuota());
         assertEquals(300, mockTicket.getRemaining()); // Remaining should increase by 100
     }
@@ -74,7 +75,7 @@ class UpdateTicketCommandTest {
 
         command.execute();
 
-        verify(repository, times(1)).update(mockTicket);
+        verify(repository, times(1)).save(mockTicket);
         assertEquals(TicketType.VIP, mockTicket.getType());
     }
 
@@ -86,7 +87,7 @@ class UpdateTicketCommandTest {
 
         command.execute();
 
-        verify(repository, times(1)).update(mockTicket);
+        verify(repository, times(1)).save(mockTicket);
         assertEquals(120.0, mockTicket.getPrice());
         assertEquals(250, mockTicket.getQuota());
         assertEquals(250, mockTicket.getRemaining());
