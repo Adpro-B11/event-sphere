@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 public interface TransactionService {
 
@@ -13,31 +14,31 @@ public interface TransactionService {
             String currentUserId
     );
 
-    Transaction createTopUpTransaction(
+    CompletableFuture<Transaction> createTopUpTransaction(
             String userId,
             double amount,
             String method,
             Map<String, String> paymentData
     );
 
-    Transaction createTicketPurchaseTransaction(
+    CompletableFuture<Transaction> createTicketPurchaseTransaction(
             String userId,
             double amount,
             Map<String, String> ticketData
     );
 
-    Optional<Transaction> getTransactionById(
+    CompletableFuture<Optional<Transaction>> getTransactionById(
             String transactionId,
             String currentUserId,
             boolean isAdmin
     );
 
-    List<Transaction> viewAllTransactions(
+    CompletableFuture<List<Transaction>> viewAllTransactions(
             String currentUserId,
             boolean isAdmin
     );
 
-    List<Transaction> filterTransactions(
+    CompletableFuture<List<Transaction>> filterTransactions(
             String currentUserId,
             boolean isAdmin,
             String status,
