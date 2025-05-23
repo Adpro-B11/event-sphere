@@ -15,6 +15,8 @@ import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @RestController
@@ -25,77 +27,97 @@ public class TicketController {
     private final TicketService ticketService;
 
     @GetMapping
-    public ResponseEntity<List<TicketResponse>> getAllTickets() {
-        List<Ticket> tickets = ticketService.getAllTickets();
-        List<TicketResponse> responses = tickets.stream()
-                .map(TicketResponse::fromTicket)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
+    public CompletableFuture<ResponseEntity<List<TicketResponse>>> getAllTickets() {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Ticket> tickets = ticketService.getAllTickets();
+            List<TicketResponse> responses = tickets.stream()
+                    .map(TicketResponse::fromTicket)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        });
     }
 
     @GetMapping("/{ticketId}")
-    public ResponseEntity<TicketResponse> getTicketById(@PathVariable String ticketId) {
-        Ticket ticket = ticketService.viewTicket(ticketId);
-        if (ticket == null) {
-            return ResponseEntity.notFound().build();
-        }
-        return ResponseEntity.ok(TicketResponse.fromTicket(ticket));
+    public CompletableFuture<ResponseEntity<TicketResponse>> getTicketById(@PathVariable String ticketId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                Ticket ticket = ticketService.viewTicket(ticketId);
+                if (ticket == null) {
+                    return ResponseEntity.notFound().build();
+                }
+                return ResponseEntity.ok(TicketResponse.fromTicket(ticket));
+            } catch (NoSuchElementException ex) {
+                return ResponseEntity.notFound().build();
+            }
+        });
     }
 
     @GetMapping("/event/{eventId}")
-    public ResponseEntity<List<TicketResponse>> getTicketsByEventId(@PathVariable String eventId) {
-        List<Ticket> tickets = ticketService.viewTicketsByEvent(eventId);
-        List<TicketResponse> responses = tickets.stream()
-                .map(TicketResponse::fromTicket)
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(responses);
+    public CompletableFuture<ResponseEntity<List<TicketResponse>>> getTicketsByEventId(@PathVariable String eventId) {
+        return CompletableFuture.supplyAsync(() -> {
+            List<Ticket> tickets = ticketService.viewTicketsByEvent(eventId);
+            List<TicketResponse> responses = tickets.stream()
+                    .map(TicketResponse::fromTicket)
+                    .collect(Collectors.toList());
+            return ResponseEntity.ok(responses);
+        });
     }
 
     @PostMapping
-    public ResponseEntity<TicketResponse> createTicket(User currentUser,
-            @Valid @RequestBody CreateTicketRequest request) {
-
-        Ticket createdTicket = ticketService.createTicket(
-                currentUser,
-                request.getEventId(),
-                request.getType(),
-                request.getPrice(),
-                request.getQuota()
-        );
-
-        return ResponseEntity
-                .status(HttpStatus.CREATED)
-                .body(TicketResponse.fromTicket(createdTicket));
+    public CompletableFuture<ResponseEntity<TicketResponse>> createTicket(User currentUser,
+                                                                          @Valid @RequestBody CreateTicketRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            Ticket createdTicket = ticketService.createTicket(
+                    currentUser,
+                    request.getEventId(),
+                    request.getType(),
+                    request.getPrice(),
+                    request.getQuota()
+            );
+            return ResponseEntity
+                    .status(HttpStatus.CREATED)
+                    .body(TicketResponse.fromTicket(createdTicket));
+        });
     }
 
     @PutMapping("/{ticketId}")
-    public ResponseEntity<Void> updateTicket(User currentUser,
-            @PathVariable String ticketId,
-            @Valid @RequestBody UpdateTicketRequest request) {
-
-        Map<String, Object> updates = new HashMap<>();
-
-        if (request.getType() != null) {
-            updates.put("type", request.getType());
-        }
-
-        if (request.getPrice() != null) {
-            updates.put("price", request.getPrice());
-        }
-
-        if (request.getQuota() != null) {
-            updates.put("quota", request.getQuota());
-        }
-
-        ticketService.updateTicket(currentUser, ticketId, updates);
-        return ResponseEntity.noContent().build();
+    public CompletableFuture<ResponseEntity<Void>> updateTicket(User currentUser,
+                                                                @PathVariable String ticketId,
+                                                                @Valid @RequestBody UpdateTicketRequest request) {
+        return CompletableFuture.supplyAsync(() -> {
+            Map<String, Object> updates = new HashMap<>();
+            if (request.getType() != null) {
+                updates.put("type", request.getType());
+            }
+            if (request.getPrice() != null) {
+                updates.put("price", request.getPrice());
+            }
+            if (request.getQuota() != null) {
+                updates.put("quota", request.getQuota());
+            }
+            try {
+                ticketService.updateTicket(currentUser, ticketId, updates);
+                return ResponseEntity.noContent().build();
+            } catch (NoSuchElementException ex) {
+                return ResponseEntity.notFound().build();
+            } catch (SecurityException ex) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        });
     }
 
     @DeleteMapping("/{ticketId}")
-    public ResponseEntity<Void> deleteTicket(User currentUser,
-            @PathVariable String ticketId) {
-
-        ticketService.deleteTicket(currentUser, ticketId);
-        return ResponseEntity.noContent().build();
+    public CompletableFuture<ResponseEntity<Void>> deleteTicket(User currentUser,
+                                                                @PathVariable String ticketId) {
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                ticketService.deleteTicket(currentUser, ticketId);
+                return ResponseEntity.noContent().build();
+            } catch (NoSuchElementException ex) {
+                return ResponseEntity.notFound().build();
+            } catch (SecurityException ex) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+            }
+        });
     }
 }
