@@ -1,54 +1,16 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.repository;
 
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
-import java.util.ArrayList;
+import java.util.Optional; // JpaRepository.findById returns Optional
 
 @Repository
-public class TicketRepository {
-    private Map<String, Ticket> tickets = new HashMap<>();
-
-    public void save(Ticket ticket) {
-        tickets.put(ticket.getId(), ticket);
-    }
-
-    public Ticket findById(String id) {
-        Ticket ticket = tickets.get(id);
-        if (ticket == null) {
-            return null;
-        }
-        return ticket;
-    }
-
-    public List<Ticket> findByEventId(String eventId) {
-        List<Ticket> eventTickets = new ArrayList<>();
-        for (Ticket ticket : tickets.values()) {
-            if (ticket.getEventId().equals(eventId) && ticket.isActive()) {
-                eventTickets.add(ticket);
-            }
-        }
-        return eventTickets;
-    }
-
-    public void update(Ticket ticket) {
-        if (!tickets.containsKey(ticket.getId())) {
-            return;
-        }
-        tickets.put(ticket.getId(), ticket);
-    }
-
-    public void delete(String id) {
-        Ticket ticket = findById(id);
-        // Soft delete - just mark as inactive
-        ticket.setActive(false);
-        tickets.put(id, ticket);
-    }
-
-    public List<Ticket> findAll() {
-        return new ArrayList<>(tickets.values());
-    }
+public interface TicketRepository extends JpaRepository<Ticket, String> {
+    List<Ticket> findByEventId(String eventId);
 }
