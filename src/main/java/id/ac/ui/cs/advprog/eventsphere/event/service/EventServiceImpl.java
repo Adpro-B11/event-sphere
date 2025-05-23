@@ -8,6 +8,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.time.LocalDate;
 import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
+import java.util.concurrent.CompletableFuture;
+
 
 @Service
 public class EventServiceImpl implements EventService {
@@ -81,5 +84,44 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> findAllEvents() {
         return eventRepository.findAll();
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> updateStatusAsync(String eventId, String status) {
+        try {
+            updateStatus(eventId, status);
+            return CompletableFuture.completedFuture(null);
+        } catch (Exception ex) {
+            CompletableFuture<Void> cf = new CompletableFuture<>();
+            cf.completeExceptionally(ex);
+            return cf;
+        }
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> deleteEventAsync(String eventId) {
+        try {
+            deleteEvent(eventId);
+            return CompletableFuture.completedFuture(null);
+        } catch (Exception ex) {
+            CompletableFuture<Void> cf = new CompletableFuture<>();
+            cf.completeExceptionally(ex);
+            return cf;
+        }
+    }
+
+    @Override
+    @Async
+    public CompletableFuture<Void> createEventAsync(Event event) {
+        try {
+            createEvent(event);
+            return CompletableFuture.completedFuture(null);
+        } catch (Exception ex) {
+            CompletableFuture<Void> cf = new CompletableFuture<>();
+            cf.completeExceptionally(ex);
+            return cf;
+        }
     }
 }

@@ -33,6 +33,10 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-validation")
+    // Dependensi JPA
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    // Dotenv
+    implementation("io.github.cdimascio:dotenv-java:3.0.0")
 
     compileOnly("org.projectlombok:lombok")
 
@@ -40,6 +44,11 @@ dependencies {
 
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
     annotationProcessor("org.projectlombok:lombok")
+
+    // H2 untuk development/testing
+    runtimeOnly("com.h2database:h2")
+    //  PostgreSQL
+    runtimeOnly("org.postgresql:postgresql")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.seleniumhq.selenium:selenium-java:$seleniumJavaVersion")
