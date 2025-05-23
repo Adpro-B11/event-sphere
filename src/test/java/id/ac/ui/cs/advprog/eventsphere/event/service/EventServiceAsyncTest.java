@@ -6,13 +6,14 @@ import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.repository.EventRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
+import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+import org.springframework.beans.factory.annotation.Autowired;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -20,31 +21,38 @@ import java.util.concurrent.Executor;
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-@Import(EventServiceAsyncTest.TestConfig.class)
+@SpringJUnitConfig(EventServiceAsyncTest.TestConfig.class)
 class EventServiceAsyncTest {
 
     @Configuration
     @EnableAsync
     static class TestConfig implements AsyncConfigurer {
-        @Bean EventRepository repo() {
+        @Bean
+        EventRepository repo() {
             return mock(EventRepository.class);
         }
-        @Bean EventServiceImpl service(EventRepository repo) {
+        @Bean
+        EventServiceImpl service(EventRepository repo) {
             return new EventServiceImpl(repo);
         }
-        @Override public Executor getAsyncExecutor() {
-            var t = new ThreadPoolTaskExecutor();
+        @Override
+        public Executor getAsyncExecutor() {
+            ThreadPoolTaskExecutor t = new ThreadPoolTaskExecutor();
             t.setCorePoolSize(1);
             t.afterPropertiesSet();
             return t;
         }
-        @Override public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-            return (ex, method, params) -> {};
+        @Override
+        public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
+            return (ex, method, params) -> { /* ignore */ };
         }
     }
 
-    @Autowired EventServiceImpl svc;
-    @Autowired EventRepository repo;
+    @Autowired
+    EventService svc;      // Service under test
+
+    @Autowired
+    EventRepository repo;     // Mocked repo
 
     private final String ID = "evt1";
 
@@ -56,9 +64,8 @@ class EventServiceAsyncTest {
     @Test
     void createEventAsync_success() {
         Event e = new Event();
-        // tidak perlu stub repo.save karena void
         CompletableFuture<Void> f = svc.createEventAsync(e);
-        f.join();
+        f.join();  // tunggu sampai selesai
         verify(repo).save(e);
     }
 
@@ -75,10 +82,12 @@ class EventServiceAsyncTest {
         e.setId(ID);
         when(repo.findById(ID)).thenReturn(e);
 
-        CompletableFuture<Void> f = svc.updateStatusAsync(ID, EventStatus.PUBLISHED.getValue());
+        CompletableFuture<Void> f =
+                svc.updateStatusAsync(ID, EventStatus.PUBLISHED.getValue());
         f.join();
 
-        assertThat(e.getStatus()).isEqualTo(EventStatus.PUBLISHED.getValue());
+        assertThat(e.getStatus())
+                .isEqualTo(EventStatus.PUBLISHED.getValue());
         verify(repo).save(e);
     }
 

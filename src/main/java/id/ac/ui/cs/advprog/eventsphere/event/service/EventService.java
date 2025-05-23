@@ -2,6 +2,8 @@ package id.ac.ui.cs.advprog.eventsphere.event.service;
 
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.repository.EventRepository;
+import java.util.concurrent.CompletableFuture;
+import org.springframework.scheduling.annotation.Async;
 
 import java.util.List;
 
@@ -17,19 +19,13 @@ public interface EventService {
     List<Event> findAllEvents();
 
     @Async
-    default CompletableFuture<Void> updateStatusAsync(String eventId, String status) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
+    CompletableFuture<Void> updateStatusAsync(String eventId, String status);
 
     @Async
-    default CompletableFuture<Void> deleteEventAsync(String eventId) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
+    CompletableFuture<Void> deleteEventAsync(String eventId);
 
     @Async
-    default CompletableFuture<Void> createEventAsync(Event event) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
+    CompletableFuture<Void> createEventAsync(Event event);
 
 
 
