@@ -5,26 +5,37 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import jakarta.persistence.*;
 import java.util.UUID;
 
+@Entity
+@Table(name = "tickets")
 @NoArgsConstructor
 @Getter
 public class Ticket {
 
+    @Id
     @Setter
     private String id = UUID.randomUUID().toString();
 
+    @Column(name = "event_id", nullable = false)
     @Setter
     private String eventId;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
     private TicketType type;
 
+    @Column(nullable = false)
     private double price;
 
+    @Column(nullable = false)
     private int quota;
 
+    @Column(nullable = false)
     private int remaining;
 
+    @Column(name = "is_active", nullable = false)
     @Setter
     private boolean isActive = true;
 
