@@ -1,16 +1,25 @@
 // src/main/java/model/Event.java
 package id.ac.ui.cs.advprog.eventsphere.event.model;
 
+import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
+import lombok.EqualsAndHashCode;
 
 import java.util.UUID;
 import id.ac.ui.cs.advprog.eventsphere.event.enums.EventStatus;
 
+@Entity
+@Table(name = "events")
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public class Event {
+
+    @Id
     @Setter
     private String id = UUID.randomUUID().toString();
 
