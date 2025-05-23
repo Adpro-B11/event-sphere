@@ -49,8 +49,8 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<Report> findReportByUser(String UserID) {
-        return reportRepository.findByCreatedBy(UserID) ;
+    public List<Report> findReportByUser(String userId) {
+        return reportRepository.findByCreatedBy(userId) ;
     }
 
     @Override

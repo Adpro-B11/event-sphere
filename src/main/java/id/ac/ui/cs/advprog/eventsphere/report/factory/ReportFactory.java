@@ -29,7 +29,7 @@ public class ReportFactory {
         return ReportService.createReport(report);
     }
 
-    private void validateInput(String title, String Description , String category, String createdBy) {
+    private void validateInput(String title, String description , String category, String createdBy) {
         if (title == null || title.trim().isEmpty()) {
             throw new IllegalArgumentException("Title report can't be empty");
         }
@@ -38,11 +38,11 @@ public class ReportFactory {
             throw new IllegalArgumentException("Title report cannot be more than 35 characters");
         }
 
-        if (Description == null || Description.trim().isEmpty()) {
+        if (description == null || description.trim().isEmpty()) {
             throw new IllegalArgumentException("Description report can't be empty");
         }
 
-        if (Description.length() > 100) {
+        if (description.length() > 100) {
             throw new IllegalArgumentException("Description report cannot be more than 100 characters");
         }
 
