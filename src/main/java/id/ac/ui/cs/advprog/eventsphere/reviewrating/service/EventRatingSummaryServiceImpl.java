@@ -4,9 +4,13 @@ import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.EventRatingSummary;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.repository.EventRatingSummaryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class EventRatingSummaryServiceImpl implements EventRatingSummaryService {
 
     private final EventRatingSummaryRepository summaryRepository;
@@ -33,22 +37,24 @@ public class EventRatingSummaryServiceImpl implements EventRatingSummaryService 
     }
 
     @Override
+    @Transactional(readOnly = true)
     public double getAverageRating(String eventId) {
-        EventRatingSummary summary = summaryRepository.findByEventId(eventId);
-        return summary != null ? summary.getAverageRating() : 0.0;
+        Optional<EventRatingSummary> summaryOptional = summaryRepository.findByEventId(eventId);
+        return summaryOptional.map(EventRatingSummary::getAverageRating).orElse(0.0);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public int getTotalReviews(String eventId) {
-        EventRatingSummary summary = summaryRepository.findByEventId(eventId);
-        return summary != null ? summary.getTotalReviews() : 0;
+        Optional<EventRatingSummary> summaryOptional = summaryRepository.findByEventId(eventId);
+        return summaryOptional.map(EventRatingSummary::getTotalReviews).orElse(0);
     }
 
     private EventRatingSummary getOrCreateSummary(String eventId) {
-        EventRatingSummary summary = summaryRepository.findByEventId(eventId);
-        if (summary == null) {
-            summary = new EventRatingSummary(eventId);
-        }
-        return summary;
+        return summaryRepository.findByEventId(eventId)
+                .orElseGet(() -> {
+                    EventRatingSummary newSummary = new EventRatingSummary(eventId);
+                    return newSummary;
+                });
     }
 }
