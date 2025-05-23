@@ -16,6 +16,22 @@ public interface EventService {
     void deleteEvent(String eventId);
     List<Event> findAllEvents();
 
+    @Async
+    default CompletableFuture<Void> updateStatusAsync(String eventId, String status) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Async
+    default CompletableFuture<Void> deleteEventAsync(String eventId) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+    @Async
+    default CompletableFuture<Void> createEventAsync(Event event) {
+        throw new UnsupportedOperationException("Not implemented yet");
+    }
+
+
 
 
 }
