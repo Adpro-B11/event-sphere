@@ -45,7 +45,6 @@ public class ReportServiceTest {
                 "Tiket yang saya beli tidak bisa di-scan oleh panitia",
                 ReportCategory.TICKET.name(),
                 "TICKET-123",
-                null,
                 userId
         );
 

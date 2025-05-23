@@ -51,7 +51,6 @@ public class ReportMessageServiceTest {
                 "Tiket yang saya beli tidak bisa di-scan oleh panitia",
                 "TICKET",
                 "TICKET-123",
-                null,
                 sender
         );
 

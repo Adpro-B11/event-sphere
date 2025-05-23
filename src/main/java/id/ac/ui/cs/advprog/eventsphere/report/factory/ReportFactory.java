@@ -19,13 +19,12 @@ public class ReportFactory {
         String description = newReport.getDescription();
         String category = newReport.getCategory();
         String categoryReference = newReport.getCategoryReference();
-        String attachmentPath = newReport.getAttachmentPath();
         String createdBy = newReport.getCreatedBy();
 
         validateInput(title, description, category, createdBy);
         validateReference(category, categoryReference);
 
-        Report report = new Report(title, description, category.toUpperCase(), categoryReference, attachmentPath, createdBy);
+        Report report = new Report(title, description, category.toUpperCase(), categoryReference, createdBy);
         return ReportService.createReport(report);
     }
 

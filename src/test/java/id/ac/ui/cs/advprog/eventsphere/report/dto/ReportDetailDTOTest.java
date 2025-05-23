@@ -22,7 +22,6 @@ class ReportDetailDTOTest {
         assertNull(dto.getDescription());
         assertNull(dto.getCategory());
         assertNull(dto.getCategoryReference());
-        assertNull(dto.getAttachmentPath());
         assertNull(dto.getStatus());
         assertNull(dto.getCreatedAt());
         assertNull(dto.getCreatedBy());
@@ -37,7 +36,6 @@ class ReportDetailDTOTest {
         String description = "Pembayaran untuk tiket event tidak berhasil";
         String category = "PAYMENT";
         String categoryReference = "TRX-123";
-        String attachmentPath = "/attachments/bukti.jpg";
         String status = "PENDING";
         LocalDateTime createdAt = LocalDateTime.now();
         String createdBy = "user123";
@@ -46,7 +44,7 @@ class ReportDetailDTOTest {
         // Act
         ReportDetailDTO dto = new ReportDetailDTO(
                 reportID, title, description, category, categoryReference,
-                attachmentPath, status, createdAt, createdBy, messages
+                status, createdAt, createdBy, messages
         );
 
         // Assert
@@ -55,7 +53,6 @@ class ReportDetailDTOTest {
         assertEquals(description, dto.getDescription());
         assertEquals(category, dto.getCategory());
         assertEquals(categoryReference, dto.getCategoryReference());
-        assertEquals(attachmentPath, dto.getAttachmentPath());
         assertEquals(status, dto.getStatus());
         assertEquals(createdAt, dto.getCreatedAt());
         assertEquals(createdBy, dto.getCreatedBy());
@@ -77,7 +74,6 @@ class ReportDetailDTOTest {
                 .description("Event yang saya buat tidak muncul di halaman utama")
                 .category("EVENT_ISSUE")
                 .categoryReference("EVENT-456")
-                .attachmentPath("/attachments/screenshoot.png")
                 .status("ON_PROGRESS")
                 .createdAt(createdAt)
                 .createdBy("user456")
@@ -90,7 +86,6 @@ class ReportDetailDTOTest {
         assertEquals("Event yang saya buat tidak muncul di halaman utama", dto.getDescription());
         assertEquals("EVENT_ISSUE", dto.getCategory());
         assertEquals("EVENT-456", dto.getCategoryReference());
-        assertEquals("/attachments/screenshoot.png", dto.getAttachmentPath());
         assertEquals("ON_PROGRESS", dto.getStatus());
         assertEquals(createdAt, dto.getCreatedAt());
         assertEquals("user456", dto.getCreatedBy());
@@ -111,7 +106,6 @@ class ReportDetailDTOTest {
         dto.setDescription("Saya mendapatkan tiket duplikat");
         dto.setCategory("TICKET");
         dto.setCategoryReference("TIX-789");
-        dto.setAttachmentPath("/attachments/tiket.pdf");
         dto.setStatus("RESOLVED");
         dto.setCreatedAt(createdAt);
         dto.setCreatedBy("user789");
@@ -123,7 +117,6 @@ class ReportDetailDTOTest {
         assertEquals("Saya mendapatkan tiket duplikat", dto.getDescription());
         assertEquals("TICKET", dto.getCategory());
         assertEquals("TIX-789", dto.getCategoryReference());
-        assertEquals("/attachments/tiket.pdf", dto.getAttachmentPath());
         assertEquals("RESOLVED", dto.getStatus());
         assertEquals(createdAt, dto.getCreatedAt());
         assertEquals("user789", dto.getCreatedBy());
@@ -143,7 +136,6 @@ class ReportDetailDTOTest {
                 .description("Description")
                 .category("PAYMENT")
                 .categoryReference("REF-123")
-                .attachmentPath("/path")
                 .status("PENDING")
                 .createdAt(createdAt)
                 .createdBy("user")
@@ -156,7 +148,6 @@ class ReportDetailDTOTest {
                 .description("Description")
                 .category("PAYMENT")
                 .categoryReference("REF-123")
-                .attachmentPath("/path")
                 .status("PENDING")
                 .createdAt(createdAt)
                 .createdBy("user")
@@ -169,7 +160,6 @@ class ReportDetailDTOTest {
                 .description("Different Description")
                 .category("TICKET")
                 .categoryReference("REF-456")
-                .attachmentPath("/different/path")
                 .status("RESOLVED")
                 .createdAt(LocalDateTime.now().plusDays(1))
                 .createdBy("another-user")

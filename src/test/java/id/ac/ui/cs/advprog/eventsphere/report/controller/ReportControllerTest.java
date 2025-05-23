@@ -64,7 +64,6 @@ class ReportControllerTest {
                 "Tiket tidak muncul setelah pembayaran",
                 "TICKET",
                 "TICKET-123",
-                "path/to/attachment",
                 userId
         );
 
@@ -83,7 +82,6 @@ class ReportControllerTest {
                 .description("Tiket tidak muncul setelah pembayaran")
                 .category("TICKET")
                 .categoryReference("TICKET-123")
-                .attachmentPath("path/to/attachment")
                 .status("PENDING")
                 .createdAt(LocalDateTime.now())
                 .createdBy(userId)
@@ -108,7 +106,6 @@ class ReportControllerTest {
                 .description("Tiket tidak muncul setelah pembayaran")
                 .category("TICKET")
                 .categoryReference("TICKET-123")
-                .attachmentPath("path/to/attachment")
                 .createdBy(userId)
                 .build();
     }

@@ -63,7 +63,6 @@ class ReportMessageControllerTest {
                 "Tiket tidak muncul setelah pembayaran",
                 "TICKET",
                 "TICKET-123",
-                "path/to/attachment",
                 "user123"
         );
 
