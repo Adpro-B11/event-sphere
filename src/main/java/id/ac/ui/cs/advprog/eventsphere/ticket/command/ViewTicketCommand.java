@@ -15,10 +15,11 @@ public class ViewTicketCommand implements TicketCommand {
 
     @Override
     public void execute() {
-        result = repository.findById(ticketId);
+        result = repository.findById(ticketId).orElse(null);
     }
 
     public Ticket getResult() {
         return result;
     }
 }
+    

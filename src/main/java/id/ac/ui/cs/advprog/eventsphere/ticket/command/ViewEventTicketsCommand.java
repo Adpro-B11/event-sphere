@@ -24,3 +24,4 @@ public class ViewEventTicketsCommand implements TicketCommand {
         return result;
     }
 }
+    

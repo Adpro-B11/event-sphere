@@ -3,8 +3,8 @@ package id.ac.ui.cs.advprog.eventsphere.ticket.command;
 import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
 import id.ac.ui.cs.advprog.eventsphere.ticket.repository.TicketRepository;
-
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class UpdateTicketCommand implements TicketCommand {
     private final TicketRepository repository;
@@ -19,24 +19,28 @@ public class UpdateTicketCommand implements TicketCommand {
 
     @Override
     public void execute() {
-        Ticket ticket = repository.findById(ticketId);
+        Ticket ticket = repository.findById(ticketId)
+                .orElseThrow(() -> new NoSuchElementException("Ticket not found with id: " + ticketId));
 
-        // Apply updates
         if (updates.containsKey("price")) {
             ticket.setPrice((Double) updates.get("price"));
         }
 
         if (updates.containsKey("quota")) {
             int newQuota = (Integer) updates.get("quota");
-            int difference = newQuota - ticket.getQuota();
+
+            int oldQuota = ticket.getQuota();
             ticket.setQuota(newQuota);
-            ticket.setRemaining(ticket.getRemaining() + difference);
+            int quotaDifference = newQuota - oldQuota;
+            ticket.setRemaining(Math.max(0, ticket.getRemaining() + quotaDifference));
         }
 
         if (updates.containsKey("type")) {
             ticket.setType((TicketType) updates.get("type"));
         }
 
-        repository.update(ticket);
+        repository.save(ticket);
+        // Note: The service method calling this command should be @Transactional
     }
 }
+    

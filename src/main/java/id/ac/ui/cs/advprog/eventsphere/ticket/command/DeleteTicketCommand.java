@@ -13,6 +13,8 @@ public class DeleteTicketCommand implements TicketCommand {
 
     @Override
     public void execute() {
-        repository.delete(ticketId);
+        repository.deleteById(ticketId);
+        // Note: The service method calling this command should be @Transactional
     }
 }
+    
