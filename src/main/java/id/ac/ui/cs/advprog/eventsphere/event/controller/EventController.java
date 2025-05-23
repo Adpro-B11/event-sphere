@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("api/events")
+@CrossOrigin(origins = "http://localhost:3000")
 public class EventController {
 
     private final EventService eventService;
@@ -25,12 +26,16 @@ public class EventController {
     }
 
     @PostMapping
-    public CompletableFuture<ResponseEntity<Void>> createEvent(@RequestBody Event event) {
+    public CompletableFuture<ResponseEntity<Event>> createEvent(@RequestBody Event event) {
         return CompletableFuture.supplyAsync(() -> {
-            new CreateEventCommand(eventService, event).execute();
-            // note: Location header stays "/events/{id}"
-            URI location = URI.create("/events/" + event.getId());
-            return ResponseEntity.created(location).build();
+            try {
+                new CreateEventCommand(eventService, event).execute();
+                // Return the saved event with its ID
+                Event savedEvent = eventService.findById(event.getId());
+                return ResponseEntity.ok(savedEvent);
+            } catch (IllegalArgumentException ex) {
+                return ResponseEntity.badRequest().build();
+            }
         });
     }
 
@@ -54,14 +59,15 @@ public class EventController {
     }
 
     @PutMapping("/{id}")
-    public CompletableFuture<ResponseEntity<Void>> updateEventInfo(
+    public CompletableFuture<ResponseEntity<Event>> updateEventInfo(
             @PathVariable String id,
             @RequestBody Event updatedEvent
     ) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 new UpdateEventInfoCommand(eventService, id, updatedEvent).execute();
-                return ResponseEntity.ok().build();
+                Event updated = eventService.findById(id);
+                return ResponseEntity.ok(updated);
             } catch (NoSuchElementException ex) {
                 return ResponseEntity.notFound().build();
             } catch (IllegalStateException | IllegalArgumentException ex) {
@@ -69,16 +75,14 @@ public class EventController {
             }
         });
     }
-
     @PatchMapping("/{id}/status")
-    public CompletableFuture<ResponseEntity<Void>> updateStatus(
-            @PathVariable String id,
-            @RequestBody StatusDto dto
-    ) {
+    public CompletableFuture<ResponseEntity<Event>> updateStatus(@PathVariable String id, @RequestBody StatusDto dto) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 new UpdateStatusCommand(eventService, id, dto.status).execute();
-                return ResponseEntity.ok().build();
+                // Return the updated event
+                Event updatedEvent = eventService.findById(id);
+                return ResponseEntity.ok(updatedEvent);
             } catch (NoSuchElementException ex) {
                 return ResponseEntity.notFound().build();
             } catch (IllegalArgumentException ex) {
@@ -88,7 +92,7 @@ public class EventController {
     }
 
     @DeleteMapping("/{id}")
-    public CompletableFuture<ResponseEntity<Void>> deleteEvent(@PathVariable String id) {
+    public CompletableFuture<ResponseEntity<Event>> deleteEvent(@PathVariable String id) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 new DeleteEventCommand(eventService, id).execute();
