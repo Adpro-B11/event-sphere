@@ -126,7 +126,7 @@ class EventServiceTest {
                 .thenReturn(Optional.of(existing));
 
         Event updated = new Event();
-        updated.setTitle("New");
+        updated.setTitle("New Title");
         updated.setDescription("NewDesc");
         updated.setDate("2025-06-30");
         updated.setLocation("NewLoc");
