@@ -4,12 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.service.EventService;
 import org.junit.jupiter.api.Test;
-import org.mockito.BDDMockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -18,6 +18,7 @@ import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(EventController.class)
@@ -29,7 +30,7 @@ class EventControllerTest {
     @MockitoBean
     private EventService eventService;
 
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Test
     void testCreateEvent() throws Exception {
@@ -43,9 +44,13 @@ class EventControllerTest {
 
         willDoNothing().given(eventService).createEvent(any(Event.class));
 
-        mockMvc.perform(post("/events")
+        MvcResult result = mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(event)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isCreated())
                 .andExpect(header().string("Location", matchesPattern(".*/events/.+")));
 
@@ -60,7 +65,11 @@ class EventControllerTest {
         event.setTitle("Konser");
         given(eventService.findById(id)).willReturn(event);
 
-        mockMvc.perform(get("/events/{id}", id))
+        MvcResult result = mockMvc.perform(get("/api/events/{id}", id))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.title").value("Konser"));
@@ -71,7 +80,11 @@ class EventControllerTest {
         String id = "notfound";
         given(eventService.findById(id)).willThrow(new NoSuchElementException());
 
-        mockMvc.perform(get("/events/{id}", id))
+        MvcResult result = mockMvc.perform(get("/api/events/{id}", id))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isNotFound());
     }
 
@@ -81,7 +94,11 @@ class EventControllerTest {
         Event e2 = new Event(); e2.setId("2"); e2.setTitle("A2");
         given(eventService.findAllEvents()).willReturn(List.of(e1, e2));
 
-        mockMvc.perform(get("/events"))
+        MvcResult result = mockMvc.perform(get("/api/events"))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("1"));
@@ -91,14 +108,21 @@ class EventControllerTest {
     void testUpdateEventInfo() throws Exception {
         String id = "123";
         Event updated = new Event();
-        updated.setTitle("New"); updated.setDescription("NewDesc");
-        updated.setDate("2025-07-01"); updated.setLocation("L");
+        updated.setTitle("New");
+        updated.setDescription("NewDesc");
+        updated.setDate("2025-07-01");
+        updated.setLocation("L");
         updated.setPrice(200.0);
+
         willDoNothing().given(eventService).updateEventInfo(eq(id), any(Event.class));
 
-        mockMvc.perform(put("/events/{id}", id)
+        MvcResult result = mockMvc.perform(put("/api/events/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updated)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isOk());
 
         then(eventService).should().updateEventInfo(eq(id), any(Event.class));
@@ -108,11 +132,16 @@ class EventControllerTest {
     void testUpdateStatus() throws Exception {
         String id = "123";
         String body = "{\"status\":\"PUBLISHED\"}";
+
         willDoNothing().given(eventService).updateStatus(eq(id), eq("PUBLISHED"));
 
-        mockMvc.perform(patch("/events/{id}/status", id)
+        MvcResult result = mockMvc.perform(patch("/api/events/{id}/status", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isOk());
 
         then(eventService).should().updateStatus(id, "PUBLISHED");
@@ -123,7 +152,11 @@ class EventControllerTest {
         String id = "123";
         willDoNothing().given(eventService).deleteEvent(id);
 
-        mockMvc.perform(delete("/events/{id}", id))
+        MvcResult result = mockMvc.perform(delete("/api/events/{id}", id))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(result))
                 .andExpect(status().isNoContent());
 
         then(eventService).should().deleteEvent(id);
