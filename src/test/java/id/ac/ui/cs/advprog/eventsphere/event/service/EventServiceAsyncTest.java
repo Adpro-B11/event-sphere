@@ -54,6 +54,22 @@ class EventServiceAsyncTest {
     }
 
     @Test
+    void createEventAsync_success() {
+        Event e = new Event();
+        // tidak perlu stub repo.save karena void
+        CompletableFuture<Void> f = svc.createEventAsync(e);
+        f.join();
+        verify(repo).save(e);
+    }
+
+    @Test
+    void createEventAsync_null_throws() {
+        CompletableFuture<Void> f = svc.createEventAsync(null);
+        assertThatThrownBy(f::join)
+                .hasCauseInstanceOf(IllegalArgumentException.class);
+    }
+
+    @Test
     void updateStatusAsync_success() {
         Event e = new Event();
         e.setId(ID);
