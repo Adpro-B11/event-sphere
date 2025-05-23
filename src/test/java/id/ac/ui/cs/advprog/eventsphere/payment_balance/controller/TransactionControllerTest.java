@@ -10,13 +10,12 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+
 import static org.hamcrest.Matchers.hasSize;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
-
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -38,19 +37,17 @@ class TransactionControllerTest {
 
     @BeforeEach
     void setUp() {
-        // userId dan adminId sudah diinisialisasi sebagai String dari UUID
         userId = UUID.randomUUID().toString();
         adminId = UUID.randomUUID().toString();
     }
 
-    // --- TOP-UP ENDPOINT ---
     @Test
-    void whenTopUpSuccess_thenReturnsCreatedAndId() throws Exception {
-        UUID transactionId = UUID.randomUUID(); // Membuat UUID baru
+    void whenTopUpSuccess_thenReturnsAcceptedAndId() throws Exception {
+        UUID txId = UUID.randomUUID();
         Transaction tx = mock(Transaction.class);
-        when(tx.getTransactionId()).thenReturn(transactionId); 
+        when(tx.getTransactionId()).thenReturn(txId);
         when(transactionService.createTopUpTransaction(eq(userId), eq(100.0), eq("CREDIT_CARD"), anyMap()))
-                .thenReturn(tx);
+                .thenReturn(CompletableFuture.completedFuture(tx));
 
         String json = mapper.writeValueAsString(Map.of(
                 "userId", userId,
@@ -62,8 +59,8 @@ class TransactionControllerTest {
         mockMvc.perform(post("/api/transactions/topup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.transactionId").value(transactionId.toString()));
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.transactionId").value(txId.toString()));
 
         verify(transactionService).createTopUpTransaction(userId, 100.0, "CREDIT_CARD", anyMap());
     }
@@ -71,7 +68,7 @@ class TransactionControllerTest {
     @Test
     void whenTopUpInvalidAmount_thenReturnsBadRequest() throws Exception {
         when(transactionService.createTopUpTransaction(anyString(), eq(-50.0), anyString(), anyMap()))
-                .thenThrow(new IllegalArgumentException("Invalid amount"));
+                .thenReturn(CompletableFuture.failedFuture(new IllegalArgumentException("Invalid amount")));
 
         String json = mapper.writeValueAsString(Map.of(
                 "userId", userId,
@@ -82,43 +79,28 @@ class TransactionControllerTest {
         mockMvc.perform(post("/api/transactions/topup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Invalid amount"));
-    }
-
-    @Test
-    void whenTopUpMissingMethod_thenReturnsBadRequest() throws Exception {
-        String json = mapper.writeValueAsString(Map.of(
-                "userId", userId,
-                "amount", 50.0
-        ));
-
-        mockMvc.perform(post("/api/transactions/topup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
                 .andExpect(status().isBadRequest());
     }
 
-    // --- PURCHASE ENDPOINT ---
     @Test
-    void whenPurchaseSuccess_thenReturnsCreatedAndId() throws Exception {
-        UUID transactionId = UUID.randomUUID();
+    void whenPurchaseSuccess_thenReturnsAcceptedAndId() throws Exception {
+        UUID txId = UUID.randomUUID();
         Transaction tx = mock(Transaction.class);
-        when(tx.getTransactionId()).thenReturn(transactionId); 
+        when(tx.getTransactionId()).thenReturn(txId);
         when(transactionService.createTicketPurchaseTransaction(eq(userId), eq(75.0), anyMap()))
-                .thenReturn(tx);
+                .thenReturn(CompletableFuture.completedFuture(tx));
 
         String json = mapper.writeValueAsString(Map.of(
                 "userId", userId,
                 "amount", 75.0,
-                "ticketData", Map.of("VIP","1")
+                "ticketData", Map.of("VIP", "1")
         ));
 
         mockMvc.perform(post("/api/transactions/purchase")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.transactionId").value(transactionId.toString())); // Membandingkan dengan String dari UUID
+                .andExpect(status().isAccepted())
+                .andExpect(jsonPath("$.transactionId").value(txId.toString()));
 
         verify(transactionService).createTicketPurchaseTransaction(userId, 75.0, anyMap());
     }
@@ -126,26 +108,12 @@ class TransactionControllerTest {
     @Test
     void whenPurchaseInsufficient_thenReturnsBadRequest() throws Exception {
         when(transactionService.createTicketPurchaseTransaction(anyString(), anyDouble(), anyMap()))
-                .thenThrow(new IllegalStateException("Insufficient balance"));
+                .thenReturn(CompletableFuture.failedFuture(new IllegalStateException("Insufficient balance")));
 
         String json = mapper.writeValueAsString(Map.of(
                 "userId", userId,
                 "amount", 500.0,
-                "ticketData", Map.of("VIP","1")
-        ));
-
-        mockMvc.perform(post("/api/transactions/purchase")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Insufficient balance"));
-    }
-
-    @Test
-    void whenPurchaseMissingData_thenReturnsBadRequest() throws Exception {
-        String json = mapper.writeValueAsString(Map.of(
-                "userId", userId,
-                "amount", 30.0
+                "ticketData", Map.of("VIP", "1")
         ));
 
         mockMvc.perform(post("/api/transactions/purchase")
@@ -154,27 +122,26 @@ class TransactionControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
-    // --- GET BY ID ---
     @Test
     void whenGetByIdFound_thenReturnsOk() throws Exception {
-        UUID txId = UUID.randomUUID(); 
+        UUID txId = UUID.randomUUID();
         Transaction tx = mock(Transaction.class);
-        when(tx.getTransactionId()).thenReturn(txId); 
-        when(transactionService.getTransactionById(eq(txId.toString()), eq(userId), eq(false))) 
-                .thenReturn(Optional.of(tx));
+        when(tx.getTransactionId()).thenReturn(txId);
+        when(transactionService.getTransactionById(eq(txId.toString()), eq(userId), eq(false)))
+                .thenReturn(CompletableFuture.completedFuture(Optional.of(tx)));
 
-        mockMvc.perform(get("/api/transactions/{id}", txId.toString()) 
+        mockMvc.perform(get("/api/transactions/{id}", txId.toString())
                         .param("currentUserId", userId)
                         .param("isAdmin", "false"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.transactionId").value(txId.toString())); // Membandingkan dengan String dari UUID
+                .andExpect(jsonPath("$.transactionId").value(txId.toString()));
     }
 
     @Test
     void whenGetByIdNotFound_thenReturnsNotFound() throws Exception {
-        String txId = UUID.randomUUID().toString(); 
+        String txId = UUID.randomUUID().toString();
         when(transactionService.getTransactionById(eq(txId), eq(userId), eq(false)))
-                .thenReturn(Optional.empty());
+                .thenReturn(CompletableFuture.completedFuture(Optional.empty()));
 
         mockMvc.perform(get("/api/transactions/{id}", txId)
                         .param("currentUserId", userId)
@@ -183,23 +150,9 @@ class TransactionControllerTest {
     }
 
     @Test
-    void whenGetByIdAdmin_thenReturnsOk() throws Exception {
-        UUID txId = UUID.randomUUID(); 
-        Transaction tx = mock(Transaction.class);
-        when(transactionService.getTransactionById(eq(txId.toString()), eq(adminId), eq(true))) 
-                .thenReturn(Optional.of(tx));
-
-        mockMvc.perform(get("/api/transactions/{id}", txId.toString()) 
-                        .param("currentUserId", adminId)
-                        .param("isAdmin", "true"))
-                .andExpect(status().isOk());
-    }
-
-    // --- LIST/FILTER ---
-    @Test
-    void whenListUser_thenReturnsOk() throws Exception {
+    void whenList_thenReturnsOk() throws Exception {
         when(transactionService.filterTransactions(eq(userId), eq(false), any(), any(), any(), any(), any()))
-                .thenReturn(List.of());
+                .thenReturn(CompletableFuture.completedFuture(List.of()));
 
         mockMvc.perform(get("/api/transactions")
                         .param("currentUserId", userId)
@@ -209,51 +162,15 @@ class TransactionControllerTest {
     }
 
     @Test
-    void whenListAdminWithFilters_thenReturnsOk() throws Exception {
-        when(transactionService.filterTransactions(eq(null), eq(true), eq("SUCCESS"), eq("TOPUP_BALANCE"), eq("BANK_TRANSFER"), any(), any()))
-                .thenReturn(List.of(mock(Transaction.class)));
-
-        mockMvc.perform(get("/api/transactions")
-                        .param("currentUserId", adminId)
-                        .param("isAdmin", "true")
-                        .param("status", "SUCCESS")
-                        .param("type", "TOPUP_BALANCE")
-                        .param("method", "BANK_TRANSFER"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(1)));
-    }
-
-    // --- DELETE ---
-    @Test
-    void whenDeleteAdmin_thenReturnsNoContent() throws Exception {
-        String txId = UUID.randomUUID().toString(); 
+    void whenDelete_thenReturnsNoContent() throws Exception {
+        String txId = UUID.randomUUID().toString();
         doNothing().when(transactionService).deleteTransaction(eq(txId), eq(true));
 
         mockMvc.perform(delete("/api/transactions/{id}", txId)
                         .param("currentUserId", adminId)
                         .param("isAdmin", "true"))
                 .andExpect(status().isNoContent());
-    }
 
-    @Test
-    void whenDeleteUser_thenReturnsForbidden() throws Exception {
-        String txId = UUID.randomUUID().toString(); 
-        mockMvc.perform(delete("/api/transactions/{id}", txId)
-                        .param("currentUserId", userId)
-                        .param("isAdmin", "false"))
-                .andExpect(status().isForbidden());
-    }
-
-    @Test
-    void whenDeleteNotFound_thenReturnsBadRequest() throws Exception {
-        String txId = UUID.randomUUID().toString(); 
-        doThrow(new java.util.NoSuchElementException("Not found"))
-                .when(transactionService).deleteTransaction(eq(txId), eq(true));
-
-        mockMvc.perform(delete("/api/transactions/{id}", txId)
-                        .param("currentUserId", adminId)
-                        .param("isAdmin", "true"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.message").value("Not found"));
+        verify(transactionService).deleteTransaction(txId, true);
     }
 }

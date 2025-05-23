@@ -28,8 +28,11 @@ public class TransactionController {
             @RequestParam double amount,
             @RequestParam String method,
             @RequestBody(required = false) Map<String, String> paymentData) {
+
         return service.createTopUpTransaction(userId, amount, method, paymentData)
-                .thenApply(tx -> ResponseEntity.status(HttpStatus.ACCEPTED).body(tx));
+                .thenApply(tx -> ResponseEntity.status(HttpStatus.ACCEPTED).body(tx))
+                .exceptionally(ex -> ResponseEntity.badRequest()
+                        .body(null));
     }
 
     @PostMapping("/purchase")
@@ -37,19 +40,23 @@ public class TransactionController {
             @RequestParam String userId,
             @RequestParam double amount,
             @RequestBody Map<String, String> ticketData) {
+
         return service.createTicketPurchaseTransaction(userId, amount, ticketData)
-                .thenApply(tx -> ResponseEntity.status(HttpStatus.ACCEPTED).body(tx));
+                .thenApply(tx -> ResponseEntity.status(HttpStatus.ACCEPTED).body(tx))
+                .exceptionally(ex -> ResponseEntity.badRequest()
+                        .body(null));
     }
+
 
     @GetMapping("/{id}")
     public CompletableFuture<ResponseEntity<Transaction>> getById(
             @PathVariable String id,
             @RequestParam String currentUserId,
             @RequestParam(defaultValue = "false") boolean isAdmin) {
+
         service.initStrategy(isAdmin, currentUserId);
         return service.getTransactionById(id, currentUserId, isAdmin)
-                .thenApply(opt -> opt
-                        .map(ResponseEntity::ok)
+                .thenApply(opt -> opt.map(ResponseEntity::ok)
                         .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build()));
     }
 
@@ -64,9 +71,9 @@ public class TransactionController {
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdAfter,
             @RequestParam(required = false)
             @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime createdBefore) {
+
         service.initStrategy(isAdmin, currentUserId);
-        return service.filterTransactions(
-                        currentUserId, isAdmin, status, type, method, createdAfter, createdBefore)
+        return service.filterTransactions(currentUserId, isAdmin, status, type, method, createdAfter, createdBefore)
                 .thenApply(ResponseEntity::ok);
     }
 
@@ -75,7 +82,9 @@ public class TransactionController {
             @PathVariable String id,
             @RequestParam String currentUserId,
             @RequestParam(defaultValue = "false") boolean isAdmin) {
+
         service.initStrategy(isAdmin, currentUserId);
+        // synchronous deletion wrapped in CompletableFuture
         service.deleteTransaction(id, isAdmin);
         return CompletableFuture.completedFuture(ResponseEntity.noContent().build());
     }
