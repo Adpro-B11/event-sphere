@@ -32,4 +32,8 @@ public class TicketCommandFactory {
     public TicketCommand updateTicketCommand(String ticketId, Map<String, Object> updates) {
         return new UpdateTicketCommand(repository, ticketId, updates);
     }
+
+    public TicketCommand purchaseTicketCommand(String ticketId, int quantity) {
+        return new PurchaseTicketCommand(repository, ticketId, quantity);
+    }
 }
