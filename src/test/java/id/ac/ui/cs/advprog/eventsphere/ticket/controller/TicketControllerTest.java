@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -37,7 +38,7 @@ public class TicketControllerTest {
     void setUp() {
         // Create test user
         testUser = new User();
-        testUser.setId("user123");
+        testUser.setId(UUID.fromString("user123"));
 
         // Create test ticket
         testTicket = new Ticket();
