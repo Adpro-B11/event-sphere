@@ -43,13 +43,13 @@ public class TicketServiceImplTest {
     @Test
     public void testDeleteTicketExecutesDeleteCommand() {
         service.deleteTicket(mockUser, "ticket123");
-        verify(repository).delete("ticket123");
+        verify(repository).deleteById("ticket123");
     }
 
     @Test
     public void testViewTicketReturnsTicket() {
         Ticket ticket = new Ticket();
-        when(repository.findById("ticket123")).thenReturn(ticket);
+        when(repository.findById("ticket123")).thenReturn(Optional.of(ticket));
 
         Ticket result = service.viewTicket("ticket123");
 
@@ -81,10 +81,10 @@ public class TicketServiceImplTest {
         existingTicket.setPrice(200.0);
         existingTicket.setQuota(50);
 
-        when(repository.findById("ticket123")).thenReturn(existingTicket);
+        when(repository.findById("ticket123")).thenReturn(Optional.of(existingTicket));
 
         service.updateTicket(mockUser, "ticket123", updates);
 
-        verify(repository).update(any(Ticket.class));  // ← FIXED
+        verify(repository).save(any(Ticket.class));  // ← FIXED
     }
 }

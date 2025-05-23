@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -29,7 +31,7 @@ class ViewTicketCommandTest {
         mockTicket.setId(ticketId);
         mockTicket.setType(TicketType.VIP);
 
-        when(repository.findById(ticketId)).thenReturn(mockTicket);
+        when(repository.findById(ticketId)).thenReturn(Optional.of(mockTicket));
 
         command = new ViewTicketCommand(repository, ticketId);
     }
