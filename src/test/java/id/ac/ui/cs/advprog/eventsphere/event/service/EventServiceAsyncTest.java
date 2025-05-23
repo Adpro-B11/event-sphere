@@ -14,7 +14,9 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 import org.springframework.beans.factory.annotation.Autowired;
+
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -27,12 +29,10 @@ class EventServiceAsyncTest {
     @Configuration
     @EnableAsync
     static class TestConfig implements AsyncConfigurer {
-        @Bean
-        EventRepository repo() {
+        @Bean EventRepository repo() {
             return mock(EventRepository.class);
         }
-        @Bean
-        EventServiceImpl service(EventRepository repo) {
+        @Bean EventServiceImpl service(EventRepository repo) {
             return new EventServiceImpl(repo);
         }
         @Override
@@ -44,15 +44,12 @@ class EventServiceAsyncTest {
         }
         @Override
         public AsyncUncaughtExceptionHandler getAsyncUncaughtExceptionHandler() {
-            return (ex, method, params) -> { /* ignore */ };
+            return (ex, method, params) -> {};
         }
     }
 
-    @Autowired
-    EventService svc;      // Service under test
-
-    @Autowired
-    EventRepository repo;     // Mocked repo
+    @Autowired EventService svc;
+    @Autowired EventRepository repo;
 
     private final String ID = "evt1";
 
@@ -64,25 +61,25 @@ class EventServiceAsyncTest {
     @Test
     void createEventAsync_success() {
         Event e = new Event();
-        CompletableFuture<Void> f = svc.createEventAsync(e);
-        f.join();  // tunggu sampai selesai
+        CompletableFuture<Event> f = svc.createEventAsync(e);
+        f.join();
         verify(repo).save(e);
     }
 
     @Test
-    void createEventAsync_null_throws() {
-        CompletableFuture<Void> f = svc.createEventAsync(null);
-        assertThatThrownBy(f::join)
-                .hasCauseInstanceOf(IllegalArgumentException.class);
+    void createEventAsync_null_returnsNull() {
+        CompletableFuture<Event> f = svc.createEventAsync(null);
+        assertThat(f.join()).isNull();
+        verify(repo).save(null);
     }
 
     @Test
     void updateStatusAsync_success() {
         Event e = new Event();
         e.setId(ID);
-        when(repo.findById(ID)).thenReturn(e);
+        when(repo.findById(ID)).thenReturn(Optional.of(e));
 
-        CompletableFuture<Void> f =
+        CompletableFuture<Event> f =
                 svc.updateStatusAsync(ID, EventStatus.PUBLISHED.getValue());
         f.join();
 
@@ -93,16 +90,16 @@ class EventServiceAsyncTest {
 
     @Test
     void updateStatusAsync_notFound_throws() {
-        when(repo.findById(ID)).thenReturn(null);
+        when(repo.findById(ID)).thenReturn(Optional.empty());
 
-        CompletableFuture<Void> f = svc.updateStatusAsync(ID, "ANY");
+        CompletableFuture<Event> f = svc.updateStatusAsync(ID, "ANY");
         assertThatThrownBy(f::join)
                 .hasCauseInstanceOf(NoSuchElementException.class);
     }
 
     @Test
     void deleteEventAsync_success() {
-        when(repo.deleteById(ID)).thenReturn(true);
+        when(repo.existsById(ID)).thenReturn(true);
 
         CompletableFuture<Void> f = svc.deleteEventAsync(ID);
         f.join();
@@ -112,7 +109,7 @@ class EventServiceAsyncTest {
 
     @Test
     void deleteEventAsync_notFound_throws() {
-        when(repo.deleteById(ID)).thenReturn(false);
+        when(repo.existsById(ID)).thenReturn(false);
 
         CompletableFuture<Void> f = svc.deleteEventAsync(ID);
         assertThatThrownBy(f::join)
