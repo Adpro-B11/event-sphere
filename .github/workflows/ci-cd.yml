@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - staging
 
 jobs:
   build:
@@ -17,7 +18,7 @@ jobs:
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
-        java-version: '17'
+        java-version: '21'
 
     - name: Build with Maven
       run: mvn clean package
@@ -62,7 +63,7 @@ jobs:
 
     - name: Connect SSH and Restart Services
       run: |
-        ssh -o StrictHostKeyChecking=no -i $HOME/key.pem ubuntu@ec2-184-73-135-176.compute-1.amazonaws.com '
+        ssh -o StrictHostKeyChecking=no -i $HOME/key.pem  ubuntu@ec2-35-174-243-167.compute-1.amazonaws.com '
           sudo systemctl restart eventsphere &&
           sudo systemctl restart nginx
         '
