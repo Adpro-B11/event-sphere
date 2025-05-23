@@ -116,7 +116,7 @@ class EventServiceTest {
         existing.setId(id);
         existing.setTitle("Old");
         existing.setDescription("OldDesc");
-        existing.setDate("2025-05-20");
+        existing.setDate("2025-06-20");
         existing.setLocation("Loc");
         existing.setPrice(100.0);
         when(eventRepository.findById(id)).thenReturn(existing);
@@ -124,7 +124,7 @@ class EventServiceTest {
         Event updated = new Event();
         updated.setTitle("New");
         updated.setDescription("NewDesc");
-        updated.setDate("2025-06-10");
+        updated.setDate("2025-06-30");
         updated.setLocation("NewLoc");
         updated.setPrice(200.0);
 
@@ -132,11 +132,12 @@ class EventServiceTest {
 
         assertEquals("New", existing.getTitle());
         assertEquals("NewDesc", existing.getDescription());
-        assertEquals("2025-06-10", existing.getDate());
+        assertEquals("2025-06-30", existing.getDate());
         assertEquals("NewLoc", existing.getLocation());
         assertEquals(200.0, existing.getPrice());
         verify(eventRepository).save(existing);
     }
+
 
     @Test
     void testUpdateEventInfo_InvalidId() {

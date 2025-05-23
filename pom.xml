@@ -123,6 +123,14 @@
             <artifactId>httpclient5</artifactId>
             <version>5.4</version> <!-- Use the latest version if needed -->
         </dependency>
+
+        <!-- dotenv-java for environment variable management -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
