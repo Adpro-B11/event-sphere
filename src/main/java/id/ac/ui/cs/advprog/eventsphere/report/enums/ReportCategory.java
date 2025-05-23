@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum ReportCategory {
+    OTHER("OTHER"),
     PAYMENT("PAYMENT"),
     TICKET("TICKET"),
     EVENT_ISSUE("EVENT_ISSUE");

@@ -19,10 +19,10 @@ import java.util.UUID;
 public abstract class Transaction {
 
     @Id
-    @Column(name = "transaction_id", columnDefinition = "BINARY(16)")
+    @Column(name = "transaction_id", columnDefinition = "uuid")
     private UUID transactionId;
 
-    @Column(name = "user_id", nullable = false, columnDefinition = "BINARY(16)")
+    @Column(name = "user_id", nullable = false, columnDefinition = "uuid")
     private UUID userId;
 
     @Column(name = "type", nullable = false)

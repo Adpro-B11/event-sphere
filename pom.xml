@@ -19,7 +19,7 @@
         <java.version>21</java.version>
         <selenium.version>4.14.1</selenium.version>
         <selenium.jupiter.version>5.0.1</selenium.jupiter.version>
-        <webdrivermanager.version>5.6.3</webdrivermanager.version>
+        <webdrivermanager.version>6.1.0</webdrivermanager.version>
         <junit.jupiter.version>5.9.1</junit.jupiter.version>
         <spring.boot.version>3.4.2</spring.boot.version>
         <lombok.version>1.18.30</lombok.version>
@@ -121,8 +121,16 @@
         <dependency>
             <groupId>org.apache.httpcomponents.client5</groupId>
             <artifactId>httpclient5</artifactId>
-            <version>5.4</version> <!-- Use the latest version if needed -->
+            <version>5.4.3</version> <!-- Use the latest version if needed -->
         </dependency>
+
+        <!-- dotenv-java for environment variable management -->
+        <dependency>
+            <groupId>io.github.cdimascio</groupId>
+            <artifactId>dotenv-java</artifactId>
+            <version>3.2.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>

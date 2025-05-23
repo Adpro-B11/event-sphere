@@ -38,10 +38,12 @@ class TransactionControllerTest {
 
     @BeforeEach
     void setUp() {
+        // userId dan adminId sudah diinisialisasi sebagai String dari UUID
         userId = UUID.randomUUID().toString();
         adminId = UUID.randomUUID().toString();
     }
 
+    // --- TOP-UP ENDPOINT ---
     @Test
     void whenTopUpSuccess_thenReturnsCreatedAndId() throws Exception {
         UUID transactionId = UUID.randomUUID(); // Membuat UUID baru
@@ -97,6 +99,7 @@ class TransactionControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // --- PURCHASE ENDPOINT ---
     @Test
     void whenPurchaseSuccess_thenReturnsCreatedAndId() throws Exception {
         UUID transactionId = UUID.randomUUID();
@@ -151,6 +154,7 @@ class TransactionControllerTest {
                 .andExpect(status().isBadRequest());
     }
 
+    // --- GET BY ID ---
     @Test
     void whenGetByIdFound_thenReturnsOk() throws Exception {
         UUID txId = UUID.randomUUID(); 
@@ -191,6 +195,7 @@ class TransactionControllerTest {
                 .andExpect(status().isOk());
     }
 
+    // --- LIST/FILTER ---
     @Test
     void whenListUser_thenReturnsOk() throws Exception {
         when(transactionService.filterTransactions(eq(userId), eq(false), any(), any(), any(), any(), any()))
@@ -218,6 +223,7 @@ class TransactionControllerTest {
                 .andExpect(jsonPath("$", hasSize(1)));
     }
 
+    // --- DELETE ---
     @Test
     void whenDeleteAdmin_thenReturnsNoContent() throws Exception {
         String txId = UUID.randomUUID().toString(); 
