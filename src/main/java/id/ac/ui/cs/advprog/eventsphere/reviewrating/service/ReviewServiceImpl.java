@@ -11,14 +11,17 @@ import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.repository.ReviewRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
@@ -29,17 +32,16 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDTO createReview(String userId, String eventId, CreateReviewRequest request) {
         // Check if the user has already reviewed this event
-        Review existingReview = reviewRepository.findByUserIdAndEventId(userId, eventId);
-        if (existingReview != null) {
+        Optional<Review> existingReviewOptional = reviewRepository.findByUserIdAndEventId(userId, eventId);
+        if (existingReviewOptional.isPresent()) {
             throw new IllegalStateException("User has already reviewed this event");
         }
 
         // Create a new review
         Review review = new Review();
-        review.setId("rev_" + UUID.randomUUID().toString().substring(0, 8));
+        review.setId("rev_" + UUID.randomUUID().toString().substring(0, 12));
         review.setRating(request.getRating());
         review.setComment(request.getComment());
-        review.setCreatedAt(ZonedDateTime.now());
         review.setUserId(userId);
         review.setEventId(eventId);
 
@@ -55,6 +57,7 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<ReviewDTO> getReviewsByEventId(String eventId) {
         // Get all reviews for the event
         List<Review> reviews = reviewRepository.findByEventId(eventId);
@@ -71,29 +74,28 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDTO updateReview(String userId, String reviewId, UpdateReviewRequest request) {
         // Find the review
-        Review review = reviewRepository.findById(reviewId);
-        if (review == null) {
-            throw new NotFoundException("Review not found");
-        }
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Review not found with id: " + reviewId));
 
         // Check if the user is the author of the review
         if (!review.getUserId().equals(userId)) {
             throw new UnauthorizedException("User is not authorized to update this review");
         }
 
-        // Save the old review for observer notification
+        // Save the old review state for observer notification (manual deep copy for relevant fields)
         Review oldReview = new Review();
         oldReview.setId(review.getId());
-        oldReview.setRating(review.getRating());
+        oldReview.setRating(review.getRating()); // Capture old rating
         oldReview.setComment(review.getComment());
         oldReview.setCreatedAt(review.getCreatedAt());
         oldReview.setUserId(review.getUserId());
         oldReview.setEventId(review.getEventId());
+        // oldReview.setUpdatedAt(review.getUpdatedAt()); // Not needed for old state comparison here
 
         // Update the review
         review.setRating(request.getRating());
         review.setComment(request.getComment());
-        review.setUpdatedAt(ZonedDateTime.now());
+        // review.setUpdatedAt(ZonedDateTime.now()); // Handled by @PreUpdate
 
         // Save the updated review
         Review updatedReview = reviewRepository.save(review);
@@ -109,10 +111,9 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void deleteReview(String userId, String reviewId) {
         // Find the review
-        Review review = reviewRepository.findById(reviewId);
-        if (review == null) {
-            throw new NotFoundException("Review not found");
-        }
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("Review not found with id: " + reviewId));
+
 
         // Check if the user is the author of the review
         if (!review.getUserId().equals(userId)) {
@@ -120,7 +121,7 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         // Delete the review
-        reviewRepository.delete(reviewId);
+        reviewRepository.delete(review); // Use delete(entity) or deleteById(id)
 
         // Notify observers about the deletion
         ratingSubject.notifyReviewDeleted(review);
