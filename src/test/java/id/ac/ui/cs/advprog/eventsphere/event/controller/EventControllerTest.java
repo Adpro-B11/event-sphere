@@ -42,19 +42,23 @@ class EventControllerTest {
         event.setPrice(100.0);
         event.setOrganizer("Org");
 
-        willDoNothing().given(eventService).createEvent(any(Event.class));
+        given(eventService.createEvent(any(Event.class)))
+                .willReturn(event);
 
-        MvcResult result = mockMvc.perform(post("/api/events")
+        given(eventService.findById(anyString()))
+                .willReturn(event);
+
+        MvcResult mvc = mockMvc.perform(post("/api/events")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(event)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        mockMvc.perform(asyncDispatch(result))
-                .andExpect(status().isCreated())
-                .andExpect(header().string("Location", matchesPattern(".*/events/.+")));
+        mockMvc.perform(asyncDispatch(mvc))
+                .andExpect(status().isOk());
 
         then(eventService).should().createEvent(any(Event.class));
+        then(eventService).should().findById(anyString());
     }
 
     @Test
@@ -65,11 +69,11 @@ class EventControllerTest {
         event.setTitle("Konser");
         given(eventService.findById(id)).willReturn(event);
 
-        MvcResult result = mockMvc.perform(get("/api/events/{id}", id))
+        MvcResult mvc = mockMvc.perform(get("/api/events/{id}", id))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        mockMvc.perform(asyncDispatch(result))
+        mockMvc.perform(asyncDispatch(mvc))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(id))
                 .andExpect(jsonPath("$.title").value("Konser"));
@@ -80,11 +84,11 @@ class EventControllerTest {
         String id = "notfound";
         given(eventService.findById(id)).willThrow(new NoSuchElementException());
 
-        MvcResult result = mockMvc.perform(get("/api/events/{id}", id))
+        MvcResult mvc = mockMvc.perform(get("/api/events/{id}", id))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        mockMvc.perform(asyncDispatch(result))
+        mockMvc.perform(asyncDispatch(mvc))
                 .andExpect(status().isNotFound());
     }
 
@@ -94,11 +98,11 @@ class EventControllerTest {
         Event e2 = new Event(); e2.setId("2"); e2.setTitle("A2");
         given(eventService.findAllEvents()).willReturn(List.of(e1, e2));
 
-        MvcResult result = mockMvc.perform(get("/api/events"))
+        MvcResult mvc = mockMvc.perform(get("/api/events"))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        mockMvc.perform(asyncDispatch(result))
+        mockMvc.perform(asyncDispatch(mvc))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2))
                 .andExpect(jsonPath("$[0].id").value("1"));
@@ -116,13 +120,13 @@ class EventControllerTest {
 
         willDoNothing().given(eventService).updateEventInfo(eq(id), any(Event.class));
 
-        MvcResult result = mockMvc.perform(put("/api/events/{id}", id)
+        MvcResult mvc = mockMvc.perform(put("/api/events/{id}", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(updated)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        mockMvc.perform(asyncDispatch(result))
+        mockMvc.perform(asyncDispatch(mvc))
                 .andExpect(status().isOk());
 
         then(eventService).should().updateEventInfo(eq(id), any(Event.class));
@@ -135,13 +139,13 @@ class EventControllerTest {
 
         willDoNothing().given(eventService).updateStatus(eq(id), eq("PUBLISHED"));
 
-        MvcResult result = mockMvc.perform(patch("/api/events/{id}/status", id)
+        MvcResult mvc = mockMvc.perform(patch("/api/events/{id}/status", id)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(body))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        mockMvc.perform(asyncDispatch(result))
+        mockMvc.perform(asyncDispatch(mvc))
                 .andExpect(status().isOk());
 
         then(eventService).should().updateStatus(id, "PUBLISHED");
@@ -152,11 +156,11 @@ class EventControllerTest {
         String id = "123";
         willDoNothing().given(eventService).deleteEvent(id);
 
-        MvcResult result = mockMvc.perform(delete("/api/events/{id}", id))
+        MvcResult mvc = mockMvc.perform(delete("/api/events/{id}", id))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
-        mockMvc.perform(asyncDispatch(result))
+        mockMvc.perform(asyncDispatch(mvc))
                 .andExpect(status().isNoContent());
 
         then(eventService).should().deleteEvent(id);

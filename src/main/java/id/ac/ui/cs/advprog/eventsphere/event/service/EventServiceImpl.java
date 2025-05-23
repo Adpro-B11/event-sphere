@@ -1,18 +1,17 @@
 package id.ac.ui.cs.advprog.eventsphere.event.service;
 
-import id.ac.ui.cs.advprog.eventsphere.event.enums.EventStatus;
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.repository.EventRepository;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.time.LocalDate;
-import org.springframework.stereotype.Service;
-import org.springframework.scheduling.annotation.Async;
 import java.util.concurrent.CompletableFuture;
 
-
 @Service
+@Transactional
 public class EventServiceImpl implements EventService {
     private final EventRepository eventRepository;
 
@@ -20,65 +19,50 @@ public class EventServiceImpl implements EventService {
         this.eventRepository = eventRepository;
     }
 
+    // synchronous
     @Override
-    public void createEvent(Event event) {
-        if (event == null) {
-            throw new IllegalArgumentException("Event cannot be null");
-        }
-        eventRepository.save(event);
+    public Event createEvent(Event event) {
+        return eventRepository.save(event);
     }
 
     @Override
     public void updateStatus(String eventId, String status) {
-        Event event = eventRepository.findById(eventId);
-        if (event == null) {
-            throw new NoSuchElementException("Event with ID " + eventId + " not found");
-        }
-        if (!EventStatus.contains(status)) {
-            throw new IllegalArgumentException("Invalid status");
-        }
-        event.setStatus(status);
-        eventRepository.save(event);
+        Event evt = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NoSuchElementException("Event not found: " + eventId));
+        evt.setStatus(status);
+        eventRepository.save(evt);
     }
 
     @Override
     public Event findById(String eventId) {
-        Event event = eventRepository.findById(eventId);
-        if (event == null) {
-            throw new NoSuchElementException("Event with ID " + eventId + " not found");
-        }
-        return event;
+        return eventRepository.findById(eventId)
+                .orElseThrow(() -> new NoSuchElementException("Event not found: " + eventId));
     }
 
     @Override
     public List<Event> findAllByOrganizer(String organizer) {
-        return eventRepository.findAllByOrganizer(organizer);
+        return eventRepository.findByOrganizer(organizer);
     }
 
     @Override
     public void updateEventInfo(String eventId, Event updatedEvent) {
-        Event event = eventRepository.findById(eventId);
-        if (event == null) {
-            throw new NoSuchElementException("Event with ID " + eventId + " not found");
-        }
-        LocalDate eventDate = LocalDate.parse(event.getDate());
-        if (LocalDate.now().isAfter(eventDate)) {
-            throw new IllegalStateException("Cannot update event after its date");
-        }
-        event.setTitle(updatedEvent.getTitle());
-        event.setDescription(updatedEvent.getDescription());
-        event.setDate(updatedEvent.getDate());
-        event.setLocation(updatedEvent.getLocation());
-        event.setPrice(updatedEvent.getPrice());
-        eventRepository.save(event);
+        Event existing = findById(eventId);
+        existing.setTitle(updatedEvent.getTitle());
+        existing.setDescription(updatedEvent.getDescription());
+        existing.setDate(updatedEvent.getDate());
+        existing.setLocation(updatedEvent.getLocation());
+        existing.setPrice(updatedEvent.getPrice());
+        existing.setStatus(updatedEvent.getStatus());
+        existing.setOrganizer(updatedEvent.getOrganizer());
+        eventRepository.save(existing);
     }
 
     @Override
     public void deleteEvent(String eventId) {
-        boolean removed = eventRepository.deleteById(eventId);
-        if (!removed) {
-            throw new NoSuchElementException("Event with ID " + eventId + " not found");
+        if (!eventRepository.existsById(eventId)) {
+            throw new NoSuchElementException("Cannot delete, event not found: " + eventId);
         }
+        eventRepository.deleteById(eventId);
     }
 
     @Override
@@ -86,42 +70,25 @@ public class EventServiceImpl implements EventService {
         return eventRepository.findAll();
     }
 
-    @Override
     @Async
-    public CompletableFuture<Void> updateStatusAsync(String eventId, String status) {
-        try {
-            updateStatus(eventId, status);
-            return CompletableFuture.completedFuture(null);
-        } catch (Exception ex) {
-            CompletableFuture<Void> cf = new CompletableFuture<>();
-            cf.completeExceptionally(ex);
-            return cf;
-        }
+    @Override
+    public CompletableFuture<Event> createEventAsync(Event event) {
+        Event saved = createEvent(event);
+        return CompletableFuture.completedFuture(saved);
     }
 
-    @Override
     @Async
+    @Override
+    public CompletableFuture<Event> updateStatusAsync(String eventId, String status) {
+        updateStatus(eventId, status);
+        Event updated = findById(eventId);
+        return CompletableFuture.completedFuture(updated);
+    }
+
+    @Async
+    @Override
     public CompletableFuture<Void> deleteEventAsync(String eventId) {
-        try {
-            deleteEvent(eventId);
-            return CompletableFuture.completedFuture(null);
-        } catch (Exception ex) {
-            CompletableFuture<Void> cf = new CompletableFuture<>();
-            cf.completeExceptionally(ex);
-            return cf;
-        }
-    }
-
-    @Override
-    @Async
-    public CompletableFuture<Void> createEventAsync(Event event) {
-        try {
-            createEvent(event);
-            return CompletableFuture.completedFuture(null);
-        } catch (Exception ex) {
-            CompletableFuture<Void> cf = new CompletableFuture<>();
-            cf.completeExceptionally(ex);
-            return cf;
-        }
+        deleteEvent(eventId);
+        return CompletableFuture.completedFuture(null);
     }
 }
