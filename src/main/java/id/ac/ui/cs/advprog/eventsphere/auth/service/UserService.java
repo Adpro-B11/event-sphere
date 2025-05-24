@@ -48,6 +48,25 @@ public class UserService {
         return null;
     }
 
+    public User getUserById(String userId) {
+        try {
+            String url = authServiceUrl + "/api/users/" + userId;
+
+            ResponseEntity<Map> response = restTemplate.exchange(
+                    url,
+                    HttpMethod.GET,
+                    null,
+                    Map.class
+            );
+
+            if (response.getBody() != null) {
+                return mapToUser(response.getBody());
+            }
+        } catch (Exception e) {
+        }
+        return null;
+    }
+
     private User mapToUser(Map<String, Object> userMap) {
         return User.builder()
                 .id(UUID.fromString((String) userMap.get("id")))
