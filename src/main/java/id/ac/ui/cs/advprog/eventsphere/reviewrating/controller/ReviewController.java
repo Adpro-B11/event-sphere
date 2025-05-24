@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.controller;
 
+import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.CreateReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.EventRatingSummaryDTO;
@@ -32,6 +33,7 @@ public class ReviewController {
                 List<ReviewDTO> reviews = reviewService.getReviewsByEventId(eventId);
                 return ResponseEntity.ok(reviews);
             } catch (Exception ex) {
+                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });
@@ -41,15 +43,25 @@ public class ReviewController {
     public CompletableFuture<ResponseEntity<ReviewDTO>> createReview(
             @PathVariable String eventId,
             @RequestBody CreateReviewRequest request,
-            @RequestHeader(name = "X-User-ID", required = true) String userId) {
+            User currentUser) { 
 
         return CompletableFuture.supplyAsync(() -> {
             try {
+                if (currentUser == null) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+
+                // Get user ID from the authenticated user object
+                String userId = currentUser.getId().toString();
+
                 ReviewDTO createdReview = reviewService.createReview(userId, eventId, request);
                 return ResponseEntity.status(HttpStatus.CREATED).body(createdReview);
+
             } catch (IllegalStateException ex) {
+                // User already reviewed this event
                 return ResponseEntity.status(HttpStatus.CONFLICT).build();
             } catch (Exception ex) {
+                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });
@@ -60,37 +72,50 @@ public class ReviewController {
             @PathVariable String eventId,
             @PathVariable String reviewId,
             @RequestBody UpdateReviewRequest request,
-            @RequestHeader(name = "X-User-ID", required = true) String userId) {
+            User currentUser) {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
+                if (currentUser == null) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+
+                String userId = currentUser.getId().toString();
                 ReviewDTO updatedReview = reviewService.updateReview(userId, reviewId, request);
                 return ResponseEntity.ok(updatedReview);
+
             } catch (NotFoundException ex) {
                 return ResponseEntity.notFound().build();
             } catch (UnauthorizedException ex) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             } catch (Exception ex) {
+                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });
     }
 
-    @DeleteMapping("/reviews/{reviewId}")
     public CompletableFuture<ResponseEntity<Void>> deleteReview(
             @PathVariable String eventId,
             @PathVariable String reviewId,
-            @RequestHeader(name = "X-User-ID", required = true) String userId) {
+            User currentUser) {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
+                if (currentUser == null) {
+                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                }
+
+                String userId = currentUser.getId().toString();
                 reviewService.deleteReview(userId, reviewId);
                 return ResponseEntity.noContent().<Void>build();
+
             } catch (NotFoundException ex) {
                 return ResponseEntity.notFound().build();
             } catch (UnauthorizedException ex) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             } catch (Exception ex) {
+                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<Void>build();
             }
         });
@@ -113,6 +138,7 @@ public class ReviewController {
                         
                 return ResponseEntity.ok(response);
             } catch (Exception ex) {
+                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });
