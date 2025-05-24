@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.service;
 
+import id.ac.ui.cs.advprog.eventsphere.auth.model.User;  // Add this import
 import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.CreateReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
@@ -39,6 +40,9 @@ class ReviewServiceTest {
     @Mock
     private UserService userService;
 
+    @Mock
+    private User mockUser;  // Add this field
+
     private ReviewService reviewService;
     private Review testReview;
     private final String TEST_USER_ID = "usr_123";
@@ -63,7 +67,9 @@ class ReviewServiceTest {
         testReview.setUserId(TEST_USER_ID);
         testReview.setEventId(TEST_EVENT_ID);
 
-        when(userService.getUsernameById(TEST_USER_ID)).thenReturn("John Doe");
+        // Mock User behavior
+        when(mockUser.getDisplayName()).thenReturn("John Doe");
+        when(userService.getUserById(TEST_USER_ID)).thenReturn(mockUser);
 
         ReviewDTO testDTO = ReviewDTO.builder()
                 .id(testReview.getId())
