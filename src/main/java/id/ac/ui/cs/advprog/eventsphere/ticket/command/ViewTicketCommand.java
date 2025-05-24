@@ -1,20 +1,25 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.command;
 
+import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
 import id.ac.ui.cs.advprog.eventsphere.ticket.repository.TicketRepository;
 
-public class DeleteTicketCommand implements TicketCommand {
+public class ViewTicketCommand implements TicketCommand {
     private final TicketRepository repository;
     private final String ticketId;
+    private Ticket result;
 
-    public DeleteTicketCommand(TicketRepository repository, String ticketId) {
+    public ViewTicketCommand(TicketRepository repository, String ticketId) {
         this.repository = repository;
         this.ticketId = ticketId;
     }
 
     @Override
     public void execute() {
-        repository.deleteById(ticketId);
-        // Note: The service method calling this command should be @Transactional
+        result = repository.findById(ticketId).orElse(null);
+    }
+
+    public Ticket getResult() {
+        return result;
     }
 }
     

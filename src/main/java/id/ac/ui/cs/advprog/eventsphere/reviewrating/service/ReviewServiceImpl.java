@@ -52,7 +52,7 @@ public class ReviewServiceImpl implements ReviewService {
         ratingSubject.notifyReviewCreated(savedReview);
 
         // Create and return the DTO
-        String username = userService.getUsernameById(userId);
+        String username = userService.getUserById(userId).getDisplayName();
         return dtoFactory.createFromReview(savedReview, username);
     }
 
@@ -65,7 +65,7 @@ public class ReviewServiceImpl implements ReviewService {
         // Convert to DTOs
         return reviews.stream()
                 .map(review -> {
-                    String username = userService.getUsernameById(review.getUserId());
+                    String username = userService.getUserById(review.getUserId()).getDisplayName();
                     return dtoFactory.createFromReview(review, username);
                 })
                 .collect(Collectors.toList());
@@ -104,7 +104,7 @@ public class ReviewServiceImpl implements ReviewService {
         ratingSubject.notifyReviewUpdated(oldReview, updatedReview);
 
         // Create and return the DTO
-        String username = userService.getUsernameById(userId);
+        String username = userService.getUserById(userId).getDisplayName();
         return dtoFactory.createFromReview(updatedReview, username);
     }
 

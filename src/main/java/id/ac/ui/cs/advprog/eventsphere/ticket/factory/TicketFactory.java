@@ -2,7 +2,9 @@ package id.ac.ui.cs.advprog.eventsphere.ticket.factory;
 
 import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
+import org.springframework.stereotype.Component;
 
+@Component
 public class TicketFactory {
 
     public Ticket createTicket(String eventId, TicketType type, double price, int quota) {
