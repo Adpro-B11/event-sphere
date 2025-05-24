@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.service;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
 import id.ac.ui.cs.advprog.eventsphere.ticket.client.PaymentServiceClient;
 import id.ac.ui.cs.advprog.eventsphere.ticket.command.*;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.purchase.PaymentRequest;
@@ -38,7 +37,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Transactional
-    public Ticket createTicket(User user, String eventId, TicketType type, double price, int quota) {
+    public Ticket createTicket(String eventId, TicketType type, double price, int quota) {
         Ticket ticket = ticketFactory.createTicket(eventId, type, price, quota);
         TicketCommand command = commandFactory.createTicketCommand(ticket);
         command.execute();
@@ -63,14 +62,14 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Transactional
-    public void updateTicket(User user, String ticketId, Map<String, Object> updates) {
+    public void updateTicket(String ticketId, Map<String, Object> updates) {
         TicketCommand command = commandFactory.updateTicketCommand(ticketId, updates);
         command.execute();
     }
 
     @Override
     @Transactional
-    public void deleteTicket(User user, String ticketId) {
+    public void deleteTicket(String ticketId) {
         TicketCommand command = commandFactory.deleteTicketCommand(ticketId);
         command.execute();
     }
@@ -83,7 +82,7 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Transactional
-    public PurchaseTicketResponse purchaseTicket(User user, PurchaseTicketRequest request) {
+    public PurchaseTicketResponse purchaseTicket(PurchaseTicketRequest request) {
         Ticket ticket = viewTicket(request.getTicketId());
         if (ticket == null) {
             throw new IllegalArgumentException("Ticket not found");
@@ -92,7 +91,7 @@ public class TicketServiceImpl implements TicketService {
         double totalAmount = ticket.getPrice() * request.getQuantity();
 
         PaymentRequest paymentRequest = PaymentRequest.builder()
-                .userId(String.valueOf(user.getId()))
+//                .userId(String.valueOf(user.getId()))
                 .ticketId(request.getTicketId())
                 .eventId(ticket.getEventId())
                 .amount(totalAmount)

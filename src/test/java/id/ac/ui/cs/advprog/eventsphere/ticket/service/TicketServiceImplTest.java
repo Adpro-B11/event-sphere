@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.service;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
 import id.ac.ui.cs.advprog.eventsphere.ticket.client.PaymentServiceClient;
 import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
 import id.ac.ui.cs.advprog.eventsphere.ticket.factory.TicketFactory;
@@ -19,7 +18,6 @@ public class TicketServiceImplTest {
     private TicketRepository repository;
     private TicketFactory factory;
     private TicketService service;
-    private User mockUser;
 
     @BeforeEach
     public void setUp() {
@@ -27,7 +25,6 @@ public class TicketServiceImplTest {
         factory = mock(TicketFactory.class);
         PaymentServiceClient paymentService = mock(PaymentServiceClient.class);
         service = new TicketServiceImpl(repository, factory, paymentService);
-        mockUser = new User();
     }
 
     @Test
@@ -35,7 +32,7 @@ public class TicketServiceImplTest {
         Ticket ticket = new Ticket();
         when(factory.createTicket("event123", TicketType.VIP, 200.0, 50)).thenReturn(ticket);
 
-        Ticket result = service.createTicket(mockUser, "event123", TicketType.VIP, 200.0, 50);
+        Ticket result = service.createTicket("event123", TicketType.VIP, 200.0, 50);
 
         assertEquals(ticket, result);
         verify(factory).createTicket("event123", TicketType.VIP, 200.0, 50);
@@ -44,7 +41,7 @@ public class TicketServiceImplTest {
 
     @Test
     public void testDeleteTicketExecutesDeleteCommand() {
-        service.deleteTicket(mockUser, "ticket123");
+        service.deleteTicket("ticket123");
         verify(repository).deleteById("ticket123");
     }
 
@@ -85,7 +82,7 @@ public class TicketServiceImplTest {
 
         when(repository.findById("ticket123")).thenReturn(Optional.of(existingTicket));
 
-        service.updateTicket(mockUser, "ticket123", updates);
+        service.updateTicket("ticket123", updates);
 
         verify(repository).save(any(Ticket.class));  // ← FIXED
     }
