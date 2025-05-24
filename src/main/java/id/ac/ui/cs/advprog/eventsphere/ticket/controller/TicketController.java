@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.controller;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.CreateTicketRequest;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.TicketResponse;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.UpdateTicketRequest;
@@ -9,6 +8,7 @@ import id.ac.ui.cs.advprog.eventsphere.ticket.service.TicketService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
@@ -27,6 +27,7 @@ public class TicketController {
     private final TicketService ticketService;
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
     public CompletableFuture<ResponseEntity<List<TicketResponse>>> getAllTickets() {
         return CompletableFuture.supplyAsync(() -> {
             List<Ticket> tickets = ticketService.getAllTickets();
@@ -64,11 +65,10 @@ public class TicketController {
     }
 
     @PostMapping
-    public CompletableFuture<ResponseEntity<TicketResponse>> createTicket(User currentUser,
-                                                                          @Valid @RequestBody CreateTicketRequest request) {
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public CompletableFuture<ResponseEntity<TicketResponse>> createTicket(@Valid @RequestBody CreateTicketRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             Ticket createdTicket = ticketService.createTicket(
-                    currentUser,
                     request.getEventId(),
                     request.getType(),
                     request.getPrice(),
@@ -80,9 +80,9 @@ public class TicketController {
         });
     }
 
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
     @PutMapping("/{ticketId}")
-    public CompletableFuture<ResponseEntity<Void>> updateTicket(User currentUser,
-                                                                @PathVariable String ticketId,
+    public CompletableFuture<ResponseEntity<Void>> updateTicket(@PathVariable String ticketId,
                                                                 @Valid @RequestBody UpdateTicketRequest request) {
         return CompletableFuture.supplyAsync(() -> {
             Map<String, Object> updates = new HashMap<>();
@@ -96,7 +96,7 @@ public class TicketController {
                 updates.put("quota", request.getQuota());
             }
             try {
-                ticketService.updateTicket(currentUser, ticketId, updates);
+                ticketService.updateTicket(ticketId, updates);
                 return ResponseEntity.noContent().build();
             } catch (NoSuchElementException ex) {
                 return ResponseEntity.notFound().build();
@@ -107,11 +107,11 @@ public class TicketController {
     }
 
     @DeleteMapping("/{ticketId}")
-    public CompletableFuture<ResponseEntity<Void>> deleteTicket(User currentUser,
-                                                                @PathVariable String ticketId) {
+    @PreAuthorize("hasAnyRole('ORGANIZER', 'ADMIN')")
+    public CompletableFuture<ResponseEntity<Void>> deleteTicket(@PathVariable String ticketId) {
         return CompletableFuture.supplyAsync(() -> {
             try {
-                ticketService.deleteTicket(currentUser, ticketId);
+                ticketService.deleteTicket(ticketId);
                 return ResponseEntity.noContent().build();
             } catch (NoSuchElementException ex) {
                 return ResponseEntity.notFound().build();
