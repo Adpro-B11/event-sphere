@@ -2,10 +2,12 @@ package id.ac.ui.cs.advprog.eventsphere.reviewrating.controller;
 
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.CreateReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.EventRatingSummaryDTO;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.UpdateReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.NotFoundException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.UnauthorizedException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.ReviewService;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.EventRatingSummaryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +23,7 @@ import java.util.concurrent.CompletableFuture;
 public class ReviewController {
 
     private final ReviewService reviewService;
+    private final EventRatingSummaryService ratingSummaryService;
 
     @GetMapping("/reviews")
     public CompletableFuture<ResponseEntity<List<ReviewDTO>>> getReviewsByEventId(@PathVariable String eventId) {
@@ -89,6 +92,28 @@ public class ReviewController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             } catch (Exception ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<Void>build();
+            }
+        });
+    }
+
+    @GetMapping("/rating-summary")
+    public CompletableFuture<ResponseEntity<EventRatingSummaryDTO>> getEventRatingSummary(
+            @PathVariable String eventId) {
+        
+        return CompletableFuture.supplyAsync(() -> {
+            try {
+                double averageRating = ratingSummaryService.getAverageRating(eventId);
+                int totalReviews = ratingSummaryService.getTotalReviews(eventId);
+                
+                EventRatingSummaryDTO response = EventRatingSummaryDTO.builder()
+                        .eventId(eventId)
+                        .averageRating(averageRating)
+                        .totalReviews(totalReviews)
+                        .build();
+                        
+                return ResponseEntity.ok(response);
+            } catch (Exception ex) {
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });
     }
