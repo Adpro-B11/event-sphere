@@ -22,6 +22,6 @@ public class DeleteTicketCommandTest {
     void testExecuteDeletesTicketFromRepository() {
         command.execute();
 
-        verify(repository, times(1)).delete(ticketId);
+        verify(repository, times(1)).deleteById(ticketId);
     }
 }
