@@ -8,6 +8,7 @@ import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.UpdateReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.NotFoundException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.UnauthorizedException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.ReviewService;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.EventRatingSummaryService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -42,6 +43,9 @@ class ReviewControllerTest {
 
     @InjectMocks
     private ReviewController reviewController;
+
+    @Mock
+    private EventRatingSummaryService ratingSummaryService;
 
     private ObjectMapper objectMapper;
 
@@ -317,5 +321,110 @@ class ReviewControllerTest {
                 .andExpect(status().isForbidden());
                 
         verify(reviewService).deleteReview(differentUserId, reviewId);
+    }
+
+    @Test
+    void testGetEventRatingSummary() throws Exception {
+        double expectedAverageRating = 4.2;
+        int expectedTotalReviews = 5;
+
+        given(ratingSummaryService.getAverageRating(eventId)).willReturn(expectedAverageRating);
+        given(ratingSummaryService.getTotalReviews(eventId)).willReturn(expectedTotalReviews);
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", eventId))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eventId", is(eventId)))
+                .andExpect(jsonPath("$.averageRating", is(expectedAverageRating)))
+                .andExpect(jsonPath("$.totalReviews", is(expectedTotalReviews)));
+
+        verify(ratingSummaryService).getAverageRating(eventId);
+        verify(ratingSummaryService).getTotalReviews(eventId);
+    }
+
+    @Test
+    void testGetEventRatingSummary_NoReviews() throws Exception {
+        double expectedAverageRating = 0.0;
+        int expectedTotalReviews = 0;
+
+        given(ratingSummaryService.getAverageRating(eventId)).willReturn(expectedAverageRating);
+        given(ratingSummaryService.getTotalReviews(eventId)).willReturn(expectedTotalReviews);
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", eventId))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eventId", is(eventId)))
+                .andExpect(jsonPath("$.averageRating", is(0.0)))
+                .andExpect(jsonPath("$.totalReviews", is(0)));
+
+        verify(ratingSummaryService).getAverageRating(eventId);
+        verify(ratingSummaryService).getTotalReviews(eventId);
+    }
+
+    @Test
+    void testGetEventRatingSummary_ServiceThrowsException() throws Exception {
+        given(ratingSummaryService.getAverageRating(eventId))
+                .willThrow(new RuntimeException("Database error"));
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", eventId))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isInternalServerError());
+
+        verify(ratingSummaryService).getAverageRating(eventId);
+        // getTotalReviews might not be called if getAverageRating throws first
+    }
+
+    @Test
+    void testGetEventRatingSummary_HighRating() throws Exception {
+        double expectedAverageRating = 4.9;
+        int expectedTotalReviews = 100;
+
+        given(ratingSummaryService.getAverageRating(eventId)).willReturn(expectedAverageRating);
+        given(ratingSummaryService.getTotalReviews(eventId)).willReturn(expectedTotalReviews);
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", eventId))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eventId", is(eventId)))
+                .andExpect(jsonPath("$.averageRating", is(4.9)))
+                .andExpect(jsonPath("$.totalReviews", is(100)));
+
+        verify(ratingSummaryService).getAverageRating(eventId);
+        verify(ratingSummaryService).getTotalReviews(eventId);
+    }
+
+    @Test
+    void testGetEventRatingSummary_DifferentEventId() throws Exception {
+        String anotherEventId = "evt_456";
+        double expectedAverageRating = 3.5;
+        int expectedTotalReviews = 2;
+
+        given(ratingSummaryService.getAverageRating(anotherEventId)).willReturn(expectedAverageRating);
+        given(ratingSummaryService.getTotalReviews(anotherEventId)).willReturn(expectedTotalReviews);
+
+        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", anotherEventId))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eventId", is(anotherEventId)))
+                .andExpect(jsonPath("$.averageRating", is(3.5)))
+                .andExpect(jsonPath("$.totalReviews", is(2)));
+
+        verify(ratingSummaryService).getAverageRating(anotherEventId);
+        verify(ratingSummaryService).getTotalReviews(anotherEventId);
     }
 }
