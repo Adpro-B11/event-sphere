@@ -40,17 +40,19 @@ public class ReviewController {
     }
 
     @PostMapping("/reviews")
-    public CompletableFuture<ResponseEntity<ReviewDTO>> createReview(
+    public CompletableFuture<ResponseEntity<ReviewDTO>  > createReview(
             @PathVariable String eventId,
             @RequestBody CreateReviewRequest request,
             User currentUser) { 
 
-        return CompletableFuture.supplyAsync(() -> {
-            try {
-                if (currentUser == null) {
-                    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-                }
-
+                
+                return CompletableFuture.supplyAsync(() -> {
+                    try {
+                        System.out.println("Creating review for event: " + eventId + " by user: " + (currentUser != null ? currentUser.getId() : "anonymous"));
+                        if (currentUser == null) {
+                            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+                        }
+                        
                 // Get user ID from the authenticated user object
                 String userId = currentUser.getId().toString();
 
@@ -95,6 +97,7 @@ public class ReviewController {
         });
     }
 
+    @DeleteMapping("/reviews/{reviewId}")
     public CompletableFuture<ResponseEntity<Void>> deleteReview(
             @PathVariable String eventId,
             @PathVariable String reviewId,
