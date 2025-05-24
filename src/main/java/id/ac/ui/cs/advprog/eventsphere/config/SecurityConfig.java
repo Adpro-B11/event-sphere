@@ -32,6 +32,10 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(HttpMethod.GET, "/api/events/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
+                        .requestMatchers(HttpMethod.PUT, "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
+                        .requestMatchers(HttpMethod.DELETE, "/api/events/**").hasAnyRole("ORGANIZER", "ADMIN")
                         .requestMatchers(HttpMethod.GET, "/api/tickets/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/tickets/**").hasAnyRole("ORGANIZER", "ADMIN")
                         .requestMatchers(HttpMethod.PUT, "/api/tickets/**").hasAnyRole("ORGANIZER", "ADMIN")
