@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.service;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.CreateReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.UpdateReviewRequest;
@@ -27,7 +26,6 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final RatingSubject ratingSubject;
     private final ReviewDTOFactory dtoFactory;
-    private final UserService userService;
 
     @Override
     public ReviewDTO createReview(String userId, String eventId, CreateReviewRequest request) {

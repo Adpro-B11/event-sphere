@@ -127,18 +127,18 @@ public class ReviewController {
     @GetMapping("/rating-summary")
     public CompletableFuture<ResponseEntity<EventRatingSummaryDTO>> getEventRatingSummary(
             @PathVariable String eventId) {
-        
+
         return CompletableFuture.supplyAsync(() -> {
             try {
                 double averageRating = ratingSummaryService.getAverageRating(eventId);
                 int totalReviews = ratingSummaryService.getTotalReviews(eventId);
-                
+
                 EventRatingSummaryDTO response = EventRatingSummaryDTO.builder()
                         .eventId(eventId)
                         .averageRating(averageRating)
                         .totalReviews(totalReviews)
                         .build();
-                        
+
                 return ResponseEntity.ok(response);
             } catch (Exception ex) {
                 ex.printStackTrace();

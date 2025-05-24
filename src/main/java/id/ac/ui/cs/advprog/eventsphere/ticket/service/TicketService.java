@@ -1,6 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.service;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.purchase.PurchaseTicketRequest;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.purchase.PurchaseTicketResponse;
 import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
@@ -10,11 +9,11 @@ import java.util.List;
 import java.util.Map;
 
 public interface TicketService {
-    Ticket createTicket(User user, String eventId, TicketType type, double price, int quota);
-    void deleteTicket(User user, String ticketId);
+    Ticket createTicket(String eventId, TicketType type, double price, int quota);
+    void deleteTicket(String ticketId);
     Ticket viewTicket(String ticketId);
     List<Ticket> viewTicketsByEvent(String eventId);
-    void updateTicket(User user, String ticketId, Map<String, Object> updates);
+    void updateTicket(String ticketId, Map<String, Object> updates);
     List<Ticket> getAllTickets();
-    PurchaseTicketResponse purchaseTicket(User user, PurchaseTicketRequest request);
+    PurchaseTicketResponse purchaseTicket(PurchaseTicketRequest request);
 }

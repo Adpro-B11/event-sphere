@@ -70,7 +70,7 @@ class ReviewControllerTest {
                 .setCustomArgumentResolvers(currentUserResolver)
                 .setAsyncRequestTimeout(5000)
                 .build();
-        
+
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
