@@ -1,12 +1,15 @@
 package id.ac.ui.cs.advprog.eventsphere.event.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
+import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService.JwtService;
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;
 import id.ac.ui.cs.advprog.eventsphere.event.service.EventService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -14,7 +17,6 @@ import org.springframework.test.web.servlet.MvcResult;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import static org.hamcrest.Matchers.matchesPattern;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.BDDMockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -22,12 +24,19 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(EventController.class)
+@AutoConfigureMockMvc(addFilters = false)  // disable security filters for controller tests
 class EventControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockitoBean
+    @MockBean
+    private JwtService jwtService;
+
+    @MockBean
+    private UserService userService;
+
+    @MockBean
     private EventService eventService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();

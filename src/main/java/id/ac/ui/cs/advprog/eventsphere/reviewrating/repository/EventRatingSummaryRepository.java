@@ -4,7 +4,7 @@ import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.EventRatingSummary;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.Optional; // Import Optional
+import java.util.Optional;
 
 @Repository
 public interface EventRatingSummaryRepository extends JpaRepository<EventRatingSummary, String> {

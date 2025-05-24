@@ -1,7 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.auth.security;
 
 import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
-import id.ac.ui.cs.advprog.eventsphere.auth.service.JwtService;
 import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,7 +20,7 @@ import java.io.IOException;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final JwtService jwtService;
+    private final UserService.JwtService jwtService;
     private final UserService userService;
 
     @Override
