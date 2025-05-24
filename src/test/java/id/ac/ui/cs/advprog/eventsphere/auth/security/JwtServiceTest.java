@@ -1,6 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.auth.security;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.service.JwtService;
+import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtServiceTest {
 
     @InjectMocks
-    private JwtService jwtService;
+    private UserService.JwtService jwtService;
 
     private final String testSecretKey = "YVBRDFJDSkFGU0RGR0pIREZHR0hKS0xPUFJUVVlDSlNLSkRGV1FVUkpK"; // Ensure this is a valid Base64 encoded key of sufficient length for HS256
     private Key signingKey;
