@@ -4,7 +4,6 @@ import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
 import id.ac.ui.cs.advprog.eventsphere.ticket.repository.TicketRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import static org.mockito.Mockito.*;
 
