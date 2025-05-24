@@ -60,7 +60,7 @@ class ReviewControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(reviewController)
                 .setAsyncRequestTimeout(5000)
                 .build();
-        
+
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
@@ -88,7 +88,7 @@ class ReviewControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id", is(reviewId)));
-                
+
         verify(reviewService).getReviewsByEventId(eventId);
     }
 
@@ -103,7 +103,7 @@ class ReviewControllerTest {
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(0)));
-                
+
         verify(reviewService).getReviewsByEventId(eventId);
     }
 
@@ -140,10 +140,10 @@ class ReviewControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(reviewId)))
                 .andExpect(jsonPath("$.rating", is(4)));
-                
+
         verify(reviewService).createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class));
     }
-    
+
     @Test
     void testCreateReview_UserAlreadyReviewed_Conflict() throws Exception {
         CreateReviewRequest requestBody = new CreateReviewRequest();
@@ -162,7 +162,7 @@ class ReviewControllerTest {
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isConflict());
-                
+
         verify(reviewService).createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class));
     }
 
@@ -176,7 +176,7 @@ class ReviewControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(status().isBadRequest());
-                
+
         verifyNoInteractions(reviewService);
     }
 
@@ -198,7 +198,7 @@ class ReviewControllerTest {
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isInternalServerError());
-                
+
         verify(reviewService).createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class));
     }
 
@@ -207,7 +207,7 @@ class ReviewControllerTest {
         UpdateReviewRequest requestBody = new UpdateReviewRequest();
         requestBody.setRating(5);
         requestBody.setComment("Updated: Excellent event!");
-        
+
         ReviewDTO updatedReviewDTO = ReviewDTO.builder()
                 .id(reviewId).rating(5).comment("Updated: Excellent event!")
                 .createdAt(sampleReviewDTO.getCreatedAt()).updatedAt(ZonedDateTime.now())
@@ -227,10 +227,10 @@ class ReviewControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(reviewId)))
                 .andExpect(jsonPath("$.rating", is(5)));
-                
+
         verify(reviewService).updateReview(eq(userId), eq(reviewId), any(UpdateReviewRequest.class));
     }
-    
+
     @Test
     void testUpdateReview_NotFound() throws Exception {
         UpdateReviewRequest requestBody = new UpdateReviewRequest();
@@ -249,7 +249,7 @@ class ReviewControllerTest {
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isNotFound());
-                
+
         verify(reviewService).updateReview(eq(userId), eq(nonExistentReviewId), any(UpdateReviewRequest.class));
     }
 
@@ -270,7 +270,7 @@ class ReviewControllerTest {
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isForbidden());
-                
+
         verify(reviewService).updateReview(eq(differentUserId), eq(reviewId), any(UpdateReviewRequest.class));
     }
 
@@ -285,7 +285,7 @@ class ReviewControllerTest {
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isNoContent());
-                
+
         verify(reviewService).deleteReview(userId, reviewId);
     }
 
@@ -302,7 +302,7 @@ class ReviewControllerTest {
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isNotFound());
-                
+
         verify(reviewService).deleteReview(userId, nonExistentReviewId);
     }
 
@@ -319,7 +319,7 @@ class ReviewControllerTest {
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isForbidden());
-                
+
         verify(reviewService).deleteReview(differentUserId, reviewId);
     }
 
