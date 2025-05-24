@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.service;
 
 import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
+import id.ac.ui.cs.advprog.eventsphere.ticket.client.PaymentServiceClient;
 import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
 import id.ac.ui.cs.advprog.eventsphere.ticket.factory.TicketFactory;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
@@ -24,7 +25,8 @@ public class TicketServiceImplTest {
     public void setUp() {
         repository = mock(TicketRepository.class);
         factory = mock(TicketFactory.class);
-        service = new TicketServiceImpl(repository, factory);
+        PaymentServiceClient paymentService = mock(PaymentServiceClient.class);
+        service = new TicketServiceImpl(repository, factory, paymentService);
         mockUser = new User();
     }
 

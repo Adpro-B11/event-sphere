@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.eventsphere.ticket.controller;
 
 import id.ac.ui.cs.advprog.eventsphere.auth.model.User;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.CreateTicketRequest;
+import id.ac.ui.cs.advprog.eventsphere.ticket.dto.TicketResponse;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.UpdateTicketRequest;
 import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
@@ -13,9 +14,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -36,11 +39,9 @@ public class TicketControllerTest {
 
     @BeforeEach
     void setUp() {
-        // Create test user
         testUser = new User();
-        testUser.setId(UUID.fromString("user123"));
+        testUser.setId(UUID.fromString("a1b2c3d4-e5f6-7788-9900-aabbccddeeff"));
 
-        // Create test ticket
         testTicket = new Ticket();
         testTicket.setId("ticket123");
         testTicket.setEventId("event123");
@@ -50,7 +51,6 @@ public class TicketControllerTest {
         testTicket.setRemaining(50);
         testTicket.setActive(true);
 
-        // Create list of test tickets
         Ticket testTicket2 = new Ticket();
         testTicket2.setId("ticket456");
         testTicket2.setEventId("event123");
@@ -64,10 +64,11 @@ public class TicketControllerTest {
     }
 
     @Test
-    void getAllTickets_returnsListOfTickets() {
+    void getAllTickets_returnsListOfTickets() throws Exception {
         when(ticketService.getAllTickets()).thenReturn(testTickets);
 
-        var response = ticketController.getAllTickets();
+        CompletableFuture<ResponseEntity<List<TicketResponse>>> futureResponse = ticketController.getAllTickets();
+        ResponseEntity<List<TicketResponse>> response = futureResponse.get();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, response.getBody().size());
@@ -75,10 +76,11 @@ public class TicketControllerTest {
     }
 
     @Test
-    void getTicketById_whenExists_returnsTicket() {
+    void getTicketById_whenExists_returnsTicket() throws Exception {
         when(ticketService.viewTicket("ticket123")).thenReturn(testTicket);
 
-        var response = ticketController.getTicketById("ticket123");
+        CompletableFuture<ResponseEntity<TicketResponse>> futureResponse = ticketController.getTicketById("ticket123");
+        ResponseEntity<TicketResponse> response = futureResponse.get();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals("ticket123", response.getBody().getId());
@@ -90,27 +92,30 @@ public class TicketControllerTest {
     }
 
     @Test
-    void getTicketById_whenNotExists_returnsNotFound() {
+    void getTicketById_whenNotExists_returnsNotFound() throws Exception {
         when(ticketService.viewTicket("nonexistent")).thenReturn(null);
 
-        var response = ticketController.getTicketById("nonexistent");
+        CompletableFuture<ResponseEntity<TicketResponse>> futureResponse = ticketController.getTicketById("nonexistent");
+        ResponseEntity<TicketResponse> response = futureResponse.get();
+
 
         assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
         assertNull(response.getBody());
     }
 
     @Test
-    void getTicketsByEventId_returnsTicketsForEvent() {
+    void getTicketsByEventId_returnsTicketsForEvent() throws Exception {
         when(ticketService.viewTicketsByEvent("event123")).thenReturn(testTickets);
 
-        var response = ticketController.getTicketsByEventId("event123");
+        CompletableFuture<ResponseEntity<List<TicketResponse>>> futureResponse = ticketController.getTicketsByEventId("event123");
+        ResponseEntity<List<TicketResponse>> response = futureResponse.get();
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertEquals(2, response.getBody().size());
     }
 
     @Test
-    void createTicket_returnsCreatedTicket() {
+    void createTicket_returnsCreatedTicket() throws Exception {
         CreateTicketRequest request = new CreateTicketRequest();
         request.setEventId("event123");
         request.setType(TicketType.VIP);
@@ -134,7 +139,8 @@ public class TicketControllerTest {
                 request.getQuota())
         ).thenReturn(newTicket);
 
-        var response = ticketController.createTicket(testUser, request);
+        CompletableFuture<ResponseEntity<TicketResponse>> futureResponse = ticketController.createTicket(testUser, request);
+        ResponseEntity<TicketResponse> response = futureResponse.get();
 
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals("newTicket", response.getBody().getId());
@@ -144,20 +150,27 @@ public class TicketControllerTest {
     }
 
     @Test
-    void updateTicket_returnsNoContent() {
+    void updateTicket_returnsNoContent() throws Exception {
         UpdateTicketRequest request = new UpdateTicketRequest();
         request.setType(TicketType.EARLY_BIRD);
         request.setPrice(200.0);
 
-        var response = ticketController.updateTicket(testUser, "ticket123", request);
+        doNothing().when(ticketService).updateTicket(eq(testUser), eq("ticket123"), anyMap());
+
+
+        CompletableFuture<ResponseEntity<Void>> futureResponse = ticketController.updateTicket(testUser, "ticket123", request);
+        ResponseEntity<Void> response = futureResponse.get();
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(ticketService).updateTicket(eq(testUser), eq("ticket123"), anyMap());
     }
 
     @Test
-    void deleteTicket_returnsNoContent() {
-        var response = ticketController.deleteTicket(testUser, "ticket123");
+    void deleteTicket_returnsNoContent() throws Exception {
+        doNothing().when(ticketService).deleteTicket(testUser, "ticket123");
+
+        CompletableFuture<ResponseEntity<Void>> futureResponse = ticketController.deleteTicket(testUser, "ticket123");
+        ResponseEntity<Void> response = futureResponse.get();
 
         assertEquals(HttpStatus.NO_CONTENT, response.getStatusCode());
         verify(ticketService).deleteTicket(testUser, "ticket123");
