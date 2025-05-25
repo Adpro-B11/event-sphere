@@ -1,7 +1,5 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.service;
 
-import id.ac.ui.cs.advprog.eventsphere.ticket.dto.purchase.PurchaseTicketRequest;
-import id.ac.ui.cs.advprog.eventsphere.ticket.dto.purchase.PurchaseTicketResponse;
 import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
 
