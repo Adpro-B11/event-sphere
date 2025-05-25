@@ -1,11 +1,11 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.enums;
 
 public enum TicketType {
-    VIP("VIP", "Akses penuh dengan fasilitas premium"),
-    REGULAR("Regular", "Akses standar ke acara"),
-    EARLY_BIRD("Early Bird", "Tiket regular dengan harga diskon"),
-    STUDENT("Student", "Tiket khusus untuk pelajar/mahasiswa dengan diskon"),
-    GROUP("Group", "Tiket untuk group dengan minimal 5 orang");
+    VIP("VIP", "Full access with premium facilities"),
+    REGULAR("Regular", "Standard access to the event"),
+    EARLY_BIRD("Early Bird", "Regular ticket at a discounted price"),
+    STUDENT("Student", "Special ticket for students with a discount"),
+    GROUP("Group", "Ticket for groups with a minimum of 5 people");
 
     private final String name;
     private final String description;
