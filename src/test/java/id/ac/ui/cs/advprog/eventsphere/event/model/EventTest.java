@@ -17,7 +17,6 @@ class EventTest {
 
     @Test
     void testCreateEvent_Success() {
-        // Arrange & Act
         event.setTitle("Konser Musik");
         event.setDescription("Konser musik tahunan");
         event.setDate("2023-12-01");
@@ -25,7 +24,6 @@ class EventTest {
         event.setPrice(500000.0);
         event.setOrganizer("Mas Inis");
 
-        // Assert
         assertEquals("Konser Musik", event.getTitle());
         assertEquals("Konser musik tahunan", event.getDescription());
         assertEquals("2023-12-01", event.getDate());
@@ -37,32 +35,26 @@ class EventTest {
 
     @Test
     void testCreateEvent_InvalidTitle() {
-        // Arrange & Act
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             event.setTitle("");
         });
 
-        // Assert
         assertEquals("Title cannot be empty", exception.getMessage());
     }
 
     @Test
     void testSetStatus_ValidStatus() {
-        // Arrange & Act
         event.setStatus(EventStatus.PUBLISHED.getValue());
 
-        // Assert
         assertEquals(EventStatus.PUBLISHED.getValue(), event.getStatus());
     }
 
     @Test
     void testSetStatus_InvalidStatus() {
-        // Arrange & Act
         Exception exception = assertThrows(IllegalArgumentException.class, () -> {
             event.setStatus("INVALID_STATUS");
         });
 
-        // Assert
         assertEquals("Invalid status", exception.getMessage());
     }
 }
