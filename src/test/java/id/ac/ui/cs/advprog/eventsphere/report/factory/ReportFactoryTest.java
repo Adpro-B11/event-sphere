@@ -329,23 +329,6 @@ public class ReportFactoryTest {
     }
 
     @Test
-    void whenCreateOtherReportWithReference_thenThrowException() {
-        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
-                "Judul Valid",
-                "Deskripsi valid",
-                "OTHER",
-                "some-reference",
-                "user123"
-        );
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidCreateReportDTO);
-        });
-        assertEquals("No need Reference for category: OTHER", exception.getMessage());
-        verify(reportService, never()).createReport(any(Report.class));
-    }
-
-    @Test
     void whenCreateReportWithDefaultCase_thenThrowException() {
         // Arrange - Ini skenario edge case untuk branch coverage
         // mock untuk ReportCategory yang mengembalikan null untuk valueOf

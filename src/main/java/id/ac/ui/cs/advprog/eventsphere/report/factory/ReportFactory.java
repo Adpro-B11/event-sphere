@@ -22,7 +22,6 @@ public class ReportFactory {
         String createdBy = newReport.getCreatedBy();
 
         validateInput(title, description, category, createdBy);
-        validateReference(category, categoryReference);
 
         Report report = new Report(title, description, category.toUpperCase(), categoryReference, createdBy);
         return ReportService.createReport(report);
@@ -55,39 +54,6 @@ public class ReportFactory {
 
         if (createdBy == null || createdBy.trim().isEmpty()) {
             throw new IllegalArgumentException("Report creator can't be empty");
-        }
-    }
-
-    private void validateReference(String strCategory, String categoryReference) {
-
-        ReportCategory category = ReportCategory.valueOf(strCategory.toUpperCase());
-
-        // [TODO] Implementasi pengecekan referensi disetiap case dengan memanggil masing-masing repo
-        boolean exist = true; // Untuk simulasi saja
-
-        switch (category) {
-            case OTHER:
-                if (categoryReference != null && !categoryReference.trim().isEmpty()) {
-                    throw new IllegalArgumentException("No need Reference for category: " + category.getValue());
-                }
-                break;
-            case EVENT_ISSUE:
-                if (!exist) {
-                    throw new IllegalArgumentException("Event not valid: " + categoryReference);
-                }
-                break;
-            case TICKET:
-                if (!exist) {
-                    throw new IllegalArgumentException("Ticket not valid: " + categoryReference);
-                }
-                break;
-            case PAYMENT:
-                if (!exist) {
-                    throw new IllegalArgumentException("Payment not valid: " + categoryReference);
-                }
-                break;
-            default:
-                throw new IllegalArgumentException("Category report not valid");
         }
     }
 }
