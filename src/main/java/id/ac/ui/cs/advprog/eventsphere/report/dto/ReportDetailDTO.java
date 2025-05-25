@@ -16,7 +16,6 @@ public class ReportDetailDTO {
     private String description;
     private String category;
     private String categoryReference;
-    private String attachmentPath;
     private String status;
     private LocalDateTime createdAt;
     private String createdBy;

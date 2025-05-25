@@ -17,12 +17,11 @@ class ReportTest {
     private final String DESCRIPTION = "Test Description";
     private final String CATEGORY = ReportCategory.PAYMENT.getValue();
     private final String CATEGORY_REFERENCE = "PAYMENT-123";
-    private final String ATTACHMENT_PATH = "https://example.com/attachment";
     private final String CREATED_BY = "testuser";
 
     @BeforeEach
     void setUp() {
-        report = new Report(TITLE, DESCRIPTION, CATEGORY, CATEGORY_REFERENCE, ATTACHMENT_PATH ,CREATED_BY);
+        report = new Report(TITLE, DESCRIPTION, CATEGORY, CATEGORY_REFERENCE, CREATED_BY);
     }
 
     @Test
@@ -31,7 +30,6 @@ class ReportTest {
         assertEquals(DESCRIPTION, report.getDescription());
         assertEquals(CATEGORY, report.getCategory());
         assertEquals(CATEGORY_REFERENCE, report.getCategoryReference());
-        assertEquals(ATTACHMENT_PATH, report.getAttachmentPath());
         assertEquals(CREATED_BY, report.getCreatedBy());
         assertTrue(report.getMessages().isEmpty());
 
@@ -96,7 +94,6 @@ class ReportTest {
         assertEquals(sender2, report.getMessages().get(1).getSender());
     }
 
-
     @Test
     void testToString() {
         String reportString = report.toString();
@@ -122,7 +119,6 @@ class ReportTest {
         assertNull(emptyReport.getDescription());
         assertNull(emptyReport.getCategory());
         assertNull(emptyReport.getCategoryReference());
-        assertNull(emptyReport.getAttachmentPath());
         assertNull(emptyReport.getStatus());
         assertNull(emptyReport.getCreatedAt());
         assertNull(emptyReport.getCreatedBy());

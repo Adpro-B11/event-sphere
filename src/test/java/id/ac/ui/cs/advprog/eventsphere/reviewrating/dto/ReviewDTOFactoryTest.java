@@ -1,6 +1,6 @@
-package id.ac.ui.cs.advprog.eventsphere.reviewrating.dto;
+package id.ac.ui.cs.advprog.eventsphere.reviewrating.factory;
 
-import id.ac.ui.cs.advprog.eventsphere.reviewrating.factory.ReviewDTOFactory;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -18,14 +18,12 @@ class ReviewDTOFactoryTest {
         review.setComment("Great event!");
         review.setCreatedAt(ZonedDateTime.now());
         review.setUserId("usr_123");
+        review.setUsername("John Doe");
         review.setEventId("evt_123");
-
-        // Create user data
-        String username = "John Doe";
 
         // Create DTO with factory
         ReviewDTOFactory factory = new ReviewDTOFactory();
-        ReviewDTO dto = factory.createFromReview(review, username);
+        ReviewDTO dto = factory.createFromReview(review);
 
         // Verify DTO contents
         assertEquals(review.getId(), dto.getId());
@@ -33,7 +31,8 @@ class ReviewDTOFactoryTest {
         assertEquals(review.getComment(), dto.getComment());
         assertEquals(review.getCreatedAt(), dto.getCreatedAt());
         assertEquals(review.getUserId(), dto.getUserId());
-        assertEquals(username, dto.getUsername());
+        assertEquals(review.getUsername(), dto.getUsername());
+        assertEquals(review.getEventId(), dto.getEventId());
     }
 
     @Test
@@ -46,14 +45,16 @@ class ReviewDTOFactoryTest {
         review.setCreatedAt(ZonedDateTime.now().minusDays(1));
         review.setUpdatedAt(ZonedDateTime.now());
         review.setUserId("usr_123");
+        review.setUsername("Jane Smith");
         review.setEventId("evt_123");
 
         // Create DTO with factory
         ReviewDTOFactory factory = new ReviewDTOFactory();
-        ReviewDTO dto = factory.createFromReview(review, "Jane Smith");
+        ReviewDTO dto = factory.createFromReview(review);
 
         // Verify DTO includes updated time
         assertNotNull(dto.getUpdatedAt());
         assertEquals(review.getUpdatedAt(), dto.getUpdatedAt());
+        assertEquals(review.getUsername(), dto.getUsername());
     }
 }

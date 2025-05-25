@@ -78,4 +78,10 @@ public class TicketServiceImpl implements TicketService {
         TicketCommand command = commandFactory.decreaseQuotaCommand(eventId, type, quantity);
         command.execute();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean userHasTicket(String userId, String eventId) {
+        return true;
+    }
 }

@@ -1,5 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.service;
 
+import id.ac.ui.cs.advprog.eventsphere.ticket.dto.purchase.PurchaseTicketRequest;
+import id.ac.ui.cs.advprog.eventsphere.ticket.dto.purchase.PurchaseTicketResponse;
 import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
 
@@ -14,4 +16,5 @@ public interface TicketService {
     void updateTicket(String ticketId, Map<String, Object> updates);
     List<Ticket> getAllTickets();
     void decreaseQuota(String eventId, String ticketType, int quantity);
+    boolean userHasTicket(String userId, String eventId);
 }
