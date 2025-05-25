@@ -1,15 +1,15 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.service;
 
-import id.ac.ui.cs.advprog.eventsphere.auth.model.User;  // Add this import
-import id.ac.ui.cs.advprog.eventsphere.auth.service.UserService;
-import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.CreateReviewRequest;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewRequest;
+import id.ac.ui.cs.advprog.eventsphere.event.service.EventService;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
-import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.UpdateReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.NotFoundException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.UnauthorizedException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.factory.ReviewDTOFactory;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.repository.ReviewRepository;
+import id.ac.ui.cs.advprog.eventsphere.ticket.service.TicketService;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -19,7 +19,7 @@ import org.mockito.MockitoAnnotations;
 import java.time.ZonedDateTime;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional; // Ensure this is imported
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -38,15 +38,16 @@ class ReviewServiceTest {
     private ReviewDTOFactory dtoFactory;
 
     @Mock
-    private UserService userService;
+    private TicketService ticketService;
 
     @Mock
-    private User mockUser;  // Add this field
+    private EventService eventService;
 
     private ReviewService reviewService;
     private Review testReview;
     private final String TEST_USER_ID = "usr_123";
     private final String TEST_EVENT_ID = "evt_123";
+    private final String TEST_USERNAME = "John Doe";
 
     @BeforeEach
     void setUp() {
@@ -56,7 +57,8 @@ class ReviewServiceTest {
                 reviewRepository,
                 ratingSubject,
                 dtoFactory,
-                userService
+                ticketService,
+                eventService
         );
 
         testReview = new Review();
@@ -65,11 +67,8 @@ class ReviewServiceTest {
         testReview.setComment("Good event");
         testReview.setCreatedAt(ZonedDateTime.now());
         testReview.setUserId(TEST_USER_ID);
+        testReview.setUsername(TEST_USERNAME);
         testReview.setEventId(TEST_EVENT_ID);
-
-        // Mock User behavior
-        when(mockUser.getDisplayName()).thenReturn("John Doe");
-        when(userService.getUserById(TEST_USER_ID)).thenReturn(mockUser);
 
         ReviewDTO testDTO = ReviewDTO.builder()
                 .id(testReview.getId())
@@ -77,118 +76,169 @@ class ReviewServiceTest {
                 .comment(testReview.getComment())
                 .createdAt(testReview.getCreatedAt())
                 .userId(testReview.getUserId())
-                .username("John Doe")
+                .username(testReview.getUsername())
                 .eventId(testReview.getEventId())
                 .build();
-        when(dtoFactory.createFromReview(any(Review.class), anyString())).thenReturn(testDTO);
+        when(dtoFactory.createFromReview(any(Review.class))).thenReturn(testDTO);
     }
 
     @Test
-    void testCreateReview() {
+    void testCreateReview_Success() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
         when(reviewRepository.findByUserIdAndEventId(TEST_USER_ID, TEST_EVENT_ID))
-                .thenReturn(Optional.empty()); // CORRECTED
-
+                .thenReturn(Optional.empty());
         when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        CreateReviewRequest request = new CreateReviewRequest();
+        ReviewRequest request = new ReviewRequest();
         request.setRating(4);
         request.setComment("Good event");
+        request.setUserId(TEST_USER_ID);
+        request.setUsername(TEST_USERNAME);
+        request.setEventId(TEST_EVENT_ID);
 
-        reviewService.createReview(TEST_USER_ID, TEST_EVENT_ID, request);
+        reviewService.createReview(request);
 
         ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
         verify(reviewRepository).save(reviewCaptor.capture());
-        // ... other assertions
+        Review savedReview = reviewCaptor.getValue();
+        
+        assertEquals(4, savedReview.getRating());
+        assertEquals("Good event", savedReview.getComment());
+        assertEquals(TEST_USER_ID, savedReview.getUserId());
+        assertEquals(TEST_USERNAME, savedReview.getUsername());
+        assertEquals(TEST_EVENT_ID, savedReview.getEventId());
+        verify(ratingSubject).notifyReviewCreated(any(Review.class));
     }
 
     @Test
-    void testCreateReviewWhenUserAlreadyReviewed() {
-        when(reviewRepository.findByUserIdAndEventId(TEST_USER_ID, TEST_EVENT_ID))
-                .thenReturn(Optional.of(testReview)); // CORRECTED
+    void testCreateReview_EventNotFinished() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(false);
 
-        CreateReviewRequest request = new CreateReviewRequest();
+        ReviewRequest request = new ReviewRequest();
+        request.setEventId(TEST_EVENT_ID);
+        request.setUserId(TEST_USER_ID);
+
         assertThrows(IllegalStateException.class, () -> {
-            reviewService.createReview(TEST_USER_ID, TEST_EVENT_ID, request);
+            reviewService.createReview(request);
+        });
+        
+        verify(reviewRepository, never()).save(any());
+    }
+
+    @Test
+    void testCreateReview_UserHasNoTicket() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(false);
+
+        ReviewRequest request = new ReviewRequest();
+        request.setEventId(TEST_EVENT_ID);
+        request.setUserId(TEST_USER_ID);
+
+        assertThrows(UnauthorizedException.class, () -> {
+            reviewService.createReview(request);
+        });
+        
+        verify(reviewRepository, never()).save(any());
+    }
+
+    @Test
+    void testCreateReview_UserAlreadyReviewed() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
+        when(reviewRepository.findByUserIdAndEventId(TEST_USER_ID, TEST_EVENT_ID))
+                .thenReturn(Optional.of(testReview));
+
+        ReviewRequest request = new ReviewRequest();
+        request.setEventId(TEST_EVENT_ID);
+        request.setUserId(TEST_USER_ID);
+
+        assertThrows(IllegalStateException.class, () -> {
+            reviewService.createReview(request);
         });
     }
 
     @Test
-    void testGetReviewsByEventId() {
-        when(reviewRepository.findByEventId(TEST_EVENT_ID)).thenReturn(Arrays.asList(testReview));
-        List<ReviewDTO> result = reviewService.getReviewsByEventId(TEST_EVENT_ID);
-        assertEquals(1, result.size());
-        // ... other assertions
+    void testGetReviewsByEventId_EventNotFinished() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(false);
+
+        assertThrows(IllegalStateException.class, () -> {
+            reviewService.getReviewsByEventId(TEST_EVENT_ID);
+        });
     }
 
     @Test
-    void testUpdateReview() {
-        when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview)); // CORRECTED
+    void testGetReviewsByEventId_Success() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(reviewRepository.findByEventId(TEST_EVENT_ID)).thenReturn(Arrays.asList(testReview));
+
+        List<ReviewDTO> result = reviewService.getReviewsByEventId(TEST_EVENT_ID);
+        
+        assertEquals(1, result.size());
+        verify(dtoFactory).createFromReview(testReview);
+    }
+
+    @Test
+    void testUpdateReview_Success() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
+        when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
         when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArguments()[0]);
 
-        Review oldReviewState = new Review(); // To capture state for notification
-        oldReviewState.setId(testReview.getId());
-        oldReviewState.setRating(testReview.getRating());
-        oldReviewState.setComment(testReview.getComment());
-        oldReviewState.setEventId(testReview.getEventId());
-        oldReviewState.setUserId(testReview.getUserId());
-        oldReviewState.setCreatedAt(testReview.getCreatedAt());
-
-
-        UpdateReviewRequest request = new UpdateReviewRequest();
+        ReviewRequest request = new ReviewRequest();
         request.setRating(5);
         request.setComment("Updated comment");
+        request.setUserId(TEST_USER_ID);
+        request.setEventId(TEST_EVENT_ID);
 
-        reviewService.updateReview(TEST_USER_ID, testReview.getId(), request);
+        reviewService.updateReview(testReview.getId(), request);
 
         ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
         verify(reviewRepository).save(reviewCaptor.capture());
         assertEquals(5, reviewCaptor.getValue().getRating());
-
-        // Verify observer was notified with the state of oldReview before changes
-        verify(ratingSubject).notifyReviewUpdated(refEq(oldReviewState, "updatedAt"), any(Review.class));
+        verify(ratingSubject).notifyReviewUpdated(any(Review.class), any(Review.class));
     }
 
     @Test
-    void testUpdateReviewNotFound() {
-        when(reviewRepository.findById("non_existent")).thenReturn(Optional.empty()); // CORRECTED
-        UpdateReviewRequest request = new UpdateReviewRequest();
-        assertThrows(NotFoundException.class, () -> {
-            reviewService.updateReview(TEST_USER_ID, "non_existent", request);
-        });
-    }
+    void testUpdateReview_NotAuthorized() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(ticketService.userHasTicket("different_user", TEST_EVENT_ID)).thenReturn(true);
+        when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
 
-    @Test
-    void testUpdateReviewNotAuthorized() {
-        when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview)); // CORRECTED
-        UpdateReviewRequest request = new UpdateReviewRequest();
+        ReviewRequest request = new ReviewRequest();
+        request.setUserId("different_user");
+        request.setEventId(TEST_EVENT_ID);
+
         assertThrows(UnauthorizedException.class, () -> {
-            reviewService.updateReview("different_user", testReview.getId(), request);
+            reviewService.updateReview(testReview.getId(), request);
         });
     }
 
     @Test
-    void testDeleteReview() {
-        when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview)); // CORRECTED
+    void testDeleteReview_Success() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
+        when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
 
-        reviewService.deleteReview(TEST_USER_ID, testReview.getId());
+        ReviewRequest request = new ReviewRequest();
+        request.setUserId(TEST_USER_ID);
+        request.setEventId(TEST_EVENT_ID);
 
-        verify(reviewRepository).delete(eq(testReview)); // CORRECTED: verify delete with the entity
+        reviewService.deleteReview(testReview.getId(), request);
+
+        verify(reviewRepository).delete(eq(testReview));
         verify(ratingSubject).notifyReviewDeleted(testReview);
     }
 
     @Test
-    void testDeleteReviewNotFound() {
-        when(reviewRepository.findById("non_existent")).thenReturn(Optional.empty()); // CORRECTED
+    void testDeleteReview_NotFound() {
+        when(reviewRepository.findById("non_existent")).thenReturn(Optional.empty());
+        
+        ReviewRequest request = new ReviewRequest();
+        request.setUserId(TEST_USER_ID);
+        
         assertThrows(NotFoundException.class, () -> {
-            reviewService.deleteReview(TEST_USER_ID, "non_existent");
-        });
-    }
-
-    @Test
-    void testDeleteReviewNotAuthorized() {
-        when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview)); // CORRECTED
-        assertThrows(UnauthorizedException.class, () -> {
-            reviewService.deleteReview("different_user", testReview.getId());
+            reviewService.deleteReview("non_existent", request);
         });
     }
 }

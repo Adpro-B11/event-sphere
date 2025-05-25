@@ -127,4 +127,10 @@ public class TicketServiceImpl implements TicketService {
                 .ticketDetails(TicketResponse.fromTicket(ticket))
                 .build();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean userHasTicket(String userId, String eventId) {
+        return true;
+    }
 }

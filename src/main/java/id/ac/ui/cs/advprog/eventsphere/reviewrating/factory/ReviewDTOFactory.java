@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class ReviewDTOFactory {
 
-    public ReviewDTO createFromReview(Review review, String username) {
+    public ReviewDTO createFromReview(Review review) {
         return ReviewDTO.builder()
                 .id(review.getId())
                 .rating(review.getRating())
@@ -15,7 +15,7 @@ public class ReviewDTOFactory {
                 .createdAt(review.getCreatedAt())
                 .updatedAt(review.getUpdatedAt())
                 .userId(review.getUserId())
-                .username(username)
+                .username(review.getUsername())
                 .eventId(review.getEventId())
                 .build();
     }
