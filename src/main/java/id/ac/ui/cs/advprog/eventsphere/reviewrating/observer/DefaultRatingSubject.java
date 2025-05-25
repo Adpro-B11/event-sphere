@@ -1,4 +1,4 @@
-package id.ac.ui.cs.advprog.eventsphere.reviewrating.service;
+package id.ac.ui.cs.advprog.eventsphere.reviewrating.observer;
 
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
 import org.springframework.stereotype.Component;

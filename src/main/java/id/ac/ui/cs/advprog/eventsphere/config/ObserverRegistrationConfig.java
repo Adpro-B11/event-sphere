@@ -1,7 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.config;
 
-import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.RatingObserver;
-import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.RatingSubject;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.observer.RatingObserver;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.observer.RatingSubject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
