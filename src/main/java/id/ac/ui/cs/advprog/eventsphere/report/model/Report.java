@@ -37,9 +37,6 @@ public class Report {
     @Column(name = "category_reference")
     private String categoryReference;
 
-    @Column(name = "attachment_path")
-    private String attachmentPath;
-
     @Column(nullable = false)
     private String status;
 
@@ -55,12 +52,11 @@ public class Report {
     private List<ReportMessage> messages = new ArrayList<>();
 
     // Constructor yang digunakan oleh ReportFactory
-    public Report(String title, String description, String category, String categoryReference, String attachmentPath, String createdBy) {
+    public Report(String title, String description, String category, String categoryReference, String createdBy) {
         this.title = title;
         this.description = description;
         this.category = category;
         this.categoryReference = categoryReference;
-        this.attachmentPath = attachmentPath;
         this.createdBy = createdBy;
         this.createdAt = LocalDateTime.now();
         this.status = ReportStatus.PENDING.getValue();

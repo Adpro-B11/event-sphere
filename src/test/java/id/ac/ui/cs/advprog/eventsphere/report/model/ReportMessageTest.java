@@ -23,7 +23,6 @@ class ReportMessageTest {
                 "Test Deskripsi",
                 ReportCategory.PAYMENT.getValue(),
                 "PAYMENT-123",
-                "https://example.com/attachment",
                 "creator");
         reportMessage = new ReportMessage(report, MESSAGE_TEXT, SENDER);
     }
