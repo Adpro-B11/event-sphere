@@ -16,4 +16,5 @@ public interface TicketService {
     void updateTicket(String ticketId, Map<String, Object> updates);
     List<Ticket> getAllTickets();
     PurchaseTicketResponse purchaseTicket(PurchaseTicketRequest request);
+    boolean userHasTicket(String userId, String eventId);
 }

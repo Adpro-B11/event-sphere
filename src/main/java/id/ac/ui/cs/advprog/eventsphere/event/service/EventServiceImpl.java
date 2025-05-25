@@ -8,6 +8,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.concurrent.CompletableFuture;
 
 @Service
@@ -68,6 +71,22 @@ public class EventServiceImpl implements EventService {
     @Override
     public List<Event> findAllEvents() {
         return eventRepository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public boolean isEventFinished(String eventId) {
+        Event event = eventRepository.findById(eventId)
+                .orElseThrow(() -> new NoSuchElementException("Event not found: " + eventId));
+        
+        try {
+            LocalDate eventDate = LocalDate.parse(event.getDate(), DateTimeFormatter.ISO_LOCAL_DATE);
+            LocalDate today = LocalDate.now();
+            
+            return eventDate.isBefore(today);
+        } catch (DateTimeParseException e) {
+            return false;
+        }
     }
 
     @Async
