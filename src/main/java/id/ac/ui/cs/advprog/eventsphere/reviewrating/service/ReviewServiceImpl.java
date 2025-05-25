@@ -9,6 +9,7 @@ import id.ac.ui.cs.advprog.eventsphere.reviewrating.factory.ReviewDTOFactory;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.repository.ReviewRepository;
 import id.ac.ui.cs.advprog.eventsphere.ticket.service.TicketService;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.observer.RatingSubject;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
