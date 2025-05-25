@@ -154,10 +154,19 @@ public class ReviewServiceImpl implements ReviewService {
             throw new UnauthorizedException("User is not authorized to delete this review");
         }
 
+        Review reviewCopy = new Review();
+        reviewCopy.setId(review.getId());
+        reviewCopy.setRating(review.getRating());
+        reviewCopy.setComment(review.getComment());
+        reviewCopy.setCreatedAt(review.getCreatedAt());
+        reviewCopy.setUserId(review.getUserId());
+        reviewCopy.setUsername(review.getUsername());
+        reviewCopy.setEventId(review.getEventId());
+
         // Delete the review
         reviewRepository.delete(review);
 
         // Notify observers about the deletion
-        ratingSubject.notifyReviewDeleted(review);
+        ratingSubject.notifyReviewDeleted(reviewCopy);
     }
 }
