@@ -105,7 +105,6 @@ public class ReviewController {
 
         return CompletableFuture.supplyAsync(() -> {
             try {
-                // Set eventId from path parameter (though it's also extracted from the review itself)
                 request.setEventId(eventId);
                 
                 reviewService.deleteReview(reviewId, request);

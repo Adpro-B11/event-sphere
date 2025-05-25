@@ -51,7 +51,6 @@ public class ReviewServiceImpl implements ReviewService {
 
         // Create a new review
         Review review = new Review();
-        review.setId("rev_" + UUID.randomUUID().toString().substring(0, 12));
         review.setRating(request.getRating());
         review.setComment(request.getComment());
         review.setUserId(request.getUserId());
