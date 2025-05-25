@@ -227,7 +227,19 @@ class ReviewServiceTest {
         reviewService.deleteReview(testReview.getId(), request);
 
         verify(reviewRepository).delete(eq(testReview));
-        verify(ratingSubject).notifyReviewDeleted(testReview);
+        
+        // Use ArgumentCaptor to capture the actual argument passed to notifyReviewDeleted
+        ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
+        verify(ratingSubject).notifyReviewDeleted(reviewCaptor.capture());
+        
+        // Verify the content of the captured review instead of object equality
+        Review capturedReview = reviewCaptor.getValue();
+        assertEquals(testReview.getId(), capturedReview.getId());
+        assertEquals(testReview.getRating(), capturedReview.getRating());
+        assertEquals(testReview.getComment(), capturedReview.getComment());
+        assertEquals(testReview.getUserId(), capturedReview.getUserId());
+        assertEquals(testReview.getEventId(), capturedReview.getEventId());
+        assertEquals(testReview.getUsername(), capturedReview.getUsername());
     }
 
     @Test
