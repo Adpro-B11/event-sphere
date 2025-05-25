@@ -16,6 +16,7 @@ public interface EventService {
     void updateEventInfo(String eventId, Event updatedEvent);
     void deleteEvent(String eventId);
     List<Event> findAllEvents();
+    boolean isEventFinished(String eventId);
 
     // async – return Event agar tidak null
     @Async

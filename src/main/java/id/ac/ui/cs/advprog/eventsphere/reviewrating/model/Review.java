@@ -38,12 +38,15 @@ public class Review {
 
     @Setter
     @Column(nullable = false)
+    private String username;
+
+    @Setter
+    @Column(nullable = false)
     private String eventId;
 
     public void setId(String id) {
         this.id = id;
     }
-
 
     public void setRating(int rating) {
         if (rating < 1 || rating > 5) {
@@ -57,11 +60,6 @@ public class Review {
         if (this.createdAt == null) {
             this.createdAt = ZonedDateTime.now();
         }
-        // Ensure ID is set if not already, useful if not using @GeneratedValue with certain strategies
-        // For example, if you set it in the service layer:
-        // if (this.id == null || this.id.isEmpty()) {
-        //     this.id = "rev_" + UUID.randomUUID().toString().substring(0,8);
-        // }
     }
 
     @PreUpdate

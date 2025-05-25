@@ -2,9 +2,8 @@ package id.ac.ui.cs.advprog.eventsphere.reviewrating.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
-import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.CreateReviewRequest;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
-import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.UpdateReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.NotFoundException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.UnauthorizedException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.ReviewService;
@@ -41,16 +40,17 @@ class ReviewControllerTest {
     @Mock
     private ReviewService reviewService;
 
-    @InjectMocks
-    private ReviewController reviewController;
-
     @Mock
     private EventRatingSummaryService ratingSummaryService;
+
+    @InjectMocks
+    private ReviewController reviewController;
 
     private ObjectMapper objectMapper;
 
     private String eventId = "evt_123";
     private String userId = "usr_123";
+    private String username = "testuser";
     private String reviewId = "rev_123";
     private ReviewDTO sampleReviewDTO;
     private List<ReviewDTO> reviewList;
@@ -60,7 +60,7 @@ class ReviewControllerTest {
         mockMvc = MockMvcBuilders.standaloneSetup(reviewController)
                 .setAsyncRequestTimeout(5000)
                 .build();
-
+        
         objectMapper = new ObjectMapper();
         objectMapper.registerModule(new JavaTimeModule());
 
@@ -70,14 +70,14 @@ class ReviewControllerTest {
                 .comment("Good event")
                 .createdAt(ZonedDateTime.now())
                 .userId(userId)
-                .username("User 1")
+                .username(username)
                 .eventId(eventId)
                 .build();
         reviewList = Arrays.asList(sampleReviewDTO);
     }
 
     @Test
-    void testGetReviewsByEventId() throws Exception {
+    void testGetReviewsByEventId_Success() throws Exception {
         given(reviewService.getReviewsByEventId(eventId)).willReturn(reviewList);
 
         MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/reviews", eventId))
@@ -87,240 +87,265 @@ class ReviewControllerTest {
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].id", is(reviewId)));
-
+                .andExpect(jsonPath("$[0].id", is(reviewId)))
+                .andExpect(jsonPath("$[0].rating", is(4)))
+                .andExpect(jsonPath("$[0].username", is(username)));
+                
         verify(reviewService).getReviewsByEventId(eventId);
     }
 
     @Test
-    void testGetReviewsByEventId_EmptyList() throws Exception {
-        given(reviewService.getReviewsByEventId(eventId)).willReturn(Arrays.asList());
-
-        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/reviews", eventId))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(0)));
-
-        verify(reviewService).getReviewsByEventId(eventId);
-    }
-
-    @Test
-    void testGetReviewsByEventId_InternalServerError() throws Exception {
+    void testGetReviewsByEventId_EventNotFinished() throws Exception {
         given(reviewService.getReviewsByEventId(eventId))
-                .willThrow(new RuntimeException("Database connection failed"));
+                .willThrow(new IllegalStateException("Reviews can only be viewed for finished events"));
 
         MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/reviews", eventId))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
-                .andExpect(status().isInternalServerError());
+                .andExpect(status().isBadRequest());
+                
+        verify(reviewService).getReviewsByEventId(eventId);
     }
 
     @Test
-    void testCreateReview() throws Exception {
-        CreateReviewRequest requestBody = new CreateReviewRequest();
+    void testCreateReview_Success() throws Exception {
+        ReviewRequest requestBody = new ReviewRequest();
         requestBody.setRating(4);
         requestBody.setComment("Good event");
+        requestBody.setUserId(userId);
+        requestBody.setUsername(username);
+        requestBody.setEventId(eventId);
 
-        given(reviewService.createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class)))
+        given(reviewService.createReview(any(ReviewRequest.class)))
                 .willReturn(sampleReviewDTO);
 
         MvcResult mvcResult = mockMvc.perform(post("/api/events/{eventId}/reviews", eventId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestBody))
-                        .header("X-User-ID", userId))
+                        .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.id", is(reviewId)))
-                .andExpect(jsonPath("$.rating", is(4)));
-
-        verify(reviewService).createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class));
+                .andExpect(jsonPath("$.rating", is(4)))
+                .andExpect(jsonPath("$.comment", is("Good event")));
+                
+        verify(reviewService).createReview(any(ReviewRequest.class));
     }
 
     @Test
-    void testCreateReview_UserAlreadyReviewed_Conflict() throws Exception {
-        CreateReviewRequest requestBody = new CreateReviewRequest();
+    void testCreateReview_EventNotFinished() throws Exception {
+        ReviewRequest requestBody = new ReviewRequest();
+        requestBody.setRating(4);
+        requestBody.setComment("Good event");
+        requestBody.setUserId(userId);
+        requestBody.setUsername(username);
+        requestBody.setEventId(eventId);
+
+        given(reviewService.createReview(any(ReviewRequest.class)))
+                .willThrow(new IllegalStateException("Reviews can only be created for finished events"));
+
+        MvcResult mvcResult = mockMvc.perform(post("/api/events/{eventId}/reviews", eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestBody)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isBadRequest());
+                
+        verify(reviewService).createReview(any(ReviewRequest.class));
+    }
+
+    @Test
+    void testCreateReview_UserHasNoTicket() throws Exception {
+        ReviewRequest requestBody = new ReviewRequest();
+        requestBody.setRating(4);
+        requestBody.setComment("Good event");
+        requestBody.setUserId(userId);
+        requestBody.setUsername(username);
+        requestBody.setEventId(eventId);
+
+        given(reviewService.createReview(any(ReviewRequest.class)))
+                .willThrow(new UnauthorizedException("Only users with tickets can review this event"));
+
+        MvcResult mvcResult = mockMvc.perform(post("/api/events/{eventId}/reviews", eventId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestBody)))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        mockMvc.perform(asyncDispatch(mvcResult))
+                .andExpect(status().isForbidden());
+                
+        verify(reviewService).createReview(any(ReviewRequest.class));
+    }
+
+    @Test
+    void testCreateReview_UserAlreadyReviewed() throws Exception {
+        ReviewRequest requestBody = new ReviewRequest();
         requestBody.setRating(4);
         requestBody.setComment("Trying to review again");
+        requestBody.setUserId(userId);
+        requestBody.setUsername(username);
+        requestBody.setEventId(eventId);
 
-        given(reviewService.createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class)))
+        given(reviewService.createReview(any(ReviewRequest.class)))
                 .willThrow(new IllegalStateException("User has already reviewed this event"));
 
         MvcResult mvcResult = mockMvc.perform(post("/api/events/{eventId}/reviews", eventId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestBody))
-                        .header("X-User-ID", userId))
+                        .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isConflict());
-
-        verify(reviewService).createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class));
+                
+        verify(reviewService).createReview(any(ReviewRequest.class));
     }
 
     @Test
-    void testCreateReview_MissingUserId() throws Exception {
-        CreateReviewRequest requestBody = new CreateReviewRequest();
-        requestBody.setRating(4);
-        requestBody.setComment("Good event");
-
-        mockMvc.perform(post("/api/events/{eventId}/reviews", eventId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestBody)))
-                .andExpect(status().isBadRequest());
-
-        verifyNoInteractions(reviewService);
-    }
-
-    @Test
-    void testCreateReview_InternalServerError() throws Exception {
-        CreateReviewRequest requestBody = new CreateReviewRequest();
-        requestBody.setRating(4);
-        requestBody.setComment("Good event");
-
-        given(reviewService.createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class)))
-                .willThrow(new RuntimeException("Database error"));
-
-        MvcResult mvcResult = mockMvc.perform(post("/api/events/{eventId}/reviews", eventId)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestBody))
-                        .header("X-User-ID", userId))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult))
-                .andExpect(status().isInternalServerError());
-
-        verify(reviewService).createReview(eq(userId), eq(eventId), any(CreateReviewRequest.class));
-    }
-
-    @Test
-    void testUpdateReview() throws Exception {
-        UpdateReviewRequest requestBody = new UpdateReviewRequest();
+    void testUpdateReview_Success() throws Exception {
+        ReviewRequest requestBody = new ReviewRequest();
         requestBody.setRating(5);
         requestBody.setComment("Updated: Excellent event!");
-
+        requestBody.setUserId(userId);
+        requestBody.setUsername(username);
+        requestBody.setEventId(eventId);
+        
         ReviewDTO updatedReviewDTO = ReviewDTO.builder()
                 .id(reviewId).rating(5).comment("Updated: Excellent event!")
                 .createdAt(sampleReviewDTO.getCreatedAt()).updatedAt(ZonedDateTime.now())
-                .userId(userId).username("User 1").eventId(eventId).build();
+                .userId(userId).username(username).eventId(eventId).build();
 
-        given(reviewService.updateReview(eq(userId), eq(reviewId), any(UpdateReviewRequest.class)))
+        given(reviewService.updateReview(eq(reviewId), any(ReviewRequest.class)))
                 .willReturn(updatedReviewDTO);
 
         MvcResult mvcResult = mockMvc.perform(put("/api/events/{eventId}/reviews/{reviewId}", eventId, reviewId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestBody))
-                        .header("X-User-ID", userId))
+                        .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(reviewId)))
-                .andExpect(jsonPath("$.rating", is(5)));
-
-        verify(reviewService).updateReview(eq(userId), eq(reviewId), any(UpdateReviewRequest.class));
+                .andExpect(jsonPath("$.rating", is(5)))
+                .andExpect(jsonPath("$.comment", is("Updated: Excellent event!")));
+                
+        verify(reviewService).updateReview(eq(reviewId), any(ReviewRequest.class));
     }
 
     @Test
     void testUpdateReview_NotFound() throws Exception {
-        UpdateReviewRequest requestBody = new UpdateReviewRequest();
+        ReviewRequest requestBody = new ReviewRequest();
         requestBody.setRating(5);
+        requestBody.setUserId(userId);
+        requestBody.setEventId(eventId);
         String nonExistentReviewId = "nonexistent_rev_id";
 
-        given(reviewService.updateReview(eq(userId), eq(nonExistentReviewId), any(UpdateReviewRequest.class)))
+        given(reviewService.updateReview(eq(nonExistentReviewId), any(ReviewRequest.class)))
                 .willThrow(new NotFoundException("Review not found"));
 
         MvcResult mvcResult = mockMvc.perform(put("/api/events/{eventId}/reviews/{reviewId}", eventId, nonExistentReviewId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestBody))
-                        .header("X-User-ID", userId))
+                        .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isNotFound());
-
-        verify(reviewService).updateReview(eq(userId), eq(nonExistentReviewId), any(UpdateReviewRequest.class));
+                
+        verify(reviewService).updateReview(eq(nonExistentReviewId), any(ReviewRequest.class));
     }
 
     @Test
     void testUpdateReview_Unauthorized() throws Exception {
-        UpdateReviewRequest requestBody = new UpdateReviewRequest();
-        String differentUserId = "usr_789";
+        ReviewRequest requestBody = new ReviewRequest();
+        requestBody.setRating(5);
+        requestBody.setUserId(userId);
+        requestBody.setEventId(eventId);
 
-        given(reviewService.updateReview(eq(differentUserId), eq(reviewId), any(UpdateReviewRequest.class)))
+        given(reviewService.updateReview(eq(reviewId), any(ReviewRequest.class)))
                 .willThrow(new UnauthorizedException("Not authorized"));
 
         MvcResult mvcResult = mockMvc.perform(put("/api/events/{eventId}/reviews/{reviewId}", eventId, reviewId)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(requestBody))
-                        .header("X-User-ID", differentUserId))
+                        .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isForbidden());
-
-        verify(reviewService).updateReview(eq(differentUserId), eq(reviewId), any(UpdateReviewRequest.class));
+                
+        verify(reviewService).updateReview(eq(reviewId), any(ReviewRequest.class));
     }
 
     @Test
-    void testDeleteReview() throws Exception {
-        doNothing().when(reviewService).deleteReview(userId, reviewId);
+    void testDeleteReview_Success() throws Exception {
+        ReviewRequest requestBody = new ReviewRequest();
+        requestBody.setUserId(userId);
+        requestBody.setEventId(eventId);
+
+        doNothing().when(reviewService).deleteReview(eq(reviewId), any(ReviewRequest.class));
 
         MvcResult mvcResult = mockMvc.perform(delete("/api/events/{eventId}/reviews/{reviewId}", eventId, reviewId)
-                        .header("X-User-ID", userId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isNoContent());
-
-        verify(reviewService).deleteReview(userId, reviewId);
+                
+        verify(reviewService).deleteReview(eq(reviewId), any(ReviewRequest.class));
     }
 
     @Test
     void testDeleteReview_NotFound() throws Exception {
+        ReviewRequest requestBody = new ReviewRequest();
+        requestBody.setUserId(userId);
+        requestBody.setEventId(eventId);
         String nonExistentReviewId = "nonexistent_rev_id";
+        
         doThrow(new NotFoundException("Review not found"))
-                .when(reviewService).deleteReview(userId, nonExistentReviewId);
+                .when(reviewService).deleteReview(eq(nonExistentReviewId), any(ReviewRequest.class));
 
         MvcResult mvcResult = mockMvc.perform(delete("/api/events/{eventId}/reviews/{reviewId}", eventId, nonExistentReviewId)
-                        .header("X-User-ID", userId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isNotFound());
-
-        verify(reviewService).deleteReview(userId, nonExistentReviewId);
+                
+        verify(reviewService).deleteReview(eq(nonExistentReviewId), any(ReviewRequest.class));
     }
 
     @Test
     void testDeleteReview_Unauthorized() throws Exception {
-        String differentUserId = "usr_789";
+        ReviewRequest requestBody = new ReviewRequest();
+        requestBody.setUserId(userId);
+        requestBody.setEventId(eventId);
+        
         doThrow(new UnauthorizedException("Not authorized"))
-                .when(reviewService).deleteReview(differentUserId, reviewId);
+                .when(reviewService).deleteReview(eq(reviewId), any(ReviewRequest.class));
 
         MvcResult mvcResult = mockMvc.perform(delete("/api/events/{eventId}/reviews/{reviewId}", eventId, reviewId)
-                        .header("X-User-ID", differentUserId))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(requestBody)))
                 .andExpect(request().asyncStarted())
                 .andReturn();
 
         mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isForbidden());
-
-        verify(reviewService).deleteReview(differentUserId, reviewId);
+                
+        verify(reviewService).deleteReview(eq(reviewId), any(ReviewRequest.class));
     }
 
     @Test
@@ -343,88 +368,5 @@ class ReviewControllerTest {
 
         verify(ratingSummaryService).getAverageRating(eventId);
         verify(ratingSummaryService).getTotalReviews(eventId);
-    }
-
-    @Test
-    void testGetEventRatingSummary_NoReviews() throws Exception {
-        double expectedAverageRating = 0.0;
-        int expectedTotalReviews = 0;
-
-        given(ratingSummaryService.getAverageRating(eventId)).willReturn(expectedAverageRating);
-        given(ratingSummaryService.getTotalReviews(eventId)).willReturn(expectedTotalReviews);
-
-        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", eventId))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.eventId", is(eventId)))
-                .andExpect(jsonPath("$.averageRating", is(0.0)))
-                .andExpect(jsonPath("$.totalReviews", is(0)));
-
-        verify(ratingSummaryService).getAverageRating(eventId);
-        verify(ratingSummaryService).getTotalReviews(eventId);
-    }
-
-    @Test
-    void testGetEventRatingSummary_ServiceThrowsException() throws Exception {
-        given(ratingSummaryService.getAverageRating(eventId))
-                .willThrow(new RuntimeException("Database error"));
-
-        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", eventId))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult))
-                .andExpect(status().isInternalServerError());
-
-        verify(ratingSummaryService).getAverageRating(eventId);
-        // getTotalReviews might not be called if getAverageRating throws first
-    }
-
-    @Test
-    void testGetEventRatingSummary_HighRating() throws Exception {
-        double expectedAverageRating = 4.9;
-        int expectedTotalReviews = 100;
-
-        given(ratingSummaryService.getAverageRating(eventId)).willReturn(expectedAverageRating);
-        given(ratingSummaryService.getTotalReviews(eventId)).willReturn(expectedTotalReviews);
-
-        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", eventId))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.eventId", is(eventId)))
-                .andExpect(jsonPath("$.averageRating", is(4.9)))
-                .andExpect(jsonPath("$.totalReviews", is(100)));
-
-        verify(ratingSummaryService).getAverageRating(eventId);
-        verify(ratingSummaryService).getTotalReviews(eventId);
-    }
-
-    @Test
-    void testGetEventRatingSummary_DifferentEventId() throws Exception {
-        String anotherEventId = "evt_456";
-        double expectedAverageRating = 3.5;
-        int expectedTotalReviews = 2;
-
-        given(ratingSummaryService.getAverageRating(anotherEventId)).willReturn(expectedAverageRating);
-        given(ratingSummaryService.getTotalReviews(anotherEventId)).willReturn(expectedTotalReviews);
-
-        MvcResult mvcResult = mockMvc.perform(get("/api/events/{eventId}/rating-summary", anotherEventId))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        mockMvc.perform(asyncDispatch(mvcResult))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.eventId", is(anotherEventId)))
-                .andExpect(jsonPath("$.averageRating", is(3.5)))
-                .andExpect(jsonPath("$.totalReviews", is(2)));
-
-        verify(ratingSummaryService).getAverageRating(anotherEventId);
-        verify(ratingSummaryService).getTotalReviews(anotherEventId);
     }
 }
