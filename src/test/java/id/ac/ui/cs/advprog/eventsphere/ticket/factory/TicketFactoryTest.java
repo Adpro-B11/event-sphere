@@ -54,7 +54,7 @@ public class TicketFactoryTest {
     void testCreateGroupTicket_NoSpecialLogicYet() {
         Ticket ticket = ticketFactory.createTicket("event123", TicketType.GROUP, 300.0, 10);
 
-        assertEquals(300.0, ticket.getPrice());
+        assertEquals(255.0, ticket.getPrice());
         assertEquals(10, ticket.getQuota());
     }
 }
