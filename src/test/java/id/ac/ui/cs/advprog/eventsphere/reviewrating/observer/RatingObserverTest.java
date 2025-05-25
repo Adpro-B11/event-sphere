@@ -53,14 +53,14 @@ class RatingObserverTest {
     @Test
     void testOnReviewCreated_VerifiesInteraction() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        
+
         doAnswer(invocation -> {
             latch.countDown();
             return null;
         }).when(summaryService).addReview(anyString(), anyInt());
 
         ratingObserver.onReviewCreated(review);
-        
+
         // Wait for async execution
         assertTrue(latch.await(2, TimeUnit.SECONDS), "Method should be called within timeout");
         verify(summaryService, times(1)).addReview(review.getEventId(), review.getRating());
@@ -69,34 +69,34 @@ class RatingObserverTest {
     @Test
     void testOnReviewUpdated_VerifiesInteraction() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        
+
         doAnswer(invocation -> {
             latch.countDown();
             return null;
         }).when(summaryService).updateReview(anyString(), anyInt(), anyInt());
 
         ratingObserver.onReviewUpdated(oldReviewState, review);
-        
+
         // Wait for async execution
         assertTrue(latch.await(2, TimeUnit.SECONDS), "Method should be called within timeout");
         verify(summaryService, times(1)).updateReview(
-            review.getEventId(), 
-            oldReviewState.getRating(), 
-            review.getRating()
+                review.getEventId(),
+                oldReviewState.getRating(),
+                review.getRating()
         );
     }
 
     @Test
     void testOnReviewDeleted_VerifiesInteraction() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        
+
         doAnswer(invocation -> {
             latch.countDown();
             return null;
         }).when(summaryService).removeReview(anyString(), anyInt());
 
         ratingObserver.onReviewDeleted(review);
-        
+
         // Wait for async execution
         assertTrue(latch.await(2, TimeUnit.SECONDS), "Method should be called within timeout");
         verify(summaryService, times(1)).removeReview(review.getEventId(), review.getRating());
@@ -105,7 +105,7 @@ class RatingObserverTest {
     @Test
     void testOnReviewCreated_HandlesException() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        
+
         doAnswer(invocation -> {
             latch.countDown();
             throw new RuntimeException("Test exception");
@@ -113,7 +113,7 @@ class RatingObserverTest {
 
         // Should not throw exception even if summaryService fails
         assertDoesNotThrow(() -> ratingObserver.onReviewCreated(review));
-        
+
         // Wait and verify the method was called
         assertTrue(latch.await(2, TimeUnit.SECONDS), "Method should be called despite exception");
         verify(summaryService, times(1)).addReview(review.getEventId(), review.getRating());
@@ -122,7 +122,7 @@ class RatingObserverTest {
     @Test
     void testOnReviewUpdated_HandlesException() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        
+
         doAnswer(invocation -> {
             latch.countDown();
             throw new RuntimeException("Test exception");
@@ -130,20 +130,20 @@ class RatingObserverTest {
 
         // Should not throw exception even if summaryService fails
         assertDoesNotThrow(() -> ratingObserver.onReviewUpdated(oldReviewState, review));
-        
+
         // Wait and verify the method was called
         assertTrue(latch.await(2, TimeUnit.SECONDS), "Method should be called despite exception");
         verify(summaryService, times(1)).updateReview(
-            review.getEventId(), 
-            oldReviewState.getRating(), 
-            review.getRating()
+                review.getEventId(),
+                oldReviewState.getRating(),
+                review.getRating()
         );
     }
 
     @Test
     void testOnReviewDeleted_HandlesException() throws InterruptedException {
         CountDownLatch latch = new CountDownLatch(1);
-        
+
         doAnswer(invocation -> {
             latch.countDown();
             throw new RuntimeException("Test exception");
@@ -151,7 +151,7 @@ class RatingObserverTest {
 
         // Should not throw exception even if summaryService fails
         assertDoesNotThrow(() -> ratingObserver.onReviewDeleted(review));
-        
+
         // Wait and verify the method was called
         assertTrue(latch.await(2, TimeUnit.SECONDS), "Method should be called despite exception");
         verify(summaryService, times(1)).removeReview(review.getEventId(), review.getRating());
