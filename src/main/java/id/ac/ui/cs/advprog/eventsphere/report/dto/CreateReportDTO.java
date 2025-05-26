@@ -14,6 +14,5 @@ public class CreateReportDTO {
     private String description;
     private String category;
     private String categoryReference;
-    private String attachmentPath;
     private String createdBy;
 }

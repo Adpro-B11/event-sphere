@@ -36,7 +36,6 @@ public class ReportFactoryTest {
                 "Ini adalah deskripsi masalah umum",
                 "OTHER",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -46,7 +45,6 @@ public class ReportFactoryTest {
                 "Ini adalah deskripsi masalah event",
                 "EVENT_ISSUE",
                 "event123",
-                "path/to/attachment",
                 "user123"
         );
 
@@ -56,7 +54,6 @@ public class ReportFactoryTest {
                 "Ini adalah deskripsi masalah tiket",
                 "TICKET",
                 "ticket123",
-                "path/to/attachment",
                 "user123"
         );
 
@@ -66,7 +63,6 @@ public class ReportFactoryTest {
                 "Ini adalah deskripsi masalah pembayaran",
                 "PAYMENT",
                 "payment123",
-                "path/to/attachment",
                 "user123"
         );
     }
@@ -78,7 +74,6 @@ public class ReportFactoryTest {
                 validCreateReportDTO.getDescription(),
                 validCreateReportDTO.getCategory().toUpperCase(),
                 validCreateReportDTO.getCategoryReference(),
-                validCreateReportDTO.getAttachmentPath(),
                 validCreateReportDTO.getCreatedBy()
         );
         when(reportService.createReport(any(Report.class))).thenReturn(mockReport);
@@ -101,7 +96,6 @@ public class ReportFactoryTest {
                 eventCreateReportDTO.getDescription(),
                 eventCreateReportDTO.getCategory().toUpperCase(),
                 eventCreateReportDTO.getCategoryReference(),
-                eventCreateReportDTO.getAttachmentPath(),
                 eventCreateReportDTO.getCreatedBy()
         );
         when(reportService.createReport(any(Report.class))).thenReturn(mockReport);
@@ -124,7 +118,6 @@ public class ReportFactoryTest {
                 ticketCreateReportDTO.getDescription(),
                 ticketCreateReportDTO.getCategory().toUpperCase(),
                 ticketCreateReportDTO.getCategoryReference(),
-                ticketCreateReportDTO.getAttachmentPath(),
                 ticketCreateReportDTO.getCreatedBy()
         );
         when(reportService.createReport(any(Report.class))).thenReturn(mockReport);
@@ -147,7 +140,6 @@ public class ReportFactoryTest {
                 paymentCreateReportDTO.getDescription(),
                 paymentCreateReportDTO.getCategory().toUpperCase(),
                 paymentCreateReportDTO.getCategoryReference(),
-                paymentCreateReportDTO.getAttachmentPath(),
                 paymentCreateReportDTO.getCreatedBy()
         );
         when(reportService.createReport(any(Report.class))).thenReturn(mockReport);
@@ -170,7 +162,6 @@ public class ReportFactoryTest {
                 "Deskripsi valid",
                 "OTHER",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -188,7 +179,6 @@ public class ReportFactoryTest {
                 "Deskripsi valid",
                 "OTHER",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -207,7 +197,6 @@ public class ReportFactoryTest {
                 "Deskripsi valid",
                 "OTHER",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -225,7 +214,6 @@ public class ReportFactoryTest {
                 "",
                 "OTHER",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -243,7 +231,6 @@ public class ReportFactoryTest {
                 null,
                 "OTHER",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -263,7 +250,6 @@ public class ReportFactoryTest {
                 longDescription,
                 "OTHER",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -281,7 +267,6 @@ public class ReportFactoryTest {
                 "Deskripsi valid",
                 "INVALID_CATEGORY",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -299,7 +284,6 @@ public class ReportFactoryTest {
                 "Deskripsi valid",
                 null,
                 null,
-                "path/to/attachment",
                 "user123"
         );
 
@@ -317,7 +301,6 @@ public class ReportFactoryTest {
                 "Deskripsi valid",
                 "OTHER",
                 null,
-                "path/to/attachment",
                 ""
         );
 
@@ -335,7 +318,6 @@ public class ReportFactoryTest {
                 "Deskripsi valid",
                 "OTHER",
                 null,
-                "path/to/attachment",
                 null
         );
 
@@ -343,24 +325,6 @@ public class ReportFactoryTest {
             reportFactory.createReport(invalidCreateReportDTO);
         });
         assertEquals("Report creator can't be empty", exception.getMessage());
-        verify(reportService, never()).createReport(any(Report.class));
-    }
-
-    @Test
-    void whenCreateOtherReportWithReference_thenThrowException() {
-        CreateReportDTO invalidCreateReportDTO = new CreateReportDTO(
-                "Judul Valid",
-                "Deskripsi valid",
-                "OTHER",
-                "some-reference",
-                "path/to/attachment",
-                "user123"
-        );
-
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            reportFactory.createReport(invalidCreateReportDTO);
-        });
-        assertEquals("No need Reference for category: OTHER", exception.getMessage());
         verify(reportService, never()).createReport(any(Report.class));
     }
 
@@ -373,7 +337,6 @@ public class ReportFactoryTest {
                 "Deskripsi valid",
                 "UNKNOWN",
                 null,
-                "path/to/attachment",
                 "user123"
         );
 

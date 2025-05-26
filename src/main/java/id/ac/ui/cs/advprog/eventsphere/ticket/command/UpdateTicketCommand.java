@@ -40,7 +40,6 @@ public class UpdateTicketCommand implements TicketCommand {
         }
 
         repository.save(ticket);
-        // Note: The service method calling this command should be @Transactional
     }
 }
     
