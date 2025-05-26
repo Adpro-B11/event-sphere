@@ -28,15 +28,6 @@ public class TicketFactory {
                     ticket.setRemaining(100);
                 }
                 break;
-            case STUDENT:
-                ticket.setPrice(ticket.getPrice() * 0.8);
-                break;
-            case GROUP:
-                if (ticket.getQuota() < 5) {
-                    throw new IllegalArgumentException("Group tickets require a minimum of 5 people.");
-                }
-                ticket.setPrice(ticket.getPrice() * 0.85);
-                break;
             default:
                 break;
         }

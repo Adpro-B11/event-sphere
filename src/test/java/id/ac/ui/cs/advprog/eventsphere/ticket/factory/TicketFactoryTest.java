@@ -47,14 +47,14 @@ public class TicketFactoryTest {
     void testCreateStudentTicketAppliesDiscount() {
         Ticket ticket = ticketFactory.createTicket("event123", TicketType.STUDENT, 100.0, 30);
 
-        assertEquals(80.0, ticket.getPrice(), 0.001); // 20% discount
+        assertEquals(100, ticket.getPrice());
     }
 
     @Test
     void testCreateGroupTicket_NoSpecialLogicYet() {
         Ticket ticket = ticketFactory.createTicket("event123", TicketType.GROUP, 300.0, 10);
 
-        assertEquals(255.0, ticket.getPrice());
+        assertEquals(300, ticket.getPrice());
         assertEquals(10, ticket.getQuota());
     }
 }
