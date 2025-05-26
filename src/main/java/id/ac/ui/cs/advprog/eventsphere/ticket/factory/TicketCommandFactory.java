@@ -37,4 +37,7 @@ public class TicketCommandFactory {
     public DecreaseQuotaCommand decreaseQuotaCommand(String eventId, TicketType type, int quantity) {
         return new DecreaseQuotaCommand(repository, eventId, type, quantity);
     }
+    public TicketCommand decreaseQuotaBatchCommand(String eventId, Map<String, String> ticketQuantities) {
+        return new DecreaseTicketQuotaBatchCommand(repository, eventId, ticketQuantities);
+    }
 }

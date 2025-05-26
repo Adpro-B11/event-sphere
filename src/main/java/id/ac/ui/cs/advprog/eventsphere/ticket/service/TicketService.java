@@ -15,4 +15,5 @@ public interface TicketService {
     List<Ticket> getAllTickets();
     void decreaseQuota(String eventId, String ticketType, int quantity);
     boolean userHasTicket(String userId, String eventId);
+    void decreaseQuotaBatch(String eventId, Map<String, String> ticketQuantities);
 }

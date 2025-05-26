@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.controller;
 
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.CreateTicketRequest;
+import id.ac.ui.cs.advprog.eventsphere.ticket.dto.DeductTicketsRequest;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.TicketResponse;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.UpdateTicketRequest;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
@@ -119,5 +120,17 @@ public class TicketController {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             }
         });
+    }
+
+    @PostMapping("/deduct-batch")
+    public ResponseEntity<Void> deductBatch(@RequestBody DeductTicketsRequest request) {
+        try {
+            ticketService.decreaseQuotaBatch(request.getEventId(), request.getTickets());
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException ex) {
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 }

@@ -84,4 +84,11 @@ public class TicketServiceImpl implements TicketService {
     public boolean userHasTicket(String userId, String eventId) {
         return true;
     }
+
+    @Override
+    @Transactional
+    public void decreaseQuotaBatch(String eventId, Map<String, String> ticketQuantities) {
+        TicketCommand command = commandFactory.decreaseQuotaBatchCommand(eventId, ticketQuantities);
+        command.execute();
+    }
 }
