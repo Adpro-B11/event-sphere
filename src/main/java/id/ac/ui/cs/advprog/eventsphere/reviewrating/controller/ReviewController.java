@@ -8,6 +8,7 @@ import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.UnauthorizedExcept
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.ReviewService;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.service.EventRatingSummaryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,8 +18,8 @@ import java.util.concurrent.CompletableFuture;
 
 @RestController
 @RequestMapping("/api/events/{eventId}")
-@CrossOrigin(origins = "http://localhost:3000")
 @RequiredArgsConstructor
+@Slf4j
 public class ReviewController {
 
     private final ReviewService reviewService;
@@ -27,14 +28,13 @@ public class ReviewController {
     @GetMapping("/reviews")
     public CompletableFuture<ResponseEntity<List<ReviewDTO>>> getReviewsByEventId(@PathVariable String eventId) {
         return CompletableFuture.supplyAsync(() -> {
+            
             try {
                 List<ReviewDTO> reviews = reviewService.getReviewsByEventId(eventId);
                 return ResponseEntity.ok(reviews);
             } catch (IllegalStateException ex) {
-                // Event not finished yet
                 return ResponseEntity.badRequest().build();
             } catch (Exception ex) {
-                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });
@@ -46,6 +46,7 @@ public class ReviewController {
             @RequestBody ReviewRequest request) {
                 
         return CompletableFuture.supplyAsync(() -> {
+            
             try {
                 // Set eventId from path parameter
                 request.setEventId(eventId);
@@ -54,17 +55,14 @@ public class ReviewController {
                 return ResponseEntity.status(HttpStatus.CREATED).body(createdReview);
 
             } catch (IllegalStateException ex) {
-                // User already reviewed this event or event not finished
                 if (ex.getMessage().contains("already reviewed")) {
                     return ResponseEntity.status(HttpStatus.CONFLICT).build();
                 } else {
                     return ResponseEntity.badRequest().build();
                 }
             } catch (UnauthorizedException ex) {
-                // User has no ticket
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
             } catch (Exception ex) {
-                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });
@@ -91,7 +89,6 @@ public class ReviewController {
             } catch (IllegalStateException ex) {
                 return ResponseEntity.badRequest().build();
             } catch (Exception ex) {
-                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });
@@ -104,6 +101,7 @@ public class ReviewController {
             @RequestBody ReviewRequest request) {
 
         return CompletableFuture.supplyAsync(() -> {
+            
             try {
                 request.setEventId(eventId);
                 
@@ -117,7 +115,6 @@ public class ReviewController {
             } catch (IllegalStateException ex) {
                 return ResponseEntity.badRequest().build();
             } catch (Exception ex) {
-                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<Void>build();
             }
         });
@@ -128,6 +125,7 @@ public class ReviewController {
             @PathVariable String eventId) {
         
         return CompletableFuture.supplyAsync(() -> {
+            
             try {
                 double averageRating = ratingSummaryService.getAverageRating(eventId);
                 int totalReviews = ratingSummaryService.getTotalReviews(eventId);
@@ -137,10 +135,9 @@ public class ReviewController {
                         .averageRating(averageRating)
                         .totalReviews(totalReviews)
                         .build();
-                        
+                
                 return ResponseEntity.ok(response);
             } catch (Exception ex) {
-                ex.printStackTrace();
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
         });

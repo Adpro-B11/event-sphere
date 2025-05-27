@@ -1,8 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.observer;
 
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
-import java.util.ArrayList;
-import java.util.List;
 
 public interface RatingSubject {
     void addObserver(RatingObserver observer);
