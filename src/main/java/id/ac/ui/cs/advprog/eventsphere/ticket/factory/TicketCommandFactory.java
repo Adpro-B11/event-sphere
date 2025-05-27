@@ -1,5 +1,6 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.factory;
 
+import id.ac.ui.cs.advprog.eventsphere.ticket.enums.TicketType;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
 import id.ac.ui.cs.advprog.eventsphere.ticket.repository.TicketRepository;
 import id.ac.ui.cs.advprog.eventsphere.ticket.command.*;
@@ -33,7 +34,10 @@ public class TicketCommandFactory {
         return new UpdateTicketCommand(repository, ticketId, updates);
     }
 
-    public TicketCommand purchaseTicketCommand(String ticketId, int quantity) {
-        return new PurchaseTicketCommand(repository, ticketId, quantity);
+    public DecreaseQuotaCommand decreaseQuotaCommand(String ticketId, int quantity) {
+        return new DecreaseQuotaCommand(repository,ticketId, quantity);
+    }
+    public TicketCommand decreaseQuotaBatchCommand(Map<String, String> ticketQuantities) {
+        return new DecreaseTicketQuotaBatchCommand(repository, ticketQuantities);
     }
 }

@@ -22,7 +22,6 @@ public class EventServiceImpl implements EventService {
         this.eventRepository = eventRepository;
     }
 
-    // synchronous
     @Override
     public Event createEvent(Event event) {
         return eventRepository.save(event);

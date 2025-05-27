@@ -4,6 +4,7 @@ import id.ac.ui.cs.advprog.eventsphere.report.model.Report;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 
 public interface ReportService {
 
@@ -18,6 +19,11 @@ public interface ReportService {
     List<Report> findReportByUser(String userId);
 
     Report findReportById(UUID reportId);
+
+    // Async fetch data
+    CompletableFuture<List<Report>> findAllReportAsync();
+
+    CompletableFuture<List<Report>> findReportByUserAsync(String userId);
 
 
 }

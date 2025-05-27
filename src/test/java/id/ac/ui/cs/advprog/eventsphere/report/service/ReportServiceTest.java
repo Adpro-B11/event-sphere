@@ -15,6 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -43,7 +45,6 @@ public class ReportServiceTest {
                 "Tiket yang saya beli tidak bisa di-scan oleh panitia",
                 ReportCategory.TICKET.name(),
                 "TICKET-123",
-                null,
                 userId
         );
 
@@ -183,4 +184,30 @@ public class ReportServiceTest {
         assertEquals("Report not found", exception.getMessage());
         verify(reportRepository).findById(reportId);
     }
+
+    @Test
+    void testfindAllReportAsync_ShouldReturnAllReports() throws ExecutionException, InterruptedException {
+        List<Report> mockReports = Arrays.asList(report, new Report());
+        when(reportRepository.findAll()).thenReturn(mockReports);
+
+        CompletableFuture<List<Report>> result = reportService.findAllReportAsync();
+
+        List<Report> reports = result.get();
+        assertEquals(2, reports.size());
+        verify(reportRepository, times(1)).findAll();
+    }
+
+    @Test
+    void testfindReportByUserAsync_ShouldReturnUserReports() throws ExecutionException, InterruptedException {
+        List<Report> userReports = Arrays.asList(report);
+        when(reportRepository.findByCreatedBy(userId)).thenReturn(userReports);
+
+        CompletableFuture<List<Report>> result = reportService.findReportByUserAsync(userId);
+
+        List<Report> reports = result.get();
+        assertEquals(1, reports.size());
+        assertEquals("user123", reports.get(0).getCreatedBy());
+        verify(reportRepository, times(1)).findByCreatedBy(userId);
+    }
+
 }

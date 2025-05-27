@@ -1,6 +1,7 @@
 package id.ac.ui.cs.advprog.eventsphere.ticket.controller;
 
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.CreateTicketRequest;
+import id.ac.ui.cs.advprog.eventsphere.ticket.dto.DeductTicketsRequest;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.TicketResponse;
 import id.ac.ui.cs.advprog.eventsphere.ticket.dto.UpdateTicketRequest;
 import id.ac.ui.cs.advprog.eventsphere.ticket.model.Ticket;
@@ -18,7 +19,9 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/tickets")
 @RequiredArgsConstructor
@@ -120,4 +123,28 @@ public class TicketController {
             }
         });
     }
+
+    @PostMapping("/deduct-batch")
+    public ResponseEntity<Void> deductBatch(@RequestBody DeductTicketsRequest request) {
+        try {
+            log.debug("Received deductBatch request: eventId={}, tickets={}", request.getEventId(), request.getTickets());
+            Map<String, String> map = request.getTickets();
+            String ticketId = request.getEventId();
+
+            // Log map isian
+            log.debug("Deducting tickets: ticketId={}, map={}", ticketId, map);
+
+            ticketService.decreaseQuotaBatch(ticketId, map);
+
+            log.info("Batch ticket deduction success for eventId={}, tickets={}", ticketId, map);
+            return ResponseEntity.ok().build();
+        } catch (NoSuchElementException ex) {
+            log.warn("Batch ticket deduction failed: Not found. eventId={}, tickets={}", request.getEventId(), request.getTickets());
+            return ResponseEntity.notFound().build();
+        } catch (IllegalArgumentException ex) {
+            log.error("Batch ticket deduction failed: Bad request. eventId={}, tickets={}, error={}", request.getEventId(), request.getTickets(), ex.getMessage());
+            return ResponseEntity.badRequest().build();
+        }
+    }
+
 }
