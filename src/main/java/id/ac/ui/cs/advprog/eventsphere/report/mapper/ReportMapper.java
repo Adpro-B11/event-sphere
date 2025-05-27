@@ -24,7 +24,7 @@ public class ReportMapper {
         this.reportMessageMapper = reportMessageMapper;
     }
 
-     /**
+    /**
      * Convert Report entity to ReportListDTO
      */
     public ReportListDTO toReportListDTO(Report report) {
@@ -61,7 +61,6 @@ public class ReportMapper {
                 .description(report.getDescription())
                 .category(report.getCategory())
                 .categoryReference(report.getCategoryReference())
-                .attachmentPath(report.getAttachmentPath())
                 .status(report.getStatus())
                 .createdAt(report.getCreatedAt())
                 .createdBy(report.getCreatedBy())

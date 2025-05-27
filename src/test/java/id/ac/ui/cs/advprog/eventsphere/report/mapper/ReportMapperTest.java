@@ -64,10 +64,6 @@ class ReportMapperTest {
             refField.setAccessible(true);
             refField.set(testReport, "event-123");
 
-            java.lang.reflect.Field attachField = Report.class.getDeclaredField("attachmentPath");
-            attachField.setAccessible(true);
-            attachField.set(testReport, "/path/to/file.jpg");
-
             java.lang.reflect.Field statusField = Report.class.getDeclaredField("status");
             statusField.setAccessible(true);
             statusField.set(testReport, ReportStatus.PENDING.getValue());
@@ -130,7 +126,6 @@ class ReportMapperTest {
         assertEquals("Test Description", result.getDescription());
         assertEquals("EVENT_ISSUE", result.getCategory());
         assertEquals("event-123", result.getCategoryReference());
-        assertEquals("/path/to/file.jpg", result.getAttachmentPath());
         assertEquals(ReportStatus.PENDING.getValue(), result.getStatus());
         assertEquals(createdAt, result.getCreatedAt());
         assertEquals("user-123", result.getCreatedBy());

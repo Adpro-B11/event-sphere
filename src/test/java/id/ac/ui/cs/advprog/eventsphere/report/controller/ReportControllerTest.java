@@ -20,6 +20,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,7 +64,6 @@ class ReportControllerTest {
                 "Tiket tidak muncul setelah pembayaran",
                 "TICKET",
                 "TICKET-123",
-                "path/to/attachment",
                 userId
         );
 
@@ -81,7 +82,6 @@ class ReportControllerTest {
                 .description("Tiket tidak muncul setelah pembayaran")
                 .category("TICKET")
                 .categoryReference("TICKET-123")
-                .attachmentPath("path/to/attachment")
                 .status("PENDING")
                 .createdAt(LocalDateTime.now())
                 .createdBy(userId)
@@ -106,7 +106,6 @@ class ReportControllerTest {
                 .description("Tiket tidak muncul setelah pembayaran")
                 .category("TICKET")
                 .categoryReference("TICKET-123")
-                .attachmentPath("path/to/attachment")
                 .createdBy(userId)
                 .build();
     }
@@ -197,5 +196,35 @@ class ReportControllerTest {
         assertEquals(reportDetailDTO, response.getBody());
         verify(reportService, times(1)).findReportById(reportId);
         verify(reportMapper, times(1)).toReportDetailDTO(report);
+    }
+
+    @Test
+    void getAllReportsAsync_ShouldReturnAllReports() throws ExecutionException, InterruptedException {
+        CompletableFuture<List<Report>> completableFuture = CompletableFuture.completedFuture(reportList);
+        when(reportService.findAllReportAsync()).thenReturn(completableFuture);
+        when(reportMapper.toReportListDTOs(reportList)).thenReturn(reportListDTOs);
+
+        CompletableFuture<ResponseEntity<List<ReportListDTO>>> response = reportController.getAllReportsAsync();
+
+        ResponseEntity<List<ReportListDTO>> result = response.get();
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(reportListDTOs, result.getBody());
+        verify(reportService, times(1)).findAllReportAsync();
+        verify(reportMapper, times(1)).toReportListDTOs(reportList);
+    }
+
+    @Test
+    void getReportByUserAsync_ShouldReturnUserReports() throws ExecutionException, InterruptedException {
+        CompletableFuture<List<Report>> completableFuture = CompletableFuture.completedFuture(reportList);
+        when(reportService.findReportByUserAsync(userId)).thenReturn(completableFuture);
+        when(reportMapper.toReportListDTOs(reportList)).thenReturn(reportListDTOs);
+
+        CompletableFuture<ResponseEntity<List<ReportListDTO>>> response = reportController.getReportByUserAsync(userId);
+
+        ResponseEntity<List<ReportListDTO>> result = response.get();
+        assertEquals(HttpStatus.OK, result.getStatusCode());
+        assertEquals(reportListDTOs, result.getBody());
+        verify(reportService, times(1)).findReportByUserAsync(userId);
+        verify(reportMapper, times(1)).toReportListDTOs(reportList);
     }
 }

@@ -47,7 +47,6 @@ public class ReportMessageRepositoryTest {
                 "Deskripsi: Pembayaran tidak berhasil dilakukan",
                 ReportCategory.PAYMENT.getValue(),
                 "PAY-123",
-                "https://example.com/attachment1",
                 "user1"
         );
 
@@ -56,7 +55,6 @@ public class ReportMessageRepositoryTest {
                 "Deskripsi: Tiket tidak muncul di aplikasi",
                 ReportCategory.TICKET.getValue(),
                 "TIX-456",
-                "https://example.com/attachment2",
                 "user2"
         );
 

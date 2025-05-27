@@ -15,7 +15,6 @@ public class TicketFactory {
         ticket.setQuota(quota);
         ticket.setRemaining(quota);
 
-        // Apply special rules based on ticket type
         applyTypeSpecificRules(ticket);
 
         return ticket;
@@ -24,17 +23,10 @@ public class TicketFactory {
     private void applyTypeSpecificRules(Ticket ticket) {
         switch (ticket.getType()) {
             case EARLY_BIRD:
-                // Limit on quantity
                 if (ticket.getQuota() > 100) {
                     ticket.setQuota(100);
                     ticket.setRemaining(100);
                 }
-                break;
-            case STUDENT:
-                ticket.setPrice(ticket.getPrice() * 0.8); // 20% discount
-                break;
-            case GROUP:
-                // nanti
                 break;
             default:
                 break;
