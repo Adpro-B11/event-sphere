@@ -6,6 +6,7 @@ import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.NotFoundException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.UnauthorizedException;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.factory.ReviewDTOFactory;
+import id.ac.ui.cs.advprog.eventsphere.reviewrating.factory.ReviewFactory;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.model.Review;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.repository.ReviewRepository;
 import id.ac.ui.cs.advprog.eventsphere.ticket.service.TicketService;
@@ -39,6 +40,9 @@ class ReviewServiceTest {
     private ReviewDTOFactory dtoFactory;
 
     @Mock
+    private ReviewFactory reviewFactory;
+
+    @Mock
     private TicketService ticketService;
 
     @Mock
@@ -46,6 +50,7 @@ class ReviewServiceTest {
 
     private ReviewService reviewService;
     private Review testReview;
+    private Review testReviewCopy;
     private final String TEST_USER_ID = "usr_123";
     private final String TEST_EVENT_ID = "evt_123";
     private final String TEST_USERNAME = "John Doe";
@@ -58,6 +63,7 @@ class ReviewServiceTest {
                 reviewRepository,
                 ratingSubject,
                 dtoFactory,
+                reviewFactory,
                 ticketService,
                 eventService
         );
@@ -70,6 +76,16 @@ class ReviewServiceTest {
         testReview.setUserId(TEST_USER_ID);
         testReview.setUsername(TEST_USERNAME);
         testReview.setEventId(TEST_EVENT_ID);
+
+        // Create a copy for testing purposes
+        testReviewCopy = new Review();
+        testReviewCopy.setId(testReview.getId());
+        testReviewCopy.setRating(testReview.getRating());
+        testReviewCopy.setComment(testReview.getComment());
+        testReviewCopy.setCreatedAt(testReview.getCreatedAt());
+        testReviewCopy.setUserId(testReview.getUserId());
+        testReviewCopy.setUsername(testReview.getUsername());
+        testReviewCopy.setEventId(testReview.getEventId());
 
         ReviewDTO testDTO = ReviewDTO.builder()
                 .id(testReview.getId())
@@ -89,6 +105,7 @@ class ReviewServiceTest {
         when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
         when(reviewRepository.findByUserIdAndEventId(TEST_USER_ID, TEST_EVENT_ID))
                 .thenReturn(Optional.empty());
+        when(reviewFactory.createFromRequest(any(ReviewRequest.class))).thenReturn(testReview);
         when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArguments()[0]);
 
         ReviewRequest request = new ReviewRequest();
@@ -100,16 +117,10 @@ class ReviewServiceTest {
 
         reviewService.createReview(request);
 
-        ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
-        verify(reviewRepository).save(reviewCaptor.capture());
-        Review savedReview = reviewCaptor.getValue();
-        
-        assertEquals(4, savedReview.getRating());
-        assertEquals("Good event", savedReview.getComment());
-        assertEquals(TEST_USER_ID, savedReview.getUserId());
-        assertEquals(TEST_USERNAME, savedReview.getUsername());
-        assertEquals(TEST_EVENT_ID, savedReview.getEventId());
-        verify(ratingSubject).notifyReviewCreated(any(Review.class));
+        verify(reviewFactory).createFromRequest(request);
+        verify(reviewRepository).save(testReview);
+        verify(ratingSubject).notifyReviewCreated(testReview);
+        verify(dtoFactory).createFromReview(testReview);
     }
 
     @Test
@@ -124,6 +135,7 @@ class ReviewServiceTest {
             reviewService.createReview(request);
         });
         
+        verify(reviewFactory, never()).createFromRequest(any());
         verify(reviewRepository, never()).save(any());
     }
 
@@ -140,6 +152,7 @@ class ReviewServiceTest {
             reviewService.createReview(request);
         });
         
+        verify(reviewFactory, never()).createFromRequest(any());
         verify(reviewRepository, never()).save(any());
     }
 
@@ -157,6 +170,9 @@ class ReviewServiceTest {
         assertThrows(IllegalStateException.class, () -> {
             reviewService.createReview(request);
         });
+
+        verify(reviewFactory, never()).createFromRequest(any());
+        verify(reviewRepository, never()).save(any());
     }
 
     @Test
@@ -184,6 +200,7 @@ class ReviewServiceTest {
         when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
         when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
         when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
+        when(reviewFactory.createCopy(testReview)).thenReturn(testReviewCopy);
         when(reviewRepository.save(any(Review.class))).thenAnswer(i -> i.getArguments()[0]);
 
         ReviewRequest request = new ReviewRequest();
@@ -194,10 +211,11 @@ class ReviewServiceTest {
 
         reviewService.updateReview(testReview.getId(), request);
 
-        ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
-        verify(reviewRepository).save(reviewCaptor.capture());
-        assertEquals(5, reviewCaptor.getValue().getRating());
-        verify(ratingSubject).notifyReviewUpdated(any(Review.class), any(Review.class));
+        verify(reviewFactory).createCopy(testReview);
+        verify(reviewFactory).updateFromRequest(testReview, request);
+        verify(reviewRepository).save(testReview);
+        verify(ratingSubject).notifyReviewUpdated(testReviewCopy, testReview);
+        verify(dtoFactory).createFromReview(testReview);
     }
 
     @Test
@@ -213,6 +231,9 @@ class ReviewServiceTest {
         assertThrows(UnauthorizedException.class, () -> {
             reviewService.updateReview(testReview.getId(), request);
         });
+
+        verify(reviewFactory, never()).createCopy(any());
+        verify(reviewFactory, never()).updateFromRequest(any(), any());
     }
 
     @Test
@@ -220,6 +241,7 @@ class ReviewServiceTest {
         when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
         when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
         when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
+        when(reviewFactory.createCopy(testReview)).thenReturn(testReviewCopy);
 
         ReviewRequest request = new ReviewRequest();
         request.setUserId(TEST_USER_ID);
@@ -227,20 +249,9 @@ class ReviewServiceTest {
 
         reviewService.deleteReview(testReview.getId(), request);
 
-        verify(reviewRepository).delete(eq(testReview));
-        
-        // Use ArgumentCaptor to capture the actual argument passed to notifyReviewDeleted
-        ArgumentCaptor<Review> reviewCaptor = ArgumentCaptor.forClass(Review.class);
-        verify(ratingSubject).notifyReviewDeleted(reviewCaptor.capture());
-        
-        // Verify the content of the captured review instead of object equality
-        Review capturedReview = reviewCaptor.getValue();
-        assertEquals(testReview.getId(), capturedReview.getId());
-        assertEquals(testReview.getRating(), capturedReview.getRating());
-        assertEquals(testReview.getComment(), capturedReview.getComment());
-        assertEquals(testReview.getUserId(), capturedReview.getUserId());
-        assertEquals(testReview.getEventId(), capturedReview.getEventId());
-        assertEquals(testReview.getUsername(), capturedReview.getUsername());
+        verify(reviewFactory).createCopy(testReview);
+        verify(reviewRepository).delete(testReview);
+        verify(ratingSubject).notifyReviewDeleted(testReviewCopy);
     }
 
     @Test
@@ -253,5 +264,59 @@ class ReviewServiceTest {
         assertThrows(NotFoundException.class, () -> {
             reviewService.deleteReview("non_existent", request);
         });
+
+        verify(reviewFactory, never()).createCopy(any());
+        verify(reviewRepository, never()).delete(any());
+    }
+
+    @Test
+    void testCreateReview_FactoryMethodsCalledWithCorrectParameters() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
+        when(reviewRepository.findByUserIdAndEventId(TEST_USER_ID, TEST_EVENT_ID))
+                .thenReturn(Optional.empty());
+        when(reviewFactory.createFromRequest(any(ReviewRequest.class))).thenReturn(testReview);
+        when(reviewRepository.save(any(Review.class))).thenReturn(testReview);
+
+        ReviewRequest request = new ReviewRequest();
+        request.setRating(4);
+        request.setComment("Good event");
+        request.setUserId(TEST_USER_ID);
+        request.setUsername(TEST_USERNAME);
+        request.setEventId(TEST_EVENT_ID);
+
+        reviewService.createReview(request);
+
+        // Verify factory is called with the correct request
+        ArgumentCaptor<ReviewRequest> requestCaptor = ArgumentCaptor.forClass(ReviewRequest.class);
+        verify(reviewFactory).createFromRequest(requestCaptor.capture());
+        
+        ReviewRequest capturedRequest = requestCaptor.getValue();
+        assertEquals(TEST_USER_ID, capturedRequest.getUserId());
+        assertEquals(TEST_EVENT_ID, capturedRequest.getEventId());
+        assertEquals(4, capturedRequest.getRating());
+        assertEquals("Good event", capturedRequest.getComment());
+        assertEquals(TEST_USERNAME, capturedRequest.getUsername());
+    }
+
+    @Test
+    void testUpdateReview_FactoryUpdateMethodCalled() {
+        when(eventService.isEventFinished(TEST_EVENT_ID)).thenReturn(true);
+        when(ticketService.userHasTicket(TEST_USER_ID, TEST_EVENT_ID)).thenReturn(true);
+        when(reviewRepository.findById(testReview.getId())).thenReturn(Optional.of(testReview));
+        when(reviewFactory.createCopy(testReview)).thenReturn(testReviewCopy);
+        when(reviewRepository.save(any(Review.class))).thenReturn(testReview);
+
+        ReviewRequest request = new ReviewRequest();
+        request.setRating(5);
+        request.setComment("Updated comment");
+        request.setUserId(TEST_USER_ID);
+        request.setEventId(TEST_EVENT_ID);
+        request.setUsername("Updated Username");
+
+        reviewService.updateReview(testReview.getId(), request);
+
+        // Verify factory update method is called with correct parameters
+        verify(reviewFactory).updateFromRequest(testReview, request);
     }
 }
