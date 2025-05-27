@@ -73,9 +73,8 @@ public class TicketServiceImpl implements TicketService {
 
     @Override
     @Transactional
-    public void decreaseQuota(String eventId, String ticketType, int quantity) {
-        TicketType type = TicketType.valueOf(ticketType.toUpperCase());
-        TicketCommand command = commandFactory.decreaseQuotaCommand(eventId, type, quantity);
+    public void decreaseQuota(String eventId, String ticketId, int quantity) {
+        TicketCommand command = commandFactory.decreaseQuotaCommand(ticketId, quantity);
         command.execute();
     }
 
@@ -88,7 +87,7 @@ public class TicketServiceImpl implements TicketService {
     @Override
     @Transactional
     public void decreaseQuotaBatch(String eventId, Map<String, String> ticketQuantities) {
-        TicketCommand command = commandFactory.decreaseQuotaBatchCommand(eventId, ticketQuantities);
+        TicketCommand command = commandFactory.decreaseQuotaBatchCommand(ticketQuantities);
         command.execute();
     }
 }

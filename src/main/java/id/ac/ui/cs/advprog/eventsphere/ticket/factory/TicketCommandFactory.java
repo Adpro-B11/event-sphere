@@ -34,10 +34,10 @@ public class TicketCommandFactory {
         return new UpdateTicketCommand(repository, ticketId, updates);
     }
 
-    public DecreaseQuotaCommand decreaseQuotaCommand(String eventId, TicketType type, int quantity) {
-        return new DecreaseQuotaCommand(repository, eventId, type, quantity);
+    public DecreaseQuotaCommand decreaseQuotaCommand(String ticketId, int quantity) {
+        return new DecreaseQuotaCommand(repository,ticketId, quantity);
     }
-    public TicketCommand decreaseQuotaBatchCommand(String eventId, Map<String, String> ticketQuantities) {
-        return new DecreaseTicketQuotaBatchCommand(repository, eventId, ticketQuantities);
+    public TicketCommand decreaseQuotaBatchCommand(Map<String, String> ticketQuantities) {
+        return new DecreaseTicketQuotaBatchCommand(repository, ticketQuantities);
     }
 }
