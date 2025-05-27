@@ -1,4 +1,3 @@
-// src/main/java/enums/EventStatus.java
 package id.ac.ui.cs.advprog.eventsphere.event.enums;
 
 import lombok.Getter;

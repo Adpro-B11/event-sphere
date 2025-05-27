@@ -1,4 +1,3 @@
-// src/main/java/model/Event.java
 package id.ac.ui.cs.advprog.eventsphere.event.model;
 
 import jakarta.persistence.Id;
