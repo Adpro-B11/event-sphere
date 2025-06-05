@@ -12,11 +12,17 @@ import id.ac.ui.cs.advprog.eventsphere.reviewrating.repository.ReviewRepository;
 import id.ac.ui.cs.advprog.eventsphere.ticket.service.TicketService;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.observer.RatingSubject;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+
+import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.ZonedDateTime;
 import java.util.Arrays;
@@ -48,6 +54,12 @@ class ReviewServiceTest {
     @Mock
     private EventService eventService;
 
+    @Mock
+    private Authentication authentication;
+
+    @Mock
+    private SecurityContext securityContext;
+
     private ReviewService reviewService;
     private Review testReview;
     private Review testReviewCopy;
@@ -58,6 +70,12 @@ class ReviewServiceTest {
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
+        
+        // Setup Security Context with TestingAuthenticationToken
+        TestingAuthenticationToken authentication = new TestingAuthenticationToken(TEST_USER_ID, null, "ROLE_USER");
+        SecurityContext securityContext = SecurityContextHolder.createEmptyContext();
+        securityContext.setAuthentication(authentication);
+        SecurityContextHolder.setContext(securityContext);
 
         reviewService = new ReviewServiceImpl(
                 reviewRepository,
@@ -97,6 +115,11 @@ class ReviewServiceTest {
                 .eventId(testReview.getEventId())
                 .build();
         when(dtoFactory.createFromReview(any(Review.class))).thenReturn(testDTO);
+    }
+
+    @AfterEach
+    void tearDown() {
+        SecurityContextHolder.clearContext();
     }
 
     @Test
