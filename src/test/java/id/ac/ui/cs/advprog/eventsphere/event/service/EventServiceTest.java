@@ -8,14 +8,14 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class EventServiceTest {
@@ -26,9 +26,15 @@ class EventServiceTest {
     @InjectMocks
     private EventServiceImpl eventService;
 
+    private final String eventId = "123";
+
+    @BeforeEach
+    void setUp() {
+        reset(eventRepository);
+    }
+
     @Test
     void testCreateEvent_Success() {
-        // Arrange
         Event event = new Event();
         event.setTitle("Konser Musik");
         event.setDescription("Konser musik tahunan");
@@ -37,93 +43,139 @@ class EventServiceTest {
         event.setPrice(500000.0);
         event.setOrganizer("Mas Inis");
 
-        // Act
         eventService.createEvent(event);
 
-        // Assert
         verify(eventRepository, times(1)).save(event);
     }
 
     @Test
     void testUpdateStatus_Success() {
-        // Arrange
-        String eventId = "123";
-        Event event = new Event();
-        event.setId(eventId);
-        when(eventRepository.findById(eventId)).thenReturn(event);
+        Event e = new Event();
+        e.setId(eventId);
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.of(e));
 
-        // Act
         eventService.updateStatus(eventId, EventStatus.PUBLISHED.getValue());
 
-        // Assert
-        assertEquals(EventStatus.PUBLISHED.getValue(), event.getStatus());
-        verify(eventRepository, times(1)).save(event);
+        assertThat(e.getStatus())
+                .isEqualTo(EventStatus.PUBLISHED.getValue());
+        verify(eventRepository).save(e);
     }
 
     @Test
     void testUpdateStatus_InvalidStatus() {
-        // Arrange
-        String eventId = "123";
-        Event event = new Event();
-        event.setId(eventId);
-        when(eventRepository.findById(eventId)).thenReturn(event);
+        Event e = new Event();
+        e.setId(eventId);
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.of(e));
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            eventService.updateStatus(eventId, "INVALID_STATUS");
-        });
+        assertThatThrownBy(() ->
+                eventService.updateStatus(eventId, "INVALID_STATUS")
+        ).isInstanceOf(IllegalArgumentException.class);
     }
 
     @Test
     void testFindById_ValidId() {
-        // Arrange
-        String eventId = "123";
-        Event event = new Event();
-        event.setId(eventId);
-        when(eventRepository.findById(eventId)).thenReturn(event);
+        Event e = new Event();
+        e.setId(eventId);
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.of(e));
 
-        // Act & Assert
-        assertNotNull(eventService.findById(eventId));
+        Event result = eventService.findById(eventId);
+        assertThat(result).isNotNull();
     }
 
     @Test
     void testFindById_InvalidId() {
-        // Arrange
-        String eventId = "INVALID_ID";
-        when(eventRepository.findById(eventId)).thenReturn(null);
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.empty());
 
-        // Act & Assert
-        assertThrows(NoSuchElementException.class, () -> {
-            eventService.findById(eventId);
-        });
+        assertThatThrownBy(() ->
+                eventService.findById(eventId)
+        ).isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
-    void testFindAllByOrganizer_ValidOrganizer() {
-        // Arrange
-        String organizer = "Mas Inis";
-        Event event = new Event();
-        event.setOrganizer(organizer);
-        when(eventRepository.findAllByOrganizer(organizer)).thenReturn(List.of(event));
+    void testFindByOrganizer_Valid() {
+        String org = "Mas Inis";
+        Event e = new Event();
+        e.setOrganizer(org);
+        when(eventRepository.findByOrganizer(org))
+                .thenReturn(List.of(e));
 
-        // Act
-        List<Event> events = eventService.findAllByOrganizer(organizer);
-
-        // Assert
-        assertFalse(events.isEmpty());
-        assertEquals(1, events.size());
+        List<Event> list = eventService.findAllByOrganizer(org);
+        assertThat(list).hasSize(1).contains(e);
     }
 
     @Test
-    void testFindAllByOrganizer_InvalidOrganizer() {
-        // Arrange
-        String organizer = "mas inis"; // Lowercase to test case sensitivity
-        when(eventRepository.findAllByOrganizer(organizer)).thenReturn(List.of());
+    void testFindByOrganizer_Invalid() {
+        String org = "Unknown";
+        when(eventRepository.findByOrganizer(org))
+                .thenReturn(List.of());
 
-        // Act
-        List<Event> events = eventService.findAllByOrganizer(organizer);
+        List<Event> list = eventService.findAllByOrganizer(org);
+        assertThat(list).isEmpty();
+    }
 
-        // Assert
-        assertTrue(events.isEmpty());
+    @Test
+    void testUpdateEventInfo_Success() {
+        Event existing = new Event();
+        existing.setId(eventId);
+        existing.setDate("2025-06-20");
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.of(existing));
+
+        Event updated = new Event();
+        updated.setTitle("New Title");
+        updated.setDescription("NewDesc");
+        updated.setDate("2025-06-30");
+        updated.setLocation("NewLoc");
+        updated.setPrice(200.0);
+
+        eventService.updateEventInfo(eventId, updated);
+
+        assertThat(existing.getTitle()).isEqualTo("New Title");
+        assertThat(existing.getDate()).isEqualTo("2025-06-30");
+        verify(eventRepository).save(existing);
+    }
+
+    @Test
+    void testUpdateEventInfo_InvalidId() {
+        when(eventRepository.findById(eventId))
+                .thenReturn(Optional.empty());
+
+        assertThatThrownBy(() ->
+                eventService.updateEventInfo(eventId, new Event())
+        ).isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    void testDeleteEvent_Success() {
+        when(eventRepository.existsById(eventId))
+                .thenReturn(true);
+
+        eventService.deleteEvent(eventId);
+
+        verify(eventRepository).deleteById(eventId);
+    }
+
+    @Test
+    void testDeleteEvent_NotFound() {
+        when(eventRepository.existsById(eventId))
+                .thenReturn(false);
+
+        assertThatThrownBy(() ->
+                eventService.deleteEvent(eventId)
+        ).isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    void testFindAllEvents() {
+        Event a = new Event(), b = new Event();
+        when(eventRepository.findAll())
+                .thenReturn(List.of(a, b));
+
+        List<Event> all = eventService.findAllEvents();
+        assertThat(all).hasSize(2);
     }
 }

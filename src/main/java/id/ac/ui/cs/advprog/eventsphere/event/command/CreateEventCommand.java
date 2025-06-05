@@ -1,4 +1,3 @@
-// src/main/java/id/ac/ui/cs/advprog/eventsphere/event/command/CreateEventCommand.java
 package id.ac.ui.cs.advprog.eventsphere.event.command;
 
 import id.ac.ui.cs.advprog.eventsphere.event.model.Event;

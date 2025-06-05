@@ -1,23 +1,51 @@
 package id.ac.ui.cs.advprog.eventsphere.reviewrating.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 import java.time.ZonedDateTime;
 
 @NoArgsConstructor
+@AllArgsConstructor
+@Builder
 @Getter
+@Entity
+@Table(name = "reviews", indexes = {
+    @Index(name = "idx_review_event_id", columnList = "eventId"),
+    @Index(name = "idx_review_user_id_event_id", columnList = "userId, eventId", unique = true)
+})
 public class Review {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
     private String id;
+
     private int rating;
+
     @Setter
+    @Column(columnDefinition = "TEXT")
     private String comment;
+
+    @Setter
+    @Column(nullable = false, updatable = false)
     private ZonedDateTime createdAt;
+
+    @Setter
     private ZonedDateTime updatedAt;
+
     @Setter
+    @Column(nullable = false)
     private String userId;
+
     @Setter
+    @Column(nullable = false)
+    private String username;
+
+    @Setter
+    @Column(nullable = false)
     private String eventId;
 
     public void setId(String id) {
@@ -31,11 +59,15 @@ public class Review {
         this.rating = rating;
     }
 
-    public void setCreatedAt(ZonedDateTime createdAt) {
-        this.createdAt = createdAt;
+    @PrePersist
+    protected void onCreate() {
+        if (this.createdAt == null) {
+            this.createdAt = ZonedDateTime.now();
+        }
     }
 
-    public void setUpdatedAt(ZonedDateTime updatedAt) {
-        this.updatedAt = updatedAt;
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = ZonedDateTime.now();
     }
 }

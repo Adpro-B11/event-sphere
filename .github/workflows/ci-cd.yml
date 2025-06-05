@@ -9,7 +9,11 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+    env:
+      DB_URL: ${{ secrets.DB_URL }}
+      DB_USERNAME: ${{ secrets.DB_USERNAME }}
+      DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+      JWT_SECRET_KEY: ${{ secrets.JWT_SECRET_KEY }}
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -18,7 +22,7 @@ jobs:
       uses: actions/setup-java@v2
       with:
         distribution: 'adopt'
-        java-version: '17'
+        java-version: '21'
 
     - name: Build with Maven
       run: mvn clean package
@@ -63,7 +67,7 @@ jobs:
 
     - name: Connect SSH and Restart Services
       run: |
-        ssh -o StrictHostKeyChecking=no -i $HOME/key.pem ubuntu@ec2-184-73-135-176.compute-1.amazonaws.com '
+        ssh -o StrictHostKeyChecking=no -i $HOME/key.pem  ubuntu@ec2-35-174-243-167.compute-1.amazonaws.com '
           sudo systemctl restart eventsphere &&
           sudo systemctl restart nginx
         '
