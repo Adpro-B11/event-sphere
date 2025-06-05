@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 
 @RestController
 @RequestMapping("/api/events/{eventId}")
@@ -24,6 +25,7 @@ public class ReviewController {
 
     private final ReviewService reviewService;
     private final EventRatingSummaryService ratingSummaryService;
+    private final Executor taskExecutor;
 
     @GetMapping("/reviews")
     public CompletableFuture<ResponseEntity<List<ReviewDTO>>> getReviewsByEventId(@PathVariable String eventId) {
@@ -46,11 +48,9 @@ public class ReviewController {
             @RequestBody ReviewRequest request) {
                 
         return CompletableFuture.supplyAsync(() -> {
-            
             try {
                 // Set eventId from path parameter
                 request.setEventId(eventId);
-                
                 ReviewDTO createdReview = reviewService.createReview(request);
                 return ResponseEntity.status(HttpStatus.CREATED).body(createdReview);
 
@@ -65,7 +65,7 @@ public class ReviewController {
             } catch (Exception ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
-        });
+        }, taskExecutor);
     }
 
     @PutMapping("/reviews/{reviewId}")
@@ -91,7 +91,7 @@ public class ReviewController {
             } catch (Exception ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
             }
-        });
+        }, taskExecutor);
     }
 
     @DeleteMapping("/reviews/{reviewId}")
@@ -117,7 +117,7 @@ public class ReviewController {
             } catch (Exception ex) {
                 return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).<Void>build();
             }
-        });
+        }, taskExecutor);
     }
 
     @GetMapping("/rating-summary")

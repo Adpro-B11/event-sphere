@@ -2,6 +2,7 @@ package id.ac.ui.cs.advprog.eventsphere.reviewrating.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import id.ac.ui.cs.advprog.eventsphere.config.AsyncTestConfig;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewRequest;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.dto.ReviewDTO;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.exception.NotFoundException;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -30,7 +32,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 @ExtendWith(MockitoExtension.class)
 class ReviewControllerTest {
@@ -47,6 +49,7 @@ class ReviewControllerTest {
     private ReviewController reviewController;
 
     private ObjectMapper objectMapper;
+    private ThreadPoolTaskExecutor taskExecutor;
 
     private String eventId = "evt_123";
     private String userId = "usr_123";
@@ -57,6 +60,16 @@ class ReviewControllerTest {
 
     @BeforeEach
     void setUp() {
+        // Setup async executor
+        taskExecutor = new ThreadPoolTaskExecutor();
+        taskExecutor.setCorePoolSize(1);
+        taskExecutor.setMaxPoolSize(1);
+        taskExecutor.setQueueCapacity(100);
+        taskExecutor.initialize();
+
+        // Inject the executor into controller
+        reviewController = new ReviewController(reviewService, ratingSummaryService, taskExecutor);
+
         mockMvc = MockMvcBuilders.standaloneSetup(reviewController)
                 .setAsyncRequestTimeout(5000)
                 .build();
@@ -74,6 +87,11 @@ class ReviewControllerTest {
                 .eventId(eventId)
                 .build();
         reviewList = Arrays.asList(sampleReviewDTO);
+    }
+
+    @Test
+    void cleanup() {
+        taskExecutor.shutdown();
     }
 
     @Test

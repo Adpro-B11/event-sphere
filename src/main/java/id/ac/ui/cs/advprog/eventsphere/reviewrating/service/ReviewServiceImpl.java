@@ -13,6 +13,9 @@ import id.ac.ui.cs.advprog.eventsphere.ticket.service.TicketService;
 import id.ac.ui.cs.advprog.eventsphere.reviewrating.observer.RatingSubject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,15 +38,17 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewDTO createReview(ReviewRequest request) {
+
+        String userId = getCurrentUserId();
         
         validateEventFinished(request.getEventId());
-        validateUserHasTicket(request.getUserId(), request.getEventId());
-        validateUserHasNotReviewed(request.getUserId(), request.getEventId());
+        validateUserHasTicket(userId, request.getEventId());
+        validateUserHasNotReviewed(userId, request.getEventId());
 
         // Create review using factory
+        request.setUserId(userId);
         Review review = reviewFactory.createFromRequest(request);
         Review savedReview = reviewRepository.save(review);
-        
 
         // Notify observers about the new review
         ratingSubject.notifyReviewCreated(savedReview);
@@ -67,16 +72,20 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public ReviewDTO updateReview(String reviewId, ReviewRequest request) {
         
+        String userId = getCurrentUserId();
+        System.out.println("current user"+userId);
+
         validateEventFinished(request.getEventId());
-        validateUserHasTicket(request.getUserId(), request.getEventId());
+        validateUserHasTicket(userId, request.getEventId());
 
         Review review = findReviewById(reviewId);
-        validateReviewOwnership(review, request.getUserId());
+        validateReviewOwnership(review, userId);
 
         // Create copy for observer notification using factory
         Review oldReview = reviewFactory.createCopy(review);
 
         // Update review using factory
+        request.setUserId(userId);
         reviewFactory.updateFromRequest(review, request);
         Review updatedReview = reviewRepository.save(review);
         
@@ -90,10 +99,13 @@ public class ReviewServiceImpl implements ReviewService {
     @Override
     public void deleteReview(String reviewId, ReviewRequest request) {
         
+        String userId = getCurrentUserId();
+        System.out.println("current user"+userId);
+
         Review review = findReviewById(reviewId);
         validateEventFinished(review.getEventId());
-        validateUserHasTicket(request.getUserId(), review.getEventId());
-        validateReviewOwnership(review, request.getUserId());
+        validateUserHasTicket(userId, review.getEventId());
+        validateReviewOwnership(review, userId);
 
         // Create copy for observer notification using factory
         Review reviewCopy = reviewFactory.createCopy(review);
@@ -102,6 +114,17 @@ public class ReviewServiceImpl implements ReviewService {
 
         // Notify observers about the deletion
         ratingSubject.notifyReviewDeleted(reviewCopy);
+    }
+
+    private String getCurrentUserId() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println("current authentication"+authentication);
+        System.out.println("current authentication principal"+authentication.getPrincipal());
+        if (authentication == null || !authentication.isAuthenticated() || 
+            "anonymousUser".equals(authentication.getPrincipal().toString())) {
+            throw new SecurityException("No authenticated user found");
+        }
+        return authentication.getName();
     }
 
     // Private validation methods to reduce code duplication
